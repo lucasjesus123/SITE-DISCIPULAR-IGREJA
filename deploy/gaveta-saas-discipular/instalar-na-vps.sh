@@ -247,6 +247,32 @@ else
 fi
 
 # ---------------------------------------------------------------------------
+# 6.1. Recolocar o HTTPS automaticamente (idempotência do cadeado)
+#
+# O passo acima REGRAVA o .conf a partir do modelo (que é só HTTP). Se este
+# domínio JÁ tinha certificado (instalação anterior), a config recém-gerada
+# ficou sem o bloco 443 — e o navegador passaria a cair no certificado de OUTRO
+# site da VPS ("Esta conexão não é privada"). Aqui detectamos o certificado
+# existente e o reinstalamos, sem menu interativo. Se ainda não houver
+# certificado, não faz nada (o HTTPS é o Passo 2 do usuário, mais abaixo).
+# ---------------------------------------------------------------------------
+if [[ -d "/etc/letsencrypt/live/${DOMINIO}" ]] && command -v certbot >/dev/null 2>&1; then
+  titulo "Recolocando o HTTPS (certificado já existia)"
+  if certbot --nginx --cert-name "${DOMINIO}" \
+        -d "${DOMINIO}" -d "www.${DOMINIO}" \
+        --reinstall --redirect --keep-until-expiring \
+        --non-interactive --no-eff-email --register-unsafely-without-email 2>/dev/null \
+     || certbot --nginx --cert-name "${DOMINIO}" -d "${DOMINIO}" \
+        --reinstall --redirect --keep-until-expiring --non-interactive 2>/dev/null; then
+    nginx -t && systemctl reload nginx
+    verde "HTTPS recolocado — o cadeado voltou sozinho."
+  else
+    amarelo "Não consegui recolocar o HTTPS sozinho. Rode manualmente:"
+    amarelo "  bash $GAVETA/deploy/ativar-https.sh ${DOMINIO} SEU-EMAIL"
+  fi
+fi
+
+# ---------------------------------------------------------------------------
 # 7. Próximos passos
 # ---------------------------------------------------------------------------
 titulo "Pronto — gaveta SAAS-DISCIPULAR instalada"
