@@ -106,8 +106,19 @@ $C ps                   # ver se está no ar
 git pull && $C up -d --build   # atualizar o sistema quando eu mandar novidades
 ```
 
-- **Super admin (você):** `https://SEU_DOMINIO/plataforma` — cadastra as igrejas.
-- **Painel de uma igreja:** `https://(subdomínio da igreja)/painel`.
+O domínio raiz é **tudo ao mesmo tempo** — o site da SUA igreja e a central:
+
+| Endereço | O que é |
+|----------|---------|
+| `https://SEU_DOMINIO/` | **Site da sua igreja** (público) |
+| `https://SEU_DOMINIO/painel` | **Painel de gestão** da sua igreja |
+| `https://SEU_DOMINIO/app` | **App dos membros** (PWA) |
+| `https://SEU_DOMINIO/plataforma` | **Central (super admin)** — cadastrar OUTRAS igrejas |
+| `https://outra.SEU_DOMINIO/` | site de outra igreja que você cadastrar depois |
+
+Você entra em `https://SEU_DOMINIO/login` com **`admin@SEU_DOMINIO`** e a senha
+que apareceu no final da instalação — é o mesmo usuário que administra a sua
+igreja **e** a central.
 - **App dos membros:** `.../app` · **Site público:** `.../`.
 
 ---

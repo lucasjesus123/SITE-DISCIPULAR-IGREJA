@@ -1118,7 +1118,7 @@ async function main(): Promise<void> {
     return criado.id;
   }
 
-  await garantirUsuario({
+  const idSuperAdmin = await garantirUsuario({
     email: emailAdmin,
     nome: "Super Admin da Plataforma",
     plataformaAdmin: true,
@@ -1173,6 +1173,59 @@ async function main(): Promise<void> {
         status: "VERIFICADO",
         tokenVerificacao: randomBytes(24).toString("hex"),
         verificadoEm: new Date(),
+      },
+    });
+  }
+
+  /**
+   * PRODUÇÃO — o domínio RAIZ é, ao mesmo tempo:
+   *   • o site público desta primeira igreja (discipularigreja.com.br/)
+   *   • o painel dela                        (.../painel)
+   *   • o app dos membros                    (.../app)
+   *   • a central do super admin             (.../plataforma)
+   *
+   * Para isso registramos o apex como domínio VERIFICADO e principal desta
+   * igreja. `resolverTenantPorHost` passa a devolver esta igreja quando alguém
+   * acessa o domínio raiz; a área /plataforma continua funcionando porque tem
+   * rota própria e `ehHostDaPlataforma()` reconhece o domínio raiz.
+   *
+   * As DEMAIS igrejas que você cadastrar depois ganham subdomínios
+   * (igreja.discipularigreja.com.br) — é por isso que o DNS precisa do curinga.
+   */
+  const rootDomain = (process.env.ROOT_DOMAIN ?? "").toLowerCase().trim();
+  if (ehProducao && rootDomain && !rootDomain.includes("localhost")) {
+    await prisma.tenantDomain.upsert({
+      where: { hostname: rootDomain },
+      update: {
+        tenantId: tenantDiscipular,
+        principal: true,
+        status: "VERIFICADO",
+        verificadoEm: new Date(),
+      },
+      create: {
+        tenantId: tenantDiscipular,
+        hostname: rootDomain,
+        principal: true,
+        status: "VERIFICADO",
+        tokenVerificacao: randomBytes(24).toString("hex"),
+        verificadoEm: new Date(),
+      },
+    });
+
+    /**
+     * O super admin também ADMINISTRA esta primeira igreja. Sem este vínculo,
+     * ao logar no domínio raiz (que agora resolve para a igreja) ele seria
+     * barrado por "sem vínculo com o tenant". Com o papel ADMIN, ele entra no
+     * painel da igreja e, sendo plataformaAdmin, acessa /plataforma pelo menu.
+     */
+    await prisma.membership.upsert({
+      where: { tenantId_userId: { tenantId: tenantDiscipular, userId: idSuperAdmin } },
+      update: { papel: "ADMIN", ativo: true },
+      create: {
+        tenantId: tenantDiscipular,
+        userId: idSuperAdmin,
+        papel: "ADMIN",
+        ativo: true,
       },
     });
   }

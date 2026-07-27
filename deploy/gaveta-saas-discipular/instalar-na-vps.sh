@@ -185,9 +185,12 @@ if [[ "${SEMEAR:-0}" == "1" ]]; then
   REDE_DADOS="$(docker network ls --format '{{.Name}}' | grep -E '(^|_)dados$' | grep discipular | head -1)"
   REDE_DADOS="${REDE_DADOS:-discipular_dados}"
   if docker run --rm --network "$REDE_DADOS" -v "$PWD":/app -w /app --env-file .env \
+        -e SEED_PERMITIR_PRODUCAO=sim \
+        -e SEED_ADMIN_EMAIL="admin@${DOMINIO}" \
         node:22-bookworm-slim \
         sh -c "npm ci --no-audit --no-fund --silent && npx prisma generate && npm run db:seed"; then
-    verde "Dados de demonstração criados."
+    verde "Dados criados. O domínio ${DOMINIO} já serve o site da sua igreja E a central do super admin."
+    amarelo ">>> ANOTE AGORA as senhas impressas acima (super admin: admin@${DOMINIO}). Elas só aparecem uma vez."
   else
     amarelo "Seed falhou (não é crítico agora). Para criar o primeiro admin depois, rode este mesmo comando dentro de $GAVETA."
   fi
