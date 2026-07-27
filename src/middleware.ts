@@ -32,15 +32,34 @@ function precisaYoutube(pathname: string): boolean {
 /**
  * Extrai o hostname da requisição, sem porta e normalizado.
  *
- * Ordem de confiança: usamos o header `Host` já processado pelo Next
- * (request.nextUrl.hostname), que reflete o que o Nginx repassou. O Nginx
- * está configurado com `server_name` explícito e `proxy_set_header Host
- * $host`, então um Host forjado não chega até aqui — ele bate no
- * `default_server` que devolve 444. Ver nginx/discipular.conf.
+ * ATENÇÃO — POR QUE NÃO USAR `request.nextUrl.hostname`:
+ * Em produção o app roda como servidor Node "standalone" ATRÁS do Nginx. Nesse
+ * modo, `request.nextUrl.hostname` reflete o endereço INTERNO em que o Node
+ * escuta (quase sempre "localhost"/"127.0.0.1"), NÃO o domínio que o usuário
+ * digitou. Se lêssemos isso primeiro, TODA requisição resolveria para
+ * "localhost" — que não pertence a nenhuma igreja — e o site inteiro cairia em
+ * 404. Foi exatamente esse o sintoma no primeiro deploy.
+ *
+ * O host verdadeiro chega nos cabeçalhos que o Nginx repassa:
+ * `proxy_set_header X-Forwarded-Host $host` e `proxy_set_header Host $host`.
+ * O Nginx só encaminha para este app requisições cujo Host casa com o
+ * `server_name` (senão vão para o default_server), e reescreve esses dois
+ * cabeçalhos com `$host` — então o cliente não consegue forjá-los por aqui. E,
+ * como camada final, `resolverTenantPorHost` só devolve tenant para um domínio
+ * VERIFICADO na tabela `tenant_domains`: um host inventado não resolve nada.
+ *
+ * `nextUrl.hostname` fica só como último recurso para `next dev` (sem proxy),
+ * onde ele reflete o host real.
  */
 function extrairHost(request: NextRequest): string {
-  const host = request.nextUrl.hostname || request.headers.get("host") || "";
-  return host.toLowerCase().split(":")[0]!.replace(/\.$/, "").trim();
+  const host =
+    request.headers.get("x-forwarded-host") ||
+    request.headers.get("host") ||
+    request.nextUrl.hostname ||
+    "";
+  // X-Forwarded-Host pode vir como lista "a, b" quando há mais de um proxy;
+  // o primeiro item é o host que o cliente pediu.
+  return host.toLowerCase().split(",")[0]!.split(":")[0]!.replace(/\.$/, "").trim();
 }
 
 /**
