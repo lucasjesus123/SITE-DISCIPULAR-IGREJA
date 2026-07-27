@@ -111,46 +111,42 @@ else
   CSRF_SECRET="$(openssl rand -base64 32)"
   DB_SENHA="$(openssl rand -base64 24 | tr -d '/+=' | head -c 32)"
 
+  # Escrevemos o .env com printf (não heredoc): cada valor já foi expandido
+  # pelo shell e é passado como argumento LITERAL a %s, sem re-parsing. Isso
+  # elimina qualquer chance de a URL do banco (com &, ?, @) ser interpretada
+  # como comando — a causa do "command not found" que alguns shells disparam.
+  # A URL do banco usa `postgres` (nome do serviço Docker) como host, não localhost.
   umask 177
-  cat > .env <<EOF
-# Gerado por instalar-na-vps.sh — NÃO compartilhe este arquivo.
-NODE_ENV=production
-ROOT_DOMAIN=${DOMINIO}
-APP_URL=https://${DOMINIO}
-PORT=${PORTA_INTERNA}
-TRUSTED_PROXY_HOPS=1
-TZ=America/Sao_Paulo
-
-# --- Banco (Postgres em container, sem porta exposta à internet) -------------
-# Nesta VPS pequena usamos UM único usuário de banco para app e migrações.
-# Separar em dois (runtime sem DDL + migrador com DDL) é o endurecimento
-# recomendado para quando escalar — ver AUDITORIA_SEGURANCA.md §7.
-# O host do banco DENTRO do Docker é `postgres` (nome do serviço), não localhost.
-POSTGRES_ADMIN_USER=discipular
-POSTGRES_ADMIN_PASSWORD=${DB_SENHA}
-POSTGRES_DB=discipular
-DATABASE_URL=postgresql://discipular:${DB_SENHA}@postgres:5432/discipular?schema=public&connection_limit=10&pool_timeout=20
-DIRECT_DATABASE_URL=postgresql://discipular:${DB_SENHA}@postgres:5432/discipular?schema=public
-
-# --- Segredos da aplicação (distintos entre si) ------------------------------
-SESSION_SECRET=${SESSION_SECRET}
-ENCRYPTION_KEY=${ENCRYPTION_KEY}
-CSRF_SECRET=${CSRF_SECRET}
-
-# --- Armazenamento de arquivos (volume Docker) -------------------------------
-STORAGE_DIR=/var/lib/discipular/storage
-MAX_UPLOAD_BYTES=5242880
-
-# --- Integrações opcionais (preencha depois no .env e rode: restart app) -----
-YOUTUBE_API_KEY=
-SMTP_HOST=
-SMTP_PORT=587
-SMTP_USER=
-SMTP_PASSWORD=
-SMTP_FROM=Discipular <nao-responda@${DOMINIO}>
-
-LOG_LEVEL=info
-EOF
+  {
+    printf '%s\n' "# Gerado por instalar-na-vps.sh — NAO compartilhe este arquivo."
+    printf '%s\n' "NODE_ENV=production"
+    printf '%s\n' "ROOT_DOMAIN=${DOMINIO}"
+    printf '%s\n' "APP_URL=https://${DOMINIO}"
+    printf '%s\n' "PORT=${PORTA_INTERNA}"
+    printf '%s\n' "TRUSTED_PROXY_HOPS=1"
+    printf '%s\n' "TZ=America/Sao_Paulo"
+    printf '%s\n' "POSTGRES_ADMIN_USER=discipular"
+    printf '%s\n' "POSTGRES_ADMIN_PASSWORD=${DB_SENHA}"
+    printf '%s\n' "POSTGRES_DB=discipular"
+    printf '%s\n' "DATABASE_URL=postgresql://discipular:${DB_SENHA}@postgres:5432/discipular?schema=public&connection_limit=10&pool_timeout=20"
+    printf '%s\n' "DIRECT_DATABASE_URL=postgresql://discipular:${DB_SENHA}@postgres:5432/discipular?schema=public"
+    # Backup (perfil 'backup') — mesmo usuário do banco nesta VPS pequena.
+    printf '%s\n' "BACKUP_DB_USER=discipular"
+    printf '%s\n' "BACKUP_DB_PASSWORD=${DB_SENHA}"
+    printf '%s\n' "BACKUP_RETENCAO_DIAS=14"
+    printf '%s\n' "SESSION_SECRET=${SESSION_SECRET}"
+    printf '%s\n' "ENCRYPTION_KEY=${ENCRYPTION_KEY}"
+    printf '%s\n' "CSRF_SECRET=${CSRF_SECRET}"
+    printf '%s\n' "STORAGE_DIR=/var/lib/discipular/storage"
+    printf '%s\n' "MAX_UPLOAD_BYTES=5242880"
+    printf '%s\n' "YOUTUBE_API_KEY="
+    printf '%s\n' "SMTP_HOST="
+    printf '%s\n' "SMTP_PORT=587"
+    printf '%s\n' "SMTP_USER="
+    printf '%s\n' "SMTP_PASSWORD="
+    printf '%s\n' "SMTP_FROM=Discipular <nao-responda@${DOMINIO}>"
+    printf '%s\n' "LOG_LEVEL=info"
+  } > .env
   umask 022
   chmod 600 .env
   verde ".env criado com segredos únicos (permissão 600)."
