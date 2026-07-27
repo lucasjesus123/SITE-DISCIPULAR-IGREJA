@@ -167,30 +167,35 @@ for i in $(seq 1 40); do
 done
 
 # ---------------------------------------------------------------------------
-# Migrations + seed num contêiner Node DESCARTÁVEL (como root).
+# Migrations + seed reaproveitando a imagem 'builder' que ACABAMOS de construir.
 #
-# Por que não pelas imagens do compose:
-#   - o 'migrador' roda como usuário 1001 e não consegue gravar o engine do
-#     Prisma em node_modules (erro "Can't write to @prisma/engines");
-#   - a imagem de produção do 'app' é standalone: não tem o CLI do Prisma nem
-#     o script de seed, e não tem HOME gravável para o npm.
-# Este contêiner tem o node_modules completo, roda como root (escrita liberada)
-# e fica na MESMA rede do banco, então resolve o host 'postgres'.
+# Por que assim (e não com 'npm ci' num contêiner limpo):
+#   - reinstalar tudo do zero num servidor de 1 CPU quebra o npm com
+#     "Exit handler never called!";
+#   - o 'migrador' roda como usuário 1001 e não grava o engine do Prisma;
+#   - a imagem 'app' é standalone, sem o CLI do Prisma nem o seed.
+# O estágio 'builder' JÁ tem tudo: node_modules completo, o cliente Prisma com
+# os engines (gerados no build, com internet), o src/ e o tsx — nada a baixar.
+# Rodamos ela como root, na MESMA rede do banco (resolve o host 'postgres').
+# Marcar o alvo builder reaproveita as camadas já construídas: é quase instantâneo.
 # ---------------------------------------------------------------------------
+titulo "Preparando as ferramentas de banco (reaproveitando o build)"
+docker build --target builder -t discipular-toolbox:latest .
+
 titulo "Migrando o banco${SEMEAR:+ e semeando a sua igreja}"
 REDE_DADOS="$(docker network ls --format '{{.Name}}' | grep -E '(^|_)dados$' | grep discipular | head -1)"
 REDE_DADOS="${REDE_DADOS:-discipular_dados}"
 
-COMANDO_DB="npm ci --no-audit --no-fund && npx prisma generate && npx prisma migrate deploy"
+COMANDO_DB="npx prisma migrate deploy"
 if [[ "${SEMEAR:-0}" == "1" ]]; then
   COMANDO_DB="${COMANDO_DB} && npm run db:seed"
 fi
 
-if docker run --rm --network "$REDE_DADOS" -v "$PWD":/app -w /app --env-file .env \
+if docker run --rm --network "$REDE_DADOS" --env-file .env \
       -e HOME=/root \
       -e SEED_PERMITIR_PRODUCAO=sim \
       -e SEED_ADMIN_EMAIL="admin@${DOMINIO}" \
-      node:22-bookworm-slim \
+      discipular-toolbox:latest \
       sh -c "$COMANDO_DB"; then
   verde "Banco migrado com sucesso."
   if [[ "${SEMEAR:-0}" == "1" ]]; then
