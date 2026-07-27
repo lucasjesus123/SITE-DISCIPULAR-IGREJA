@@ -2,6 +2,9 @@ import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 
 import { exigirPermissao } from "@/lib/auth/rbac";
+// Uso auditado (SEC-006): apenas modelos GLOBAIS (Tenant/User/Membership/Sessao),
+// sempre com tenantId à mão ou alvo resolvido no escopo antes de mutar. Ver AUDITORIA_SEGURANCA.md §5.
+// eslint-disable-next-line no-restricted-imports
 import { prisma } from "@/lib/db/prisma";
 import { id as idSchema } from "@/lib/validation/comum";
 import { FiltrosAuditoria } from "@/components/painel/FiltrosAuditoria";

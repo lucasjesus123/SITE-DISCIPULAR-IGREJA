@@ -174,7 +174,9 @@ export function tenantDb(tenantId: string) {
           // sendo usado, e ganhamos a garantia de escopo.
           if (LEITURAS_UNICAS.has(operation)) {
             const novaOperacao = operation === "findUnique" ? "findFirst" : "findFirstOrThrow";
-            const delegate = (prisma as unknown as Record<string, Record<string, Function>>)[
+            const delegate = (
+              prisma as unknown as Record<string, Record<string, (a: unknown) => Promise<unknown>>>
+            )[
               lowerFirst(model)
             ];
             return delegate![novaOperacao]!({

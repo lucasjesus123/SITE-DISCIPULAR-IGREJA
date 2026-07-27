@@ -9,6 +9,9 @@ import { hashSenha, SenhaFracaError, verificacaoFalsa } from "@/lib/auth/passwor
 import { exigirPermissao, papeisAtribuiveis, type ContextoAutorizado } from "@/lib/auth/rbac";
 import { solicitarReset } from "@/lib/auth/recuperacao";
 import { gerarToken } from "@/lib/crypto";
+// Uso auditado (SEC-006): apenas modelos GLOBAIS (Tenant/User/Membership/Sessao),
+// sempre com tenantId à mão ou alvo resolvido no escopo antes de mutar. Ver AUDITORIA_SEGURANCA.md §5.
+// eslint-disable-next-line no-restricted-imports
 import { prisma } from "@/lib/db/prisma";
 import { enviarEmail, escaparHtml } from "@/lib/email/enviar";
 import { isProd } from "@/lib/env";
