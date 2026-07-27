@@ -1,0 +1,59 @@
+# =============================================================================
+# Override para a VPS pequena (KVM 1: 1 núcleo / 4 GB / 50 GB) — gaveta
+# SAAS-DISCIPULAR numa VPS COMPARTILHADA com outros sites.
+#
+# O docker-compose.yml da raiz foi dimensionado para 4 vCPU / 8 GB. Este arquivo
+# reduz os limites para caber num servidor de 1 núcleo / 4 GB SEM sufocar os
+# outros sites que já rodam na máquina (nginx do host, outros processos).
+#
+# O Docker Compose lê os DOIS arquivos quando você passa `-f`:
+#   docker compose -f docker-compose.yml -f deploy/gaveta-saas-discipular/docker-compose.override.yml ...
+# O `instalar-na-vps.sh` já faz isso por você.
+#
+# Isolamento: o app continua publicado APENAS em 127.0.0.1:3000 (não abre porta
+# para a internet). Quem fala com o mundo é o nginx do host, que você já usa
+# para os outros sites — ver nginx-saas-discipular.conf.template.
+# =============================================================================
+
+name: discipular
+
+services:
+  postgres:
+    deploy:
+      resources:
+        limits:
+          cpus: "0.60"
+          memory: 1200M
+        reservations:
+          memory: 384M
+    # Postgres afinado para pouca RAM (o postgresql.conf.exemplo é para 8 GB).
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_buffers=256MB"
+      - "-c"
+      - "effective_cache_size=768MB"
+      - "-c"
+      - "work_mem=8MB"
+      - "-c"
+      - "maintenance_work_mem=96MB"
+      - "-c"
+      - "max_connections=40"
+      - "-c"
+      - "random_page_cost=1.1"
+
+  app:
+    deploy:
+      resources:
+        limits:
+          # Pode usar o núcleo inteiro em pico (domingo de manhã), mas cede
+          # quando os outros sites precisam.
+          cpus: "1.0"
+          memory: 1800M
+        reservations:
+          memory: 384M
+    environment:
+      # Menos threads de libuv: numa CPU só, muitas threads competem e pioram.
+      UV_THREADPOOL_SIZE: "4"
+      # Teto de heap do Node coerente com o limite de memória do container.
+      NODE_OPTIONS: "--max-old-space-size=1536"

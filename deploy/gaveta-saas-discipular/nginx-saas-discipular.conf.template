@@ -1,0 +1,73 @@
+# =============================================================================
+# GAVETA nginx: saas-discipular
+#
+# Este é o bloco nginx SÓ deste sistema. Ele convive com os outros sites da VPS
+# porque o nginx do host escolhe o destino pelo `server_name` (o domínio). Os
+# seus outros sites continuam intocados — cada um tem o seu próprio bloco.
+#
+# O `instalar-na-vps.sh` gera a versão final deste arquivo substituindo
+# __DOMINIO__ pelo seu domínio e o instala em:
+#   /etc/nginx/sites-available/saas-discipular.conf
+# com symlink em /etc/nginx/sites-enabled/.
+#
+# O app roda em Docker, escutando só em 127.0.0.1:3000. Este nginx é a ÚNICA
+# porta de entrada da internet para ele — e é onde o TLS termina.
+# =============================================================================
+
+# Mapa para WebSocket/upgrades (o Next usa em dev; inofensivo em prod).
+map $http_upgrade $connection_upgrade {
+  default upgrade;
+  ''      close;
+}
+
+server {
+  listen 80;
+  listen [::]:80;
+  server_name __DOMINIO__ www.__DOMINIO__;
+
+  # O certbot (ativar-https) adiciona aqui o redirecionamento para HTTPS.
+  # Enquanto não houver certificado, o site responde em HTTP mesmo.
+
+  # Corpo máximo coerente com o limite de upload da aplicação (5 MB) + folga.
+  client_max_body_size 6m;
+
+  # ---- Cabeçalhos de segurança na borda (o app também os envia; reforço) ----
+  add_header X-Content-Type-Options "nosniff" always;
+  add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+  # Não exponha a versão do nginx.
+  server_tokens off;
+
+  location / {
+    proxy_pass http://127.0.0.1:3000;
+    proxy_http_version 1.1;
+
+    # Repassa o host REAL — é disto que o sistema multi-tenant depende para
+    # descobrir de qual igreja é a requisição. Sem isto, o tenant não resolve.
+    proxy_set_header Host              $host;
+    proxy_set_header X-Real-IP         $remote_addr;
+    proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-Host  $host;
+
+    proxy_set_header Upgrade    $http_upgrade;
+    proxy_set_header Connection $connection_upgrade;
+
+    proxy_connect_timeout 10s;
+    proxy_read_timeout    60s;
+    proxy_buffering       off;
+  }
+
+  # Assets estáticos do Next: cache longo (têm hash no nome).
+  location /_next/static/ {
+    proxy_pass http://127.0.0.1:3000;
+    proxy_set_header Host $host;
+    add_header Cache-Control "public, max-age=31536000, immutable";
+  }
+
+  # Bloqueia acesso a caminhos sensíveis, se algum vazar para o disco público.
+  location ~ /\.(git|env) {
+    deny all;
+    return 404;
+  }
+}
