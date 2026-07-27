@@ -178,7 +178,7 @@ export async function criarAgendaItem(dadosBrutos: unknown): Promise<ResultadoAc
     }
 
     const item = await ctx.db.agendaItem.create({
-      data: camposComuns(dados),
+      data: { ...camposComuns(dados), tenantId: ctx.tenant.id },
       select: { id: true },
     });
 

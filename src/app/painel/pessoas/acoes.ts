@@ -212,6 +212,7 @@ export async function criarPessoa(dadosBrutos: unknown): Promise<ResultadoAcao> 
 
     const pessoa = await ctx.db.pessoa.create({
       data: {
+        tenantId: ctx.tenant.id,
         ...camposComuns(ctx, dados),
         origem: "PAINEL",
         // A origem do consentimento é a prova de POR QUAL caminho a pessoa
@@ -450,6 +451,7 @@ export async function registrarInteracao(
 
     await ctx.db.interacao.create({
       data: {
+        tenantId: ctx.tenant.id,
         pessoaId: pessoa.id,
         tipo: dados.tipo,
         descricao: dados.descricao,
@@ -528,6 +530,7 @@ export async function transferirCelula(
     await ctx.db.interacao
       .create({
         data: {
+          tenantId: ctx.tenant.id,
           pessoaId: pessoa.id,
           tipo: "OUTRO",
           descricao: destino

@@ -66,6 +66,11 @@ const nextConfig: NextConfig = {
   // Build standalone: imagem Docker mínima, sem devDependencies em produção.
   output: "standalone",
 
+  // nodemailer é dependência OPCIONAL (envio de e-mail): não está no
+  // package.json e é carregado dinamicamente só se estiver instalado.
+  // Marcá-lo como externo evita o webpack tentar resolvê-lo e avisar no build.
+  serverExternalPackages: ["nodemailer"],
+
   eslint: {
     // O lint roda no CI como job próprio; não deve mascarar erro de build.
     ignoreDuringBuilds: false,

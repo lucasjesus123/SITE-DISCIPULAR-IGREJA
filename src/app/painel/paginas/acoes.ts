@@ -111,6 +111,7 @@ export async function criarPagina(dadosBrutos: unknown): Promise<ResultadoAcao> 
 
     const pagina = await ctx.db.sitePagina.create({
       data: {
+        tenantId: ctx.tenant.id,
         titulo: dados.titulo,
         slug: dados.slug,
         // Nasce vazia e NÃO PUBLICADA. Publicar é um ato separado, feito depois

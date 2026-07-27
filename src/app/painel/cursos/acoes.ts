@@ -169,7 +169,7 @@ export async function criarCurso(dadosBrutos: unknown): Promise<ResultadoAcao> {
     }
 
     const curso = await ctx.db.curso.create({
-      data: { ...camposComuns(dados), slug },
+      data: { ...camposComuns(dados), slug, tenantId: ctx.tenant.id },
       select: { id: true },
     });
 

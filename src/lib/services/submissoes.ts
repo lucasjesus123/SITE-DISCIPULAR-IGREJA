@@ -88,6 +88,7 @@ export async function receberSubmissao(
   // 4. Grava
   const submissao = await db.submissao.create({
     data: {
+      tenantId: ctx.tenantId,
       tipo: tipo as TipoSubmissao,
       // Spam entra já classificado: fica disponível para revisão (falso
       // positivo acontece) mas não notifica ninguém nem aparece na fila.
@@ -153,6 +154,7 @@ async function criarSolicitacaoBatismo(
   const db = tenantDb(tenantId);
   await db.solicitacaoBatismo.create({
     data: {
+      tenantId,
       nome: String(dados.nome).slice(0, 160),
       email: typeof dados.email === "string" ? dados.email : null,
       telefone: typeof dados.telefone === "string" ? dados.telefone : null,
@@ -187,6 +189,7 @@ async function criarPedidoOracao(
 
   await db.pedidoOracao.create({
     data: {
+      tenantId,
       // Num pedido anônimo NADA de identificação é gravado, nem o nome que
       // por acaso tenha vindo no corpo. Anonimato só vale se for real.
       nomeSolicitante: anonimo ? null : (dados.nome as string | undefined) ?? null,
@@ -223,6 +226,7 @@ async function criarMatricula(tenantId: string, dados: Record<string, unknown>):
 
   await db.matricula.create({
     data: {
+      tenantId,
       cursoId: curso.id,
       nome: String(dados.nome).slice(0, 160),
       email: typeof dados.email === "string" ? dados.email : null,

@@ -56,6 +56,29 @@ const schema = z.object({
 });
 
 function load() {
+  // Durante `next build`, o Next importa todos os módulos para coletar as
+  // páginas — mas as variáveis de ambiente (segredos) são de RUNTIME, não de
+  // build, e não devem estar presentes na máquina de build. Se validássemos
+  // aqui, o build quebraria por falta de segredo, empurrando o desenvolvedor a
+  // colocar segredo de produção no ambiente de build — exatamente o que não
+  // queremos. A validação de verdade acontece quando o servidor sobe (fase
+  // diferente de NEXT_PHASE), com os segredos reais injetados pelo runtime.
+  const emBuild = process.env.NEXT_PHASE === "phase-production-build";
+  if (emBuild) {
+    return schema.parse({
+      ...process.env,
+      // Placeholders APENAS para o build passar. Nunca alcançam o runtime:
+      // no `next start` este ramo não roda e a validação real ocorre.
+      DATABASE_URL: process.env.DATABASE_URL ?? "postgresql://build:build@localhost:5432/build",
+      SESSION_SECRET: process.env.SESSION_SECRET ?? Buffer.alloc(32, 1).toString("base64"),
+      ENCRYPTION_KEY: process.env.ENCRYPTION_KEY ?? Buffer.alloc(32, 2).toString("base64"),
+      CSRF_SECRET: process.env.CSRF_SECRET ?? Buffer.alloc(32, 3).toString("base64"),
+      ROOT_DOMAIN: process.env.ROOT_DOMAIN ?? "build.local",
+      APP_URL: process.env.APP_URL ?? "http://localhost:3000",
+      NODE_ENV: "development",
+    });
+  }
+
   const parsed = schema.safeParse(process.env);
 
   if (!parsed.success) {

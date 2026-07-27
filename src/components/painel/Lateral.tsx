@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { Papel } from "@prisma/client";
-import { papelTem, type Permissao } from "@/lib/auth/rbac";
+import { papelTem, type Permissao } from "@/lib/auth/permissoes";
 
 /**
  * Menu lateral do painel.

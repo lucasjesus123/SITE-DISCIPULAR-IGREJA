@@ -185,10 +185,12 @@ export function tenantDb(tenantId: string) {
 
           // ---- create / createMany
           if (operation === "create") {
-            return query({ ...a, data: injetarEmData(a.data, tenantId) });
+            // O cast reconstrói o tipo do arg: injetarEmData devolve `unknown`
+            // (opera sobre dado dinâmico), mas o formato é o mesmo que entrou.
+            return query({ ...a, data: injetarEmData(a.data, tenantId) } as typeof args);
           }
           if (operation === "createMany" || operation === "createManyAndReturn") {
-            return query({ ...a, data: injetarEmData(a.data, tenantId) });
+            return query({ ...a, data: injetarEmData(a.data, tenantId) } as typeof args);
           }
 
           // ---- updateMany / deleteMany
@@ -224,7 +226,7 @@ export function tenantDb(tenantId: string) {
             return query({
               ...a,
               create: injetarEmData(a.create, tenantId),
-            });
+            } as typeof args);
           }
 
           // Operação desconhecida (versão nova do Prisma): falhar fechado.

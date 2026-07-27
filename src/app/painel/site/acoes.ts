@@ -110,6 +110,7 @@ export async function salvarConfigSite(dadosBrutos: unknown): Promise<ResultadoA
     await ctx.db.siteConfig.upsert({
       where: { tenantId: ctx.tenant.id },
       create: {
+        tenantId: ctx.tenant.id,
         nomeExibicao: dados.nomeExibicao,
         tagline: dados.tagline,
         descricaoSeo: dados.descricaoSeo,
@@ -261,7 +262,7 @@ export async function salvarConfigLive(dadosBrutos: unknown): Promise<ResultadoA
 
     await ctx.db.liveConfig.upsert({
       where: { tenantId: ctx.tenant.id },
-      create: base,
+      create: { ...base, tenantId: ctx.tenant.id },
       update: base,
     });
 
@@ -287,7 +288,7 @@ export async function alternarAoVivo(ligar: boolean): Promise<ResultadoAcao> {
 
     await ctx.db.liveConfig.upsert({
       where: { tenantId: ctx.tenant.id },
-      create: { forcarAoVivo: ligar, modo: "MANUAL" },
+      create: { forcarAoVivo: ligar, modo: "MANUAL", tenantId: ctx.tenant.id },
       update: { forcarAoVivo: ligar, ultimoCheckEm: null },
     });
 

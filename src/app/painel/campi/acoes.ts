@@ -178,7 +178,7 @@ export async function criarCampus(dadosBrutos: unknown): Promise<ResultadoAcao> 
         await tx.campus.updateMany({ where: { principal: true }, data: { principal: false } });
       }
       const criado = await tx.campus.create({
-        data: camposComuns(dados),
+        data: { ...camposComuns(dados), tenantId: ctx.tenant.id },
         select: { id: true },
       });
       return criado.id;

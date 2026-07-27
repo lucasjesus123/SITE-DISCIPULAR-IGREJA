@@ -129,6 +129,7 @@ export async function criarCelula(dadosBrutos: unknown): Promise<ResultadoAcao> 
 
     const celula = await ctx.db.celula.create({
       data: {
+        tenantId: ctx.tenant.id,
         nome: dados.nome,
         descricao: dados.descricao ?? null,
         campusId: dados.campusId ?? null,
@@ -320,6 +321,7 @@ export async function registrarEncontro(
     } else {
       await ctx.db.encontroCelula.create({
         data: {
+          tenantId: ctx.tenant.id,
           celulaId: celula.id,
           data,
           presentes: dados.presentes,

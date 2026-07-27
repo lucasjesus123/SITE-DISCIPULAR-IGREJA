@@ -116,7 +116,7 @@ export async function criarMensagem(dadosBrutos: unknown): Promise<ResultadoAcao
     }
 
     const criada = await ctx.db.mensagem.create({
-      data: { ...camposComuns(dados), slug },
+      data: { ...camposComuns(dados), slug, tenantId: ctx.tenant.id },
       select: { id: true },
     });
 

@@ -99,16 +99,17 @@ export async function processarSubmissao(
 
       const pessoa = await ctx.db.pessoa.create({
         data: {
+          tenantId: ctx.tenant.id,
           nome: submissao.nome,
           email: submissao.email,
           telefone: submissao.telefone,
           status: (dados.statusPessoa ?? statusPadraoPorTipo(submissao.tipo)) as StatusPessoa,
           origem: "SITE",
           dataNascimento: textoParaData(d.dataNascimento),
-          genero: enumOu(d.genero, ["MASCULINO", "FEMININO", "NAO_INFORMADO"], "NAO_INFORMADO"),
+          genero: enumOu(d.genero, ["MASCULINO", "FEMININO", "NAO_INFORMADO"] as const, "NAO_INFORMADO"),
           estadoCivil: enumOu(
             d.estadoCivil,
-            ["SOLTEIRO", "CASADO", "DIVORCIADO", "VIUVO", "UNIAO_ESTAVEL", "NAO_INFORMADO"],
+            ["SOLTEIRO", "CASADO", "DIVORCIADO", "VIUVO", "UNIAO_ESTAVEL", "NAO_INFORMADO"] as const,
             "NAO_INFORMADO",
           ),
           cep: texto(d.cep, 9),
@@ -247,6 +248,7 @@ async function registrarInteracao(
   await ctx.db.interacao
     .create({
       data: {
+        tenantId: ctx.tenant.id,
         pessoaId,
         tipo: "MENSAGEM",
         descricao: `Nova submissão do tipo ${submissao.tipo} vinculada a este cadastro.`,
@@ -284,8 +286,8 @@ function textoParaData(valor: unknown): Date | null {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
-function enumOu<T extends string>(valor: unknown, permitidos: T[], padrao: T): T {
-  return typeof valor === "string" && (permitidos as string[]).includes(valor)
+function enumOu<T extends string>(valor: unknown, permitidos: readonly T[], padrao: T): T {
+  return typeof valor === "string" && (permitidos as readonly string[]).includes(valor)
     ? (valor as T)
     : padrao;
 }
