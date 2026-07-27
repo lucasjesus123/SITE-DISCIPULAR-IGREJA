@@ -186,6 +186,51 @@ input, textarea, select { font: inherit; color: inherit; }
 .theme-ink-800 { background: var(--ink-800); }
 
 /* -----------------------------------------------------------------------------
+   MODO MONOCROMÁTICO — tema "Preto & Branco Moderno"
+   O layout do site (src/app/(site)/layout.tsx) adiciona `.modo-mono` quando a
+   cor de acento do tenant é neutra. O acento quase-preto some sobre fundos
+   escuros, então aqui ele é invertido para branco em TODO contexto escuro —
+   hero, header, menu mobile, seções .theme-dark/.theme-ink-800 e rodapé. Em
+   temas COLORIDOS a classe não é aplicada e a cor de acento aparece igual sobre
+   claro e escuro (é o que preserva o whitelabel das outras igrejas).
+   -------------------------------------------------------------------------- */
+.modo-mono {
+  --bone: #f4f4f2;
+  --bone-dim: rgb(244 244 242 / 0.72);
+  --bone-faint: rgb(244 244 242 / 0.46);
+}
+.modo-mono .theme-dark,
+.modo-mono .theme-ink-800,
+.modo-mono .hero,
+.modo-mono .site-header,
+.modo-mono .mobile-nav,
+.modo-mono .site-footer {
+  --gold: var(--bone);
+  --gold-bright: #ffffff;
+  --gold-rgb: 244 244 242;
+  --gold-line: rgb(244 244 242 / 0.24);
+}
+/* Tipografia editorial da referência: Archivo pesada; hero em caixa-alta. */
+.modo-mono h1,
+.modo-mono h2,
+.modo-mono h3,
+.modo-mono h4,
+.modo-mono .display {
+  font-weight: 680;
+  letter-spacing: -0.022em;
+  line-height: 1.02;
+}
+.modo-mono .hero__titulo {
+  text-transform: uppercase;
+  font-weight: 800;
+  letter-spacing: -0.012em;
+  line-height: 0.92;
+}
+.modo-mono .pullquote { font-weight: 560; }
+/* Em P&B o acento claro sobre seção escura precisa de bom contraste no texto. */
+.modo-mono .btn--outline-gold:hover:not(:disabled) { --btn-fg: var(--ink); }
+
+/* -----------------------------------------------------------------------------
    LAYOUT
    -------------------------------------------------------------------------- */
 .container {

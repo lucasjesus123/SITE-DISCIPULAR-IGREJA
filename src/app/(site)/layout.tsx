@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { tenantDaRequisicao } from "@/lib/tenant/resolve";
 import { carregarDadosSite } from "@/lib/services/site";
-import { cssDoTema, urlGoogleFonts } from "@/lib/site/theme";
+import { cssDoTema, urlGoogleFonts, temaMonocromatico } from "@/lib/site/theme";
 import { estadoAoVivo } from "@/lib/youtube/live";
 import { Cabecalho } from "@/components/site/Cabecalho";
 import { Rodape } from "@/components/site/Rodape";
@@ -89,6 +89,10 @@ export default async function LayoutSite({ children }: { children: React.ReactNo
 
   const estadoLive = { aoVivo: live.aoVivo, videoId: live.videoId, titulo: live.titulo };
 
+  // Acento neutro (cinza/preto) → ativa o tratamento "Preto & Branco Moderno":
+  // acento branco nas seções escuras, hero em caixa-alta pesada. Ver globals.css.
+  const classeModo = temaMonocromatico(dados.tema) ? "modo-mono" : undefined;
+
   return (
     <>
       {/*
@@ -106,18 +110,20 @@ export default async function LayoutSite({ children }: { children: React.ReactNo
         Pular para o conteúdo
       </a>
 
-      <BannerAoVivo inicial={estadoLive} />
+      <div className={classeModo}>
+        <BannerAoVivo inicial={estadoLive} />
 
-      <Cabecalho
-        nomeIgreja={dados.config.nomeExibicao}
-        logoUrl={dados.config.logoClaroId ? urlArquivoPublico(dados.config.logoClaroId) : null}
-        menu={menu}
-        estadoLive={estadoLive}
-      />
+        <Cabecalho
+          nomeIgreja={dados.config.nomeExibicao}
+          logoUrl={dados.config.logoClaroId ? urlArquivoPublico(dados.config.logoClaroId) : null}
+          menu={menu}
+          estadoLive={estadoLive}
+        />
 
-      <main id="conteudo">{children}</main>
+        <main id="conteudo">{children}</main>
 
-      <Rodape config={dados.config} campi={dados.campi} menu={menu} />
+        <Rodape config={dados.config} campi={dados.campi} menu={menu} />
+      </div>
     </>
   );
 }

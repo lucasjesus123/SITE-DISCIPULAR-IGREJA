@@ -31,6 +31,7 @@ export function corSegura(valor: string | null | undefined, padrao: string): str
  * de dados por seletores de atributo.
  */
 const FONTES_PERMITIDAS = new Set([
+  "Archivo",
   "Fraunces", "Instrument Sans", "Inter", "Playfair Display", "Lora",
   "Merriweather", "Source Serif 4", "DM Serif Display", "Cormorant Garamond",
   "Manrope", "Plus Jakarta Sans", "Outfit", "Sora", "Figtree", "Poppins",
@@ -44,6 +45,23 @@ export function fonteSegura(valor: string | null | undefined, padrao: string): s
 }
 
 export const fontesDisponiveis = [...FONTES_PERMITIDAS].sort();
+
+/**
+ * Um tema é "monocromático" quando a cor de acento é neutra (cinza/preto/branco
+ * — baixa saturação). Nesse caso o site ativa o tratamento "Preto & Branco
+ * Moderno": o acento, que sumiria sobre fundos escuros, é invertido para branco
+ * nas seções escuras (ver globals.css → `.modo-mono`). Temas coloridos
+ * (dourado, verde) NÃO ativam isso: sua cor aparece igual sobre claro e escuro.
+ */
+export function temaMonocromatico(tema: Partial<TemaTenant> | null | undefined): boolean {
+  const cor = corSegura(tema?.corAcento, TEMA_PADRAO.corAcento);
+  let h = cor.slice(1);
+  if (h.length === 3) h = h.split("").map((c) => c + c).join("");
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return Math.max(r, g, b) - Math.min(r, g, b) <= 18;
+}
 
 export interface TemaTenant {
   corAcento: string;
@@ -135,8 +153,11 @@ export function cssDoTema(tema: TemaTenant): string {
  */
 export function urlGoogleFonts(tema: TemaTenant): string {
   const t = normalizarTema(tema);
+  // Faixa 300..800: o tema "preto & branco moderno" usa pesos editoriais
+  // pesados (título do hero em 800, caixa-alta). Faixas menores deixavam o
+  // hero fino demais.
   const familias = [...new Set([t.fonteTitulo, t.fonteTexto])]
-    .map((f) => `family=${encodeURIComponent(f).replace(/%20/g, "+")}:ital,wght@0,300..700;1,300..700`)
+    .map((f) => `family=${encodeURIComponent(f).replace(/%20/g, "+")}:ital,wght@0,300..800;1,300..800`)
     .join("&");
   return `https://fonts.googleapis.com/css2?${familias}&display=swap`;
 }

@@ -195,13 +195,20 @@ let desconectarBanco: (() => Promise<void>) | null = null;
 // CONTEÚDO DE DEMONSTRAÇÃO
 // =============================================================================
 
-const TEMA_INK_GOLD = {
-  corAcento: "#C2A15C",
-  corAcentoClara: "#DCC08A",
-  corTinta: "#0B0D11",
-  corPapel: "#FBF8F1",
-  fonteTitulo: "Fraunces",
-  fonteTexto: "Instrument Sans",
+/**
+ * Tema "Preto & Branco Moderno" — a identidade final da Discipular Igreja.
+ * Base branca, texto quase-preto, tipografia Archivo. O acento é neutro
+ * (quase-preto em seções claras; o globals.css inverte para branco nas seções
+ * escuras). O único toque de cor cromática do site é o vermelho do "Ao Vivo",
+ * definido no CSS — não é cor de tema.
+ */
+const TEMA_PB = {
+  corAcento: "#0E0E10",
+  corAcentoClara: "#000000",
+  corTinta: "#0A0A0B",
+  corPapel: "#FFFFFF",
+  fonteTitulo: "Archivo",
+  fonteTexto: "Archivo",
 } as const;
 
 /** Os seis pilares — repetidos no site e na página "quem somos". */
@@ -1239,38 +1246,38 @@ async function main(): Promise<void> {
     {},
     {
       nomeExibicao: "Discipular Igreja",
-      tagline: "Uma casa de discípulos",
+      tagline: "Uma Casa de Discípulos",
       descricaoSeo:
-        "Igreja cristã em Lajeado e Vera Cruz, no Rio Grande do Sul. Cultos, células nos lares, escola de teologia e discipulado pessoal.",
+        "Igreja cristã em Lajeado e Vera Cruz, no Rio Grande do Sul. Cultos, células nos lares, Escola Discipular e discipulado pessoal. Uma Casa de Discípulos.",
 
-      ...TEMA_INK_GOLD,
+      ...TEMA_PB,
 
-      heroEyebrow: "Lajeado e Vera Cruz · RS",
-      heroTitulo: "Uma casa de discípulos",
-      heroSubtitulo:
-        "Existimos para formar pessoas que seguem Jesus de perto e ensinam outras a fazer o mesmo. Sem espetáculo, sem atalho: uma casa, uma mesa, uma vida por vez.",
-      heroCtaTexto: "Quero visitar",
-      heroCtaLink: "/visita",
+      heroEyebrow: "Seja bem-vindo",
+      heroTitulo: "Discipular Igreja",
+      heroSubtitulo: "Uma Casa de Discípulos!",
+      heroCtaTexto: "Conheça mais",
+      heroCtaLink: "/quem-somos",
 
-      emailContato: "contato@discipular.exemplo.com.br",
-      telefoneContato: telefoneFicticio(1),
-      whatsapp: telefoneFicticio(2),
+      // Conteúdo público real, já divulgado em discipularigreja.com.br.
+      emailContato: "contato@discipularigreja.com.br",
+      telefoneContato: "5551992668095",
+      whatsapp: "5551992668095",
 
-      instagram: "https://www.instagram.com/discipular.exemplo",
-      youtube: "https://www.youtube.com/@discipular.exemplo",
+      instagram: "https://www.instagram.com/discipularigreja/",
+      youtube: "https://www.youtube.com/@DiscipularIgreja",
       spotify: null,
       facebook: null,
 
-      // Chave PIX fictícia. Dado financeiro real nunca entra num seed
-      // versionado — é o tipo de valor que vaza junto com o repositório.
-      pixChave: "pix@discipular.exemplo.com.br",
-      pixTitular: "Associação Discipular Igreja (fictício)",
+      // Chave PIX real da igreja (CNPJ), divulgada publicamente no site para
+      // ofertas. É informação pública de doação, não segredo.
+      pixChave: "54746859000173",
+      pixTitular: "Discipular Igreja",
       pixDescricao:
-        "Contribuir é resposta, não obrigação. Cada valor sustenta as células, a escola e o trabalho social nas duas cidades. Os dados desta página são fictícios, de demonstração.",
+        "Queremos muito avançar na proclamação do Evangelho e, para isso, a sua generosidade é fundamental. Estamos, juntos, construindo uma história com e para Jesus. Use a chave PIX (CNPJ) no app do seu banco.",
 
       pwaNome: "Discipular Igreja",
       pwaNomeCurto: "Discipular",
-      pwaCorTema: TEMA_INK_GOLD.corTinta,
+      pwaCorTema: "#0A0A0B",
 
       modulos: {
         site: true,
