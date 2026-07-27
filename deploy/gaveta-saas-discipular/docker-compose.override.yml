@@ -19,6 +19,20 @@ name: discipular
 
 services:
   postgres:
+    # CORREÇÃO DO HEALTHCHECK.
+    # A imagem inicializa com --auth-local=scram-sha-256 (conexão local exige
+    # senha). O healthcheck da base roda `psql` SEM senha, então o teste de
+    # saúde falhava sempre e o container ficava "unhealthy" para sempre — e o
+    # app nunca subia. Aqui passamos PGPASSWORD (que já existe no container como
+    # POSTGRES_PASSWORD), então o teste autentica e o banco fica saudável.
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB -q && PGPASSWORD=$$POSTGRES_PASSWORD psql -U $$POSTGRES_USER -d $$POSTGRES_DB -tAc 'SELECT 1' >/dev/null 2>&1"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
     deploy:
       resources:
         limits:
