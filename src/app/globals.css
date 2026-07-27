@@ -1007,3 +1007,117 @@ input, textarea, select { font: inherit; color: inherit; }
   background: #fff;
 }
 .paginacao [aria-current="page"] { border-color: var(--gold); background: rgb(var(--gold-rgb) / 0.1); font-weight: 600; }
+
+/* =============================================================================
+   COMPONENTES DA REFERÊNCIA (site público — home + páginas internas)
+   Espelham o discipularcompleto.html. Usam os mesmos tokens do tema, então
+   respeitam o whitelabel e o modo Preto & Branco.
+   ========================================================================== */
+
+/* Cabeçalho de seção centralizado */
+.section-head { max-width: 720px; margin-inline: auto; text-align: center; }
+.section-head h2 { margin-top: 1.1rem; }
+.section-head .lead { margin-top: 1.1rem; margin-inline: auto; }
+
+/* Layout de duas colunas texto + mídia */
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(2rem, 5vw, 4.5rem); align-items: center; }
+.split--text-first .split__media { order: 2; }
+@media (max-width: 900px) {
+  .split { grid-template-columns: 1fr; }
+  .split--reverse .split__media, .split--text-first .split__media { order: -1; }
+}
+.split__idx { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.2em; color: var(--gold); }
+
+/* Page-hero (topo das páginas internas) */
+.page-hero { position: relative; background: var(--ink); color: var(--bone); padding-block: clamp(6rem, 12vw, 10rem) clamp(3rem, 7vw, 6rem); overflow: hidden; }
+.page-hero__title { font-family: var(--font-display); font-size: clamp(2.6rem, 1.9rem + 3vw, 5rem); line-height: 0.98; letter-spacing: -0.022em; }
+.page-hero .lead { max-width: 60ch; margin-top: 1.6rem; }
+.breadcrumb { display: flex; gap: 0.6rem; font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-faint); margin-bottom: 1.8rem; }
+.breadcrumb a { color: var(--fg-dim); }
+.serif-italic, .ital { font-style: italic; }
+.gold, .accent { color: var(--gold-bright); }
+
+/* Marquee — faixa deslizante */
+.marquee { overflow: hidden; border-block: 1px solid var(--line); padding-block: 1.6rem; -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
+.marquee__track { display: inline-flex; gap: 2.5rem; white-space: nowrap; animation: marquee 32s linear infinite; will-change: transform; }
+.marquee:hover .marquee__track { animation-play-state: paused; }
+.marquee__item { font-family: var(--font-display); font-size: clamp(1.4rem, 1rem + 2vw, 2.4rem); font-weight: 640; display: inline-flex; align-items: center; gap: 2.5rem; }
+.marquee__item::after { content: "•"; color: var(--gold); }
+.marquee__item.ital { font-style: italic; font-weight: 420; }
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* Faixa de versículo (scripture) */
+.scripture { position: relative; text-align: center; overflow: hidden; }
+.scripture__mark { position: absolute; top: 8%; left: 50%; transform: translateX(-50%); font-family: var(--font-display); font-weight: 800; font-size: clamp(9rem, 30vw, 20rem); line-height: 1; color: var(--fg); opacity: 0.05; pointer-events: none; user-select: none; }
+.scripture__text { position: relative; font-family: var(--font-display); font-weight: 640; font-size: clamp(1.8rem, 1.2rem + 2.6vw, 3.2rem); line-height: 1.18; letter-spacing: -0.02em; max-width: 20ch; margin: 1.5rem auto 0; }
+.scripture__ref { position: relative; margin-top: 1.8rem; font-size: 0.76rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); font-weight: 700; }
+
+/* Frames de imagem/placeholder */
+.frame--tall { aspect-ratio: 3 / 4; }
+.frame--wide { aspect-ratio: 4 / 3; }
+.frame__mono { display: grid; place-items: center; background: var(--card); border: 1px solid var(--card-line); }
+.frame__mono svg, .frame__mono img { width: 62%; height: auto; opacity: 0.9; }
+.frame__cap { position: absolute; top: 1.1rem; right: 1.2rem; font-family: var(--font-display); font-style: italic; font-size: 0.95rem; color: var(--fg-dim); z-index: 2; }
+.frame__badge { position: absolute; left: 1.1rem; bottom: 1.1rem; z-index: 2; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.55rem 1rem; border: 1px solid var(--line); border-radius: 100px; font-size: 0.66rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-dim); background: rgb(var(--ink-rgb) / 0.4); backdrop-filter: blur(6px); }
+.frame__grid { position: absolute; inset: 0; background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 44px 44px; opacity: 0.5; }
+/* Tag flutuante sobre imagem */
+.floating-tag { position: absolute; left: -1.2rem; top: 2rem; z-index: 3; background: var(--ink); color: var(--bone); border: 1px solid var(--line-on-dark); border-radius: var(--radius-lg); padding: 1rem 1.3rem; max-width: 240px; box-shadow: 0 20px 50px -24px rgb(0 0 0 / 0.6); }
+.floating-tag .k { font-size: 0.64rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); font-weight: 700; }
+.floating-tag .v { font-family: var(--font-display); font-size: 1.15rem; margin-top: 0.25rem; }
+
+/* Linha de papel/cargo dos pastores */
+.role { font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); font-weight: 700; margin-top: 0.5rem; }
+
+/* Cartão de curso */
+.course__meta { font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); font-weight: 700; }
+.course__price { font-family: var(--font-display); font-size: var(--step-1); }
+.course__price span { font-size: 0.8rem; color: var(--fg-dim); font-family: var(--font-sans); letter-spacing: 0.02em; }
+
+/* Contadores / estatísticas */
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1.5rem, 4vw, 3rem); }
+.stat__num { font-family: var(--font-display); font-weight: 720; font-size: clamp(2.6rem, 2rem + 3vw, 4.5rem); line-height: 1; }
+.stat__label { color: var(--fg-dim); font-size: 0.9rem; margin-top: 0.4rem; }
+
+/* FAQ — acordeão nativo (<details>) */
+.faq details { border-top: 1px solid var(--line); }
+.faq details[open] summary .faq__sign { transform: rotate(45deg); }
+.faq summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding: 1.5rem 0; font-family: var(--font-display); font-size: var(--step-1); font-weight: 600; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq__sign { flex: none; width: 22px; height: 22px; position: relative; transition: transform 0.4s var(--ease-out); color: var(--gold); }
+.faq__sign::before, .faq__sign::after { content: ""; position: absolute; background: currentColor; }
+.faq__sign::before { left: 0; top: 50%; width: 100%; height: 2px; transform: translateY(-50%); }
+.faq__sign::after { top: 0; left: 50%; width: 2px; height: 100%; transform: translateX(-50%); }
+.faq__a { padding-bottom: 1.5rem; color: var(--fg-dim); max-width: 70ch; }
+
+/* Cartão PIX */
+.pix-card { background: var(--card); border: 1px solid var(--card-line); border-radius: var(--radius-lg); padding: clamp(1.6rem, 3vw, 2.4rem); }
+.pix-card__head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.pix-badge { border: 1px solid var(--line); border-radius: 100px; padding: 0.35rem 0.9rem; font-size: 0.68rem; letter-spacing: 0.18em; font-weight: 700; }
+.pix-card__owner { font-size: 0.7rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-faint); }
+.pix-card h3 { margin-top: 1.4rem; }
+.pix-key { margin-top: 1.4rem; border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 1.1rem 1.3rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.pix-key__label { font-size: 0.64rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-faint); font-weight: 700; }
+.pix-key__val { font-family: var(--font-display); font-size: var(--step-1); }
+.pix-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+.pix-fact { border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 1rem 1.2rem; }
+.pix-fact .k { font-size: 0.64rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-faint); font-weight: 700; }
+.pix-fact .v { margin-top: 0.35rem; }
+.pix-card__note { margin-top: 1.2rem; font-size: 0.82rem; color: var(--fg-faint); }
+
+/* Rodapé — CTA, marca, redes, marca-d'água */
+.footer-cta { text-align: center; padding-bottom: clamp(3rem, 7vw, 5rem); border-bottom: 1px solid var(--line-on-dark); margin-bottom: clamp(3rem, 6vw, 4.5rem); }
+.footer-cta h2 { margin-top: 1rem; }
+.footer-cta__acoes { margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+.footer-brand__mark { width: 54px; height: 54px; color: var(--bone); }
+.footer-sobre { color: var(--bone-dim); font-size: 0.92rem; max-width: 34ch; margin-top: 1.2rem; }
+.footer-social { display: flex; gap: 0.7rem; margin-top: 1.5rem; }
+.footer-social a { width: 42px; height: 42px; border: 1px solid var(--line-on-dark); border-radius: 50%; display: grid; place-items: center; color: var(--bone-dim); transition: color 0.3s, border-color 0.3s; }
+.footer-social a:hover { color: var(--bone); border-color: var(--bone); }
+.footer-watermark { position: absolute; left: 0; right: 0; bottom: -2%; text-align: center; font-family: var(--font-display); font-weight: 800; font-size: clamp(5rem, 20vw, 16rem); line-height: 1; color: var(--bone); opacity: 0.03; pointer-events: none; user-select: none; z-index: 0; }
+.site-footer { position: relative; overflow: hidden; }
+.site-footer > .container { position: relative; z-index: 1; }
+
+/* Marca inline (logo desenhado) para quem não tem logo próprio */
+.marca { display: inline-flex; align-items: center; gap: 0.7rem; }
+.marca__icone { width: 30px; height: 30px; flex: none; }
+.marca__texto { font-family: var(--font-display); font-weight: 800; font-size: 1.28rem; letter-spacing: -0.01em; font-style: italic; }

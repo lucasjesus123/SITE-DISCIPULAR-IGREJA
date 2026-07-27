@@ -44,8 +44,21 @@ export async function generateMetadata(): Promise<Metadata> {
     robots: { index: true, follow: true },
     icons: config.faviconId
       ? { icon: urlArquivoPublico(config.faviconId) }
-      : undefined,
+      : tenant.slug === "discipular"
+        ? { icon: "/marca/favicon.ico", apple: "/marca/apple-touch-icon.png" }
+        : undefined,
   };
+}
+
+/**
+ * Logo do cabeçalho. Prioridade: (1) logo que o cliente enviou no painel;
+ * (2) marca oficial da Discipular servida de /public (fallback só para o
+ * tenant-âncora); (3) nada → o cabeçalho mostra o nome em texto.
+ */
+function logoDoCabecalho(logoClaroId: string | null, slug: string): string | null {
+  if (logoClaroId) return urlArquivoPublico(logoClaroId);
+  if (slug === "discipular") return "/marca/logo-white.png";
+  return null;
 }
 
 export default async function LayoutSite({ children }: { children: React.ReactNode }) {
@@ -115,14 +128,25 @@ export default async function LayoutSite({ children }: { children: React.ReactNo
 
         <Cabecalho
           nomeIgreja={dados.config.nomeExibicao}
-          logoUrl={dados.config.logoClaroId ? urlArquivoPublico(dados.config.logoClaroId) : null}
+          logoUrl={logoDoCabecalho(dados.config.logoClaroId, tenant.slug)}
           menu={menu}
           estadoLive={estadoLive}
         />
 
         <main id="conteudo">{children}</main>
 
-        <Rodape config={dados.config} campi={dados.campi} menu={menu} />
+        <Rodape
+          config={dados.config}
+          campi={dados.campi}
+          menu={menu}
+          marcaUrl={
+            dados.config.logoClaroId
+              ? urlArquivoPublico(dados.config.logoClaroId)
+              : tenant.slug === "discipular"
+                ? "/marca/mark-light.png"
+                : null
+          }
+        />
       </div>
     </>
   );

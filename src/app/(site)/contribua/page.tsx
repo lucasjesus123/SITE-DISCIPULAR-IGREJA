@@ -52,177 +52,119 @@ export default async function PaginaContribua() {
   if (!tenant) notFound();
 
   const { config } = await carregarDadosSite(tenant.id);
-  const chave = config.pixChave?.trim() || null;
+
+  // Chave crua (usada para copiar) e sua exibição formatada. Quando o cliente
+  // preencheu a chave no painel, ela vem do banco; senão, cai no CNPJ padrão.
+  const chaveCrua = config.pixChave?.trim() || "54746859000173";
+  const chaveExibicao = config.pixChave?.trim() || "54.746.859/0001-73";
+  const titular = config.pixTitular?.trim() || "Discipular Igreja";
 
   return (
     <>
-      {/* ------------------------------------------------------------- ABERTURA */}
-      <section className="section theme-dark">
-        <div className="container container--narrow">
+      {/* ------------------------------------------------------------ PAGE-HERO */}
+      <section className="page-hero">
+        <div className="container">
+          <nav className="breadcrumb">
+            <Link href="/">Início</Link>
+            <span>/</span>
+            <span>Contribua</span>
+          </nav>
           <p className="eyebrow">Oferte &amp; Contribua</p>
-          <h1 style={{ marginTop: "1.2rem" }}>
-            Seja <span className="serif-italic gold">generoso</span>.
+          <h1 className="page-hero__title">
+            Generosidade que <span className="serif-italic accent">avança.</span>
           </h1>
-          <p className="lead" style={{ marginTop: "1.4rem" }}>
-            {config.pixDescricao ??
-              `Cada oferta entregue à ${config.nomeExibicao} vira Evangelho pregado, criança ` +
-                `discipulada, família visitada e porta aberta durante a semana. Contribuir não é ` +
-                `pagar uma conta da igreja: é participar do que Deus está fazendo por meio dela.`}
+          <p className="lead">
+            Sua generosidade é fundamental para avançarmos na proclamação do
+            Evangelho. Juntos, construímos uma história com e para Jesus.
           </p>
+        </div>
+      </section>
+
+      {/* ---------------------------------------------------- POR QUE CONTRIBUIR */}
+      <section className="section theme-light">
+        <div className="container split">
+          <div>
+            <p className="eyebrow">Por que contribuir</p>
+            <h2>
+              Cada oferta se torna <span className="serif-italic accent">Reino.</span>
+            </h2>
+            <p className="lead">
+              Queremos muito avançar na proclamação do Evangelho e, para isso, a
+              sua generosidade é fundamental. Estamos, juntos, construindo uma
+              história com e para Jesus.
+            </p>
+
+            <ul className="ticks">
+              <li>
+                <strong>Missões e evangelismo</strong> — da cidade para as nações.
+              </li>
+              <li>
+                <strong>Discipulado e ensino</strong> — formando vidas na Palavra.
+              </li>
+              <li>
+                <strong>Atos de justiça</strong> — servindo a nossa comunidade.
+              </li>
+            </ul>
+
+            <blockquote className="pullquote">
+              &ldquo;Cada um contribua segundo propôs no seu{" "}
+              <span className="accent">coração</span>; não com tristeza, ou por
+              necessidade; porque Deus ama ao que dá com alegria.&rdquo;
+              <p className="pullquote__by">2 Coríntios 9.7</p>
+            </blockquote>
+          </div>
+
+          <div className="split__media">
+            <div className="pix-card">
+              <div className="pix-card__head">
+                <span className="pix-badge">PIX</span>
+                <span className="pix-card__owner">Discipular Igreja</span>
+              </div>
+              <h3>Oferte com PIX em segundos.</h3>
+              <p className="pix-card__note">
+                Copie a chave abaixo (CNPJ) e faça sua oferta pelo app do seu
+                banco, quando e de onde quiser.
+              </p>
+              <div className="pix-key">
+                <div>
+                  <p className="pix-key__label">Chave PIX · CNPJ</p>
+                  <p className="pix-key__val">{chaveExibicao}</p>
+                </div>
+                <CopiarChave chave={chaveCrua} />
+              </div>
+              <div className="pix-facts">
+                <div className="pix-fact">
+                  <p className="k">Favorecido</p>
+                  <p className="v">{titular}</p>
+                </div>
+                <div className="pix-fact">
+                  <p className="k">Tipo de chave</p>
+                  <p className="v">CNPJ</p>
+                </div>
+              </div>
+              <p className="pix-card__note">
+                Recibo ou dúvidas sobre contribuições? Fale conosco: (51)
+                99266-8095.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* ---------------------------------------------------------- O VERSÍCULO */}
-      <section className="section section--tight theme-cream">
-        <div className="container container--narrow centro stack">
-          <p className="pullquote">
-            &ldquo;Cada um contribua segundo tiver proposto no coração, não com tristeza ou por
-            necessidade; porque Deus ama a quem dá com{" "}
-            <span className="accent">alegria</span>.&rdquo;
+      <section className="section theme-dark scripture">
+        <div className="container">
+          <span className="scripture__mark" aria-hidden="true">
+            &ldquo;
+          </span>
+          <p className="scripture__text">
+            &ldquo;Há maior felicidade em <span className="accent ital">dar</span>{" "}
+            do que em receber.&rdquo;
           </p>
-          <p className="pullquote__by">2 Coríntios 9.7</p>
-        </div>
-      </section>
-
-      {/* --------------------------------------------------------------- O PIX */}
-      <section className="section theme-light" id="pix">
-        <div className="container container--narrow">
-          {chave ? (
-            <>
-              <p className="eyebrow">PIX</p>
-              <h2 style={{ marginTop: "1.2rem" }}>Contribua em segundos.</h2>
-              <p className="lead" style={{ marginTop: "1.2rem" }}>
-                Abra o aplicativo do seu banco, escolha PIX e use a chave abaixo. A transferência
-                cai direto na conta da igreja.
-              </p>
-
-              <div className="card" style={{ marginTop: "clamp(2.5rem, 5vw, 3.5rem)" }}>
-                <p className="index-tag">Chave PIX</p>
-
-                {/*
-                  A chave fica visível e selecionável de propósito. O botão de
-                  copiar depende de contexto seguro e de permissão do navegador;
-                  quando ele falha, o caminho manual continua existindo.
-                */}
-                <p
-                  style={{
-                    fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-                    fontSize: "clamp(1rem, 2.6vw, 1.3rem)",
-                    wordBreak: "break-all",
-                    userSelect: "all",
-                    lineHeight: 1.5,
-                  }}
-                >
-                  {chave}
-                </p>
-
-                {config.pixTitular && (
-                  <p className="card__texto">
-                    Titular: <strong>{config.pixTitular}</strong>
-                  </p>
-                )}
-
-                <div style={{ marginTop: "1.2rem" }}>
-                  <CopiarChave chave={chave} />
-                </div>
-              </div>
-
-              <div className="alerta alerta--aviso" style={{ marginTop: "2rem" }} role="note">
-                <strong>Confira sempre o titular.</strong> Antes de confirmar, verifique se o nome
-                que aparece no seu aplicativo é o mesmo mostrado acima. A {config.nomeExibicao}{" "}
-                nunca pede contribuição por mensagem privada e nunca envia outra chave por
-                WhatsApp.
-              </div>
-            </>
-          ) : (
-            <>
-              <p className="eyebrow">Contribuição</p>
-              <h2 style={{ marginTop: "1.2rem" }}>Fale com a secretaria.</h2>
-              <p className="lead" style={{ marginTop: "1.2rem" }}>
-                Os dados para contribuição ainda não foram publicados aqui. Entre em contato e a
-                equipe da {config.nomeExibicao} orienta você com segurança.
-              </p>
-              <div style={{ marginTop: "2rem" }}>
-                <Link href="/contato" className="btn btn--lg">
-                  Falar com a igreja
-                </Link>
-              </div>
-            </>
-          )}
-        </div>
-      </section>
-
-      {/* ------------------------------------------------------- PARA ONDE VAI */}
-      <section className="section theme-cream">
-        <div className="container container--narrow">
-          <p className="eyebrow">Transparência</p>
-          <h2 style={{ marginTop: "1.2rem", marginBottom: "2rem" }}>Para onde vai a sua oferta.</h2>
-
-          <div className="value">
-            <span className="value__idx">01</span>
-            <div>
-              <p className="value__title">Proclamação</p>
-              <p className="value__text">
-                Cultos, transmissão ao vivo, materiais da Escola e o envio de quem prega onde ainda
-                não se ouviu falar de Jesus.
-              </p>
-            </div>
-          </div>
-
-          <div className="value">
-            <span className="value__idx">02</span>
-            <div>
-              <p className="value__title">Cuidado com pessoas</p>
-              <p className="value__text">
-                Assistência a famílias da igreja e do bairro, visitas, aconselhamento e as células
-                espalhadas pela cidade.
-              </p>
-            </div>
-          </div>
-
-          <div className="value">
-            <span className="value__idx">03</span>
-            <div>
-              <p className="value__title">A casa</p>
-              <p className="value__text">
-                Aluguel, energia, som, segurança e a manutenção do lugar onde a igreja se reúne
-                toda semana.
-              </p>
-            </div>
-          </div>
-
-          <p className="dim" style={{ marginTop: "2.5rem", fontSize: ".92rem" }}>
-            Quer entender melhor a prestação de contas?{" "}
-            <Link href="/contato" className="gold">
-              Peça à secretaria
-            </Link>
-            . Prestamos contas a quem contribui — é o mínimo.
-          </p>
-        </div>
-      </section>
-
-      {/* -------------------------------------------------------------- CONVITE */}
-      <section className="section section--tight theme-dark">
-        <div className="container container--narrow centro stack">
-          <h2 style={{ fontSize: "var(--step-3)" }}>Obrigado por caminhar conosco.</h2>
-          <p className="lead">
-            Se você contribui com a {config.nomeExibicao}, você faz parte de cada história que
-            acontece aqui.
-          </p>
-          <div
-            style={{
-              marginTop: "1.4rem",
-              display: "flex",
-              gap: "1rem",
-              justifyContent: "center",
-              flexWrap: "wrap",
-            }}
-          >
-            <Link href="/oracao" className="btn btn--ghost">
-              Pedido de oração
-            </Link>
-            <Link href="/visita" className="btn">
-              Quero visitar
+          <p className="scripture__ref">Atos 20.35</p>
+          <div style={{ textAlign: "center", marginTop: "2.5rem" }}>
+            <Link href="/" className="btn btn--lg">
+              Voltar para o início
             </Link>
           </div>
         </div>
