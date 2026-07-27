@@ -22,9 +22,12 @@ secrets/
 .secrets
 
 # Uploads locais (armazenamento privado por tenant)
-storage/
-uploads/
-public/uploads/
+# ANCORADO na raiz (/) de propósito: sem a barra inicial, `storage/` também
+# ignoraria src/lib/storage/ — o código de upload — e ele nunca iria para o
+# repositório. Foi exatamente o que aconteceu e quebrou o build na VPS.
+/storage/
+/uploads/
+/public/uploads/
 
 # Prisma
 prisma/*.db
