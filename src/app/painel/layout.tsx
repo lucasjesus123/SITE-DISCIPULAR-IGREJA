@@ -1,0 +1,103 @@
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { sessaoAtual } from "@/lib/auth/session";
+import { exigirAcessoTenant, NaoAutenticadoError, NaoAutorizadoError } from "@/lib/auth/rbac";
+import { TenantIndisponivelError, TenantNaoEncontradoError } from "@/lib/tenant/resolve";
+import { carregarDadosSite } from "@/lib/services/site";
+import { contadoresTriagem } from "@/lib/services/submissoes";
+import { cssDoTema } from "@/lib/site/theme";
+import { obterTokenCsrf } from "@/lib/security/csrf";
+import { LateralPainel } from "@/components/painel/Lateral";
+import "../globals.css";
+
+/**
+ * Layout do painel de gestão.
+ *
+ * A AUTORIZAÇÃO ACONTECE AQUI, NO LAYOUT.
+ *
+ * Isso é deliberado: em Next.js App Router, o layout envolve todas as páginas
+ * filhas, então nenhuma rota sob /painel pode ser alcançada sem passar por
+ * este código. Se a verificação estivesse só em cada página, bastaria alguém
+ * criar uma página nova e esquecer de verificar.
+ *
+ * Cada página AINDA verifica a permissão específica dela — este layout garante
+ * apenas o mínimo (sessão válida + vínculo com a igreja do hostname).
+ */
+
+export const metadata: Metadata = {
+  title: { default: "Painel", template: "%s · Painel" },
+  // O painel NUNCA deve ser indexado.
+  robots: { index: false, follow: false, nocache: true },
+};
+
+export const dynamic = "force-dynamic";
+
+export default async function LayoutPainel({ children }: { children: React.ReactNode }) {
+  let ctx;
+
+  try {
+    ctx = await exigirAcessoTenant();
+  } catch (erro) {
+    if (erro instanceof NaoAutenticadoError) redirect("/login");
+
+    if (erro instanceof NaoAutorizadoError) {
+      const sessao = await sessaoAtual();
+      // Logado, mas sem vínculo com ESTA igreja. Não dizemos que a igreja
+      // existe nem que ele está logado em outra: apenas mandamos para o login,
+      // que é o comportamento indistinguível de "sessão expirou".
+      if (!sessao) redirect("/login");
+      redirect("/sem-acesso");
+    }
+
+    if (erro instanceof TenantNaoEncontradoError || erro instanceof TenantIndisponivelError) {
+      redirect("/login");
+    }
+
+    throw erro;
+  }
+
+  // Membro comum não usa o painel de gestão — o lugar dele é o app.
+  if (ctx.papel === "MEMBRO") redirect("/app");
+
+  const [dados, contadores] = await Promise.all([
+    carregarDadosSite(ctx.tenant.id),
+    contadoresTriagem(ctx.tenant.id),
+    obterTokenCsrf(),
+  ]);
+
+  return (
+    <>
+      <style dangerouslySetInnerHTML={{ __html: cssDoTema(dados.tema) }} />
+
+      {/*
+        Faixa de impersonação.
+
+        Quando o super admin entra como uma igreja, ele PRECISA ver isso o
+        tempo todo. Sem o aviso permanente, é questão de tempo até alguém
+        fazer uma alteração achando que está no ambiente errado — e como as
+        ações ficam registradas em nome da igreja, o rastro fica confuso.
+      */}
+      {ctx.sessao.impersonadoPor && (
+        <div className="faixa-impersonacao" role="alert">
+          Você está acessando como <strong>{ctx.tenant.nome}</strong> (sessão de suporte iniciada
+          por {ctx.sessao.impersonadoPor}). Todas as ações ficam registradas.
+        </div>
+      )}
+
+      <div className="painel">
+        <LateralPainel
+          nomeIgreja={dados.config.nomeExibicao}
+          nomeUsuario={ctx.sessao.nome}
+          papel={ctx.papel}
+          contadores={{
+            caixaEntrada: contadores.total,
+            oracoes: contadores.oracoesPendentes,
+            batismos: contadores.batismosPendentes,
+          }}
+        />
+
+        <main className="painel__conteudo">{children}</main>
+      </div>
+    </>
+  );
+}

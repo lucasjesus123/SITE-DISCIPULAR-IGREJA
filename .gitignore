@@ -1,0 +1,65 @@
+# Dependências
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js
+.next/
+out/
+build/
+dist/
+next-env.d.ts
+
+# Segredos — NUNCA commitar
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+.secrets
+
+# Uploads locais (armazenamento privado por tenant)
+storage/
+uploads/
+public/uploads/
+
+# Prisma
+prisma/*.db
+prisma/*.db-journal
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Testes / cobertura
+coverage/
+.nyc_output/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Editores
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+
+# Saída de ferramentas de auditoria (pode conter trechos sensíveis)
+.audit/
+semgrep.json
+gitleaks-report.json
+trivy-report.json
+osv-report.json
+
+# Cache
+.turbo/
+.eslintcache
+*.tsbuildinfo

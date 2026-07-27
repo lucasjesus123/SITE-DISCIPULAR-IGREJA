@@ -1,0 +1,1082 @@
+// =============================================================================
+// Discipular SaaS — Schema multi-tenant
+//
+// REGRA DE OURO DESTE SCHEMA
+// Todo modelo que guarda dado de igreja carrega `tenantId` como PRIMEIRA
+// coluna de todo índice. Nenhuma consulta da aplicação toca esses modelos sem
+// passar pelo cliente escopado (src/lib/db/tenant-client.ts), que injeta o
+// filtro de tenant automaticamente. O banco reforça isso com RLS
+// (prisma/migrations/*_rls/migration.sql) como segunda camada.
+//
+// Modelos SEM tenantId são, por definição, globais da plataforma:
+//   Tenant, TenantDomain, User, Membership, Session, PasswordResetToken,
+//   RateLimitBucket, PlatformAuditLog
+// Qualquer modelo novo é tenant-scoped por padrão. Se não for, justifique aqui.
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
+}
+
+// =============================================================================
+// PLATAFORMA (global — sem tenantId)
+// =============================================================================
+
+enum TenantStatus {
+  TRIAL // avaliação, com data de expiração
+  ATIVO
+  SUSPENSO // inadimplência — site fica offline, painel bloqueado
+  CANCELADO // agendado para exclusão
+}
+
+enum TenantPlan {
+  ESSENCIAL
+  CRESCIMENTO
+  MULTISEDE
+}
+
+/// Uma igreja cliente do SaaS. É a raiz de todo isolamento de dados.
+model Tenant {
+  id String @id @default(cuid())
+
+  /// Identificador curto usado no subdomínio da plataforma:
+  /// `slug`.discipular.app. Imutável depois de criado.
+  slug String @unique @db.VarChar(63)
+
+  nome         String       @db.VarChar(160)
+  razaoSocial  String?      @db.VarChar(200)
+  cnpj         String?      @db.VarChar(18)
+  status       TenantStatus @default(TRIAL)
+  plano        TenantPlan   @default(ESSENCIAL)
+  trialExpiraEm DateTime?
+
+  /// Limites do plano, verificados na escrita. Impedem que um tenant
+  /// consuma recurso desproporcional da VPS compartilhada.
+  limiteUsuarios Int @default(5)
+  limitePessoas  Int @default(2000)
+  limiteStorageMb Int @default(512)
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+  excluidoEm   DateTime?
+
+  dominios      TenantDomain[]
+  membros       Membership[]
+  pessoas       Pessoa[]
+  celulas       Celula[]
+  campi         Campus[]
+  agendas       AgendaItem[]
+  cursos        Curso[]
+  matriculas    Matricula[]
+  pedidosOracao PedidoOracao[]
+  batismos      SolicitacaoBatismo[]
+  submissoes    Submissao[]
+  mensagens     Mensagem[]
+  arquivos      Arquivo[]
+  siteConfig    SiteConfig?
+  sitePaginas   SitePagina[]
+  liveConfig    LiveConfig?
+  auditoria     AuditLog[]
+  notificacoes  Notificacao[]
+
+  @@index([status])
+  @@map("tenants")
+}
+
+enum DomainStatus {
+  PENDENTE // aguardando verificação de DNS
+  VERIFICADO
+  ERRO
+}
+
+/// Domínio próprio do cliente apontando para a plataforma.
+/// É por aqui que o middleware descobre de qual igreja é a requisição.
+model TenantDomain {
+  id       String @id @default(cuid())
+  tenantId String
+
+  /// Hostname normalizado (minúsculo, sem porta, sem ponto final).
+  /// UNIQUE GLOBAL: um domínio jamais pode resolver para dois tenants.
+  hostname String @unique @db.VarChar(253)
+
+  /// Domínio principal do tenant — usado para gerar links canônicos,
+  /// e-mails e o manifest do PWA. Exatamente um por tenant.
+  principal Boolean @default(false)
+
+  status DomainStatus @default(PENDENTE)
+
+  /// Token que o cliente publica num registro TXT `_discipular.<dominio>`
+  /// para provar que controla o domínio. Sem isso, qualquer um poderia
+  /// reivindicar o domínio de outra igreja.
+  tokenVerificacao String   @db.VarChar(64)
+  verificadoEm     DateTime?
+  ultimoErro       String?  @db.VarChar(500)
+
+  criadoEm DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, principal])
+  @@index([status])
+  @@map("tenant_domains")
+}
+
+/// Conta de acesso. Global: a mesma pessoa pode pastorear duas igrejas.
+/// O vínculo com igreja e o papel ficam em `Membership`.
+model User {
+  id String @id @default(cuid())
+
+  email      String  @unique @db.VarChar(254)
+  emailVerificadoEm DateTime?
+  nome       String  @db.VarChar(160)
+  telefone   String? @db.VarChar(20)
+
+  /// Formato: scrypt$N$r$p$<salt-b64>$<hash-b64>. Ver src/lib/auth/password.ts
+  senhaHash  String  @db.VarChar(255)
+  senhaAtualizadaEm DateTime @default(now())
+
+  /// Administrador da PLATAFORMA (você). Enxerga todos os tenants.
+  /// Fora do modelo de Membership de propósito: é um poder diferente.
+  plataformaAdmin Boolean @default(false)
+
+  ativo Boolean @default(true)
+
+  /// Bloqueio progressivo contra força bruta.
+  tentativasFalhas Int       @default(0)
+  bloqueadoAte     DateTime?
+
+  ultimoLoginEm DateTime?
+  criadoEm      DateTime  @default(now())
+  atualizadoEm  DateTime  @updatedAt
+
+  memberships   Membership[]
+  sessoes       Sessao[]
+  tokensSenha   TokenSenha[]
+  pessoaVinculo Pessoa[]
+
+  @@index([plataformaAdmin])
+  @@map("users")
+}
+
+enum Papel {
+  /// Acesso total ao tenant, incluindo faturamento e exclusão de dados.
+  ADMIN
+  /// Gestão pastoral completa: pessoas, batismos, oração, células, site.
+  PASTOR
+  /// Secretaria: cadastros e triagem. Não mexe em usuários nem no site.
+  SECRETARIA
+  /// Líder de célula: enxerga APENAS a própria célula.
+  LIDER_CELULA
+  /// Membro comum: acessa o app, vê os próprios dados.
+  MEMBRO
+}
+
+/// Vínculo usuário <-> igreja, com papel. É a fonte da verdade de autorização.
+model Membership {
+  id       String @id @default(cuid())
+  tenantId String
+  userId   String
+
+  papel Papel   @default(MEMBRO)
+  ativo Boolean @default(true)
+
+  /// Para LIDER_CELULA: a célula que ele lidera. O RBAC usa isto para
+  /// restringir a visão a essa célula.
+  celulaId String?
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  tenant Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  celula Celula? @relation(fields: [celulaId], references: [id], onDelete: SetNull)
+
+  /// Um usuário tem no máximo UM papel por igreja.
+  @@unique([tenantId, userId])
+  @@index([userId])
+  @@index([tenantId, papel])
+  @@map("memberships")
+}
+
+/// Sessão de login. Opaca e revogável — guardamos apenas o HASH do token.
+/// Vazamento do banco não permite sequestrar sessão.
+model Sessao {
+  id String @id @default(cuid())
+
+  /// HMAC-SHA256(token, SESSION_SECRET), em hex. O token em claro só existe
+  /// no cookie do usuário; nunca é gravado em lugar nenhum.
+  tokenHash String @unique @db.VarChar(64)
+
+  userId String
+
+  /// Igreja ativa nesta sessão. Trocar de igreja = revalidar Membership.
+  /// Null para o super admin navegando na área da plataforma.
+  tenantAtivoId String?
+
+  /// Marca sessões abertas via "entrar como" do super admin. Toda ação
+  /// feita nelas fica etiquetada na auditoria.
+  impersonadoPor String?
+
+  ipHash        String?  @db.VarChar(64)
+  userAgent     String?  @db.VarChar(255)
+  criadaEm      DateTime @default(now())
+  ultimoUsoEm   DateTime @default(now())
+  expiraEm      DateTime
+  revogadaEm    DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revogadaEm])
+  @@index([expiraEm])
+  @@map("sessoes")
+}
+
+/// Token de recuperação de senha. Também guardado só como hash, uso único.
+model TokenSenha {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique @db.VarChar(64)
+  userId    String
+  expiraEm  DateTime
+  usadoEm   DateTime?
+  criadoEm  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiraEm])
+  @@map("tokens_senha")
+}
+
+/// Contador de rate limit persistido. Fica no banco (e não só em memória)
+/// para funcionar com múltiplos processos Node atrás do Nginx.
+model RateLimitBucket {
+  /// Chave composta: "<escopo>:<identificador>", ex. "login:ip:<hash>".
+  chave String @id @db.VarChar(160)
+
+  contador  Int      @default(0)
+  janelaFim DateTime
+
+  /// Enquanto preenchido, todas as tentativas são recusadas de imediato.
+  bloqueadoAte DateTime?
+
+  @@index([janelaFim])
+  @@map("rate_limit_buckets")
+}
+
+/// Auditoria de ações da PLATAFORMA (super admin). Separada da auditoria
+/// por tenant para que um admin de igreja nunca a enxergue.
+model PlatformAuditLog {
+  id String @id @default(cuid())
+
+  atorUserId String?  @db.VarChar(30)
+  atorEmail  String?  @db.VarChar(254)
+  acao       String   @db.VarChar(80)
+  alvoTipo   String?  @db.VarChar(60)
+  alvoId     String?  @db.VarChar(60)
+  detalhes   Json?
+  ipHash     String?  @db.VarChar(64)
+  criadoEm   DateTime @default(now())
+
+  @@index([criadoEm])
+  @@index([atorUserId, criadoEm])
+  @@map("platform_audit_logs")
+}
+
+// =============================================================================
+// DADOS DA IGREJA (tenant-scoped — todos com tenantId)
+// =============================================================================
+
+enum StatusPessoa {
+  VISITANTE
+  EM_ACOMPANHAMENTO
+  CONGREGANTE
+  MEMBRO
+  INATIVO
+  TRANSFERIDO
+}
+
+enum Genero {
+  MASCULINO
+  FEMININO
+  NAO_INFORMADO
+}
+
+enum EstadoCivil {
+  SOLTEIRO
+  CASADO
+  DIVORCIADO
+  VIUVO
+  UNIAO_ESTAVEL
+  NAO_INFORMADO
+}
+
+enum OrigemCadastro {
+  SITE
+  APP
+  PAINEL
+  IMPORTACAO
+  CELULA
+}
+
+/// Registro único de pessoa. Visitante e membro são o MESMO registro em
+/// estágios diferentes — evita duplicidade quando o visitante se torna membro.
+model Pessoa {
+  id       String @id @default(cuid())
+  tenantId String
+
+  nome          String       @db.VarChar(160)
+  email         String?      @db.VarChar(254)
+  telefone      String?      @db.VarChar(20)
+  dataNascimento DateTime?   @db.Date
+  genero        Genero       @default(NAO_INFORMADO)
+  estadoCivil   EstadoCivil  @default(NAO_INFORMADO)
+
+  status StatusPessoa   @default(VISITANTE)
+  origem OrigemCadastro @default(SITE)
+
+  // Endereço
+  cep        String? @db.VarChar(9)
+  logradouro String? @db.VarChar(200)
+  numero     String? @db.VarChar(20)
+  complemento String? @db.VarChar(100)
+  bairro     String? @db.VarChar(100)
+  cidade     String? @db.VarChar(100)
+  uf         String? @db.VarChar(2)
+
+  // Jornada de fé
+  dataConversao   DateTime? @db.Date
+  batizado        Boolean   @default(false)
+  dataBatismo     DateTime? @db.Date
+  igrejaAnterior  String?   @db.VarChar(160)
+
+  celulaId String?
+  campusId String?
+
+  /// Conta de acesso ao app, quando a pessoa se cadastra. Opcional:
+  /// a maioria das pessoas existe no sistema sem nunca logar.
+  userId String?
+
+  /// Observações pastorais. Dado sensível: só PASTOR e ADMIN leem
+  /// (filtrado na camada de serviço, ver src/lib/services/pessoas.ts).
+  observacoesPastorais String? @db.Text
+
+  /// Consentimento LGPD para tratamento dos dados e contato.
+  consentimentoLgpd   Boolean   @default(false)
+  consentimentoEm     DateTime?
+  consentimentoOrigem String?   @db.VarChar(60)
+
+  criadoEm     DateTime  @default(now())
+  atualizadoEm DateTime  @updatedAt
+  excluidoEm   DateTime?
+
+  tenant        Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  celula        Celula?              @relation(fields: [celulaId], references: [id], onDelete: SetNull)
+  campus        Campus?              @relation(fields: [campusId], references: [id], onDelete: SetNull)
+  user          User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+  batismos      SolicitacaoBatismo[]
+  pedidosOracao PedidoOracao[]
+  matriculas    Matricula[]
+  interacoes    Interacao[]
+
+  // Índices SEMPRE começando por tenantId: sem isso, o Postgres varreria
+  // linhas de outras igrejas antes de aplicar o filtro.
+  @@index([tenantId, status, criadoEm])
+  @@index([tenantId, nome])
+  @@index([tenantId, celulaId])
+  @@index([tenantId, email])
+  @@index([tenantId, excluidoEm])
+  @@map("pessoas")
+}
+
+/// Histórico de contato pastoral com uma pessoa (ligação, visita, WhatsApp).
+/// É o que transforma "cadastro" em "acompanhamento de verdade".
+model Interacao {
+  id       String @id @default(cuid())
+  tenantId String
+  pessoaId String
+
+  tipo      String   @db.VarChar(40) // LIGACAO | VISITA | MENSAGEM | ORACAO | OUTRO
+  descricao String   @db.Text
+  autorId   String?  @db.VarChar(30)
+  autorNome String?  @db.VarChar(160)
+  criadoEm  DateTime @default(now())
+
+  pessoa Pessoa @relation(fields: [pessoaId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, pessoaId, criadoEm])
+  @@map("interacoes")
+}
+
+enum StatusSubmissao {
+  NOVO
+  EM_ANALISE
+  CONCLUIDO
+  ARQUIVADO
+  SPAM
+}
+
+enum TipoSubmissao {
+  NOVO_MEMBRO
+  VISITANTE
+  BATISMO
+  PEDIDO_ORACAO
+  CONTATO
+  INSCRICAO_CURSO
+  QUERO_CELULA
+  ACONSELHAMENTO
+}
+
+/// Caixa de entrada única de tudo que chega do site e do app.
+/// Nada entra direto no cadastro definitivo: passa por triagem humana.
+/// Isso evita que um bot polua a base de membros da igreja.
+model Submissao {
+  id       String @id @default(cuid())
+  tenantId String
+
+  tipo   TipoSubmissao
+  status StatusSubmissao @default(NOVO)
+
+  nome     String  @db.VarChar(160)
+  email    String? @db.VarChar(254)
+  telefone String? @db.VarChar(20)
+
+  /// Campos específicos por tipo, validados por schema Zod antes de gravar
+  /// (ver src/lib/validation/submissoes.ts). Nunca renderizar como HTML.
+  dados Json
+
+  origem      OrigemCadastro @default(SITE)
+  paginaOrigem String?       @db.VarChar(200)
+
+  /// Só o hash do IP, para não guardar dado pessoal desnecessário (LGPD)
+  /// mantendo a capacidade de investigar abuso.
+  ipHash    String? @db.VarChar(64)
+  userAgent String? @db.VarChar(255)
+
+  /// Pontuação do anti-spam (honeypot + tempo de preenchimento + heurísticas).
+  scoreSpam Int @default(0)
+
+  // Triagem
+  responsavelId  String?   @db.VarChar(30)
+  notaInterna    String?   @db.Text
+  processadoEm   DateTime?
+  /// Pessoa criada/vinculada quando a submissão foi aprovada.
+  pessoaGeradaId String?   @db.VarChar(30)
+
+  consentimentoLgpd Boolean @default(false)
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, status, criadoEm])
+  @@index([tenantId, tipo, status])
+  @@index([tenantId, criadoEm])
+  @@map("submissoes")
+}
+
+enum StatusBatismo {
+  SOLICITADO
+  EM_PREPARO // fazendo o curso preparatório
+  APROVADO
+  AGENDADO
+  REALIZADO
+  RECUSADO
+  CANCELADO
+}
+
+model SolicitacaoBatismo {
+  id       String @id @default(cuid())
+  tenantId String
+  pessoaId String?
+
+  nome           String  @db.VarChar(160)
+  email          String? @db.VarChar(254)
+  telefone       String? @db.VarChar(20)
+  dataNascimento DateTime? @db.Date
+
+  status StatusBatismo @default(SOLICITADO)
+
+  /// Perguntas do formulário de batismo (testemunho, já foi batizado antes,
+  /// participa de célula, etc.). Estrutura validada por Zod.
+  respostas Json?
+
+  /// Menor de idade exige autorização do responsável — obrigatório por lei
+  /// e checado na aprovação.
+  menorIdade            Boolean @default(false)
+  responsavelNome       String? @db.VarChar(160)
+  responsavelTelefone   String? @db.VarChar(20)
+  autorizacaoResponsavel Boolean @default(false)
+
+  turmaPreparatoria String?   @db.VarChar(120)
+  dataBatismo       DateTime?
+  campusId          String?
+  observacoes       String?   @db.Text
+  motivoRecusa      String?   @db.VarChar(500)
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  tenant Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  pessoa Pessoa? @relation(fields: [pessoaId], references: [id], onDelete: SetNull)
+  campus Campus? @relation(fields: [campusId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, status, criadoEm])
+  @@index([tenantId, dataBatismo])
+  @@map("solicitacoes_batismo")
+}
+
+enum StatusOracao {
+  RECEBIDO
+  ORANDO
+  RESPONDIDO
+  ARQUIVADO
+}
+
+enum VisibilidadeOracao {
+  /// Só a equipe pastoral vê. Padrão — é o mais seguro.
+  PRIVADO
+  /// Aparece no mural do app para os membros orarem juntos.
+  MURAL_MEMBROS
+  /// Aparece no site público (exige consentimento explícito).
+  PUBLICO
+}
+
+/// Pedido de oração. Trata dado de saúde, família e crise — é a informação
+/// mais sensível do sistema. Por isso: visibilidade padrão PRIVADO, opção de
+/// anonimato, e leitura restrita por RBAC.
+model PedidoOracao {
+  id       String @id @default(cuid())
+  tenantId String
+  pessoaId String?
+
+  /// Preenchido quando o pedido é anônimo (não há pessoa vinculada).
+  nomeSolicitante String? @db.VarChar(160)
+  emailContato    String? @db.VarChar(254)
+  telefoneContato String? @db.VarChar(20)
+
+  anonimo Boolean @default(false)
+
+  categoria String  @default("GERAL") @db.VarChar(40) // SAUDE | FAMILIA | FINANCEIRO | ESPIRITUAL | LUTO | GRATIDAO | GERAL
+  titulo    String? @db.VarChar(160)
+  pedido    String  @db.Text
+
+  urgente      Boolean            @default(false)
+  visibilidade VisibilidadeOracao @default(PRIVADO)
+  status       StatusOracao       @default(RECEBIDO)
+
+  /// Contador do botão "estou orando" no app. Não guarda quem clicou
+  /// para não expor a rede de relacionamento de quem pediu.
+  contadorOracoes Int @default(0)
+
+  respostaTestemunho String?   @db.Text
+  respondidoEm       DateTime?
+  responsavelId      String?   @db.VarChar(30)
+
+  origem   OrigemCadastro @default(SITE)
+  ipHash   String?        @db.VarChar(64)
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  tenant Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  pessoa Pessoa? @relation(fields: [pessoaId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, status, criadoEm])
+  @@index([tenantId, visibilidade, status])
+  @@index([tenantId, urgente, status])
+  @@map("pedidos_oracao")
+}
+
+/// Endereço físico da igreja (sede, campus). O HTML de referência tem
+/// "Sede Lajeado" e "Campus Vera Cruz".
+model Campus {
+  id       String @id @default(cuid())
+  tenantId String
+
+  nome      String  @db.VarChar(120)
+  descricao String? @db.VarChar(255)
+
+  cep        String? @db.VarChar(9)
+  logradouro String? @db.VarChar(200)
+  numero     String? @db.VarChar(20)
+  complemento String? @db.VarChar(100)
+  bairro     String? @db.VarChar(100)
+  cidade     String? @db.VarChar(100)
+  uf         String? @db.VarChar(2)
+
+  mapaEmbedUrl String? @db.VarChar(500)
+  telefone     String? @db.VarChar(20)
+  principal    Boolean @default(false)
+  ordem        Int     @default(0)
+  ativo        Boolean @default(true)
+
+  criadoEm DateTime @default(now())
+
+  tenant   Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  pessoas  Pessoa[]
+  agenda   AgendaItem[]
+  celulas  Celula[]
+  batismos SolicitacaoBatismo[]
+
+  @@index([tenantId, ativo, ordem])
+  @@map("campi")
+}
+
+/// Célula / pequeno grupo.
+model Celula {
+  id       String @id @default(cuid())
+  tenantId String
+  campusId String?
+
+  nome      String  @db.VarChar(120)
+  descricao String? @db.Text
+
+  diaSemana Int?    @db.SmallInt // 0=domingo ... 6=sábado
+  horario   String? @db.VarChar(5) // "20:00"
+
+  liderNome     String? @db.VarChar(160)
+  liderTelefone String? @db.VarChar(20)
+
+  bairro String? @db.VarChar(100)
+  cidade String? @db.VarChar(100)
+
+  /// Coordenadas aproximadas para o mapa "encontre uma célula".
+  /// Deliberadamente NÃO guardamos o endereço exato em campo público:
+  /// é a casa de alguém. O endereço completo só vai por contato direto.
+  latitude  Float?
+  longitude Float?
+
+  /// Quantas pessoas ainda cabem. Usado no app para sugerir células.
+  capacidade Int?
+  ativa      Boolean @default(true)
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  tenant     Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  campus     Campus?      @relation(fields: [campusId], references: [id], onDelete: SetNull)
+  pessoas    Pessoa[]
+  lideres    Membership[]
+  encontros  EncontroCelula[]
+
+  @@index([tenantId, ativa])
+  @@index([tenantId, cidade, bairro])
+  @@map("celulas")
+}
+
+/// Relatório de encontro de célula — o líder registra pela app.
+model EncontroCelula {
+  id       String @id @default(cuid())
+  tenantId String
+  celulaId String
+
+  data          DateTime @db.Date
+  presentes     Int      @default(0)
+  visitantes    Int      @default(0)
+  decisoes      Int      @default(0)
+  ofertaCentavos Int     @default(0)
+  observacoes   String?  @db.Text
+
+  registradoPorId String?  @db.VarChar(30)
+  criadoEm        DateTime @default(now())
+
+  celula Celula @relation(fields: [celulaId], references: [id], onDelete: Cascade)
+
+  @@unique([celulaId, data])
+  @@index([tenantId, data])
+  @@map("encontros_celula")
+}
+
+enum TipoAgenda {
+  CULTO
+  ESCOLA
+  CELULA
+  EVENTO
+  ENSAIO
+  ORACAO
+}
+
+/// Agenda semanal / eventos. Alimenta o site e o app.
+model AgendaItem {
+  id       String @id @default(cuid())
+  tenantId String
+  campusId String?
+
+  tipo      TipoAgenda @default(CULTO)
+  titulo    String     @db.VarChar(160)
+  descricao String?    @db.Text
+
+  /// Evento recorrente: dia da semana + horário.
+  diaSemana Int?    @db.SmallInt
+  horario   String? @db.VarChar(5)
+
+  /// Evento pontual: data/hora exata. Um dos dois modos deve estar preenchido.
+  dataHora DateTime?
+
+  recorrente  Boolean @default(true)
+  destaque    Boolean @default(false)
+  ordem       Int     @default(0)
+  ativo       Boolean @default(true)
+  publicoSite Boolean @default(true)
+
+  criadoEm DateTime @default(now())
+
+  tenant Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  campus Campus? @relation(fields: [campusId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, ativo, ordem])
+  @@index([tenantId, dataHora])
+  @@map("agenda_itens")
+}
+
+/// Curso da Escola (Teologia Discipular, Trilha Discipular...).
+model Curso {
+  id       String @id @default(cuid())
+  tenantId String
+
+  nome      String  @db.VarChar(160)
+  slug      String  @db.VarChar(80)
+  descricao String? @db.Text
+  resumo    String? @db.VarChar(400)
+
+  diaSemana Int?    @db.SmallInt
+  horario   String? @db.VarChar(5)
+
+  /// Em centavos, para nunca ter erro de arredondamento com float.
+  precoCentavos Int?
+  periodicidade String? @db.VarChar(20) // MENSAL | UNICO
+
+  vagas          Int?
+  inscricoesAbertas Boolean @default(true)
+  ativo          Boolean @default(true)
+  ordem          Int     @default(0)
+
+  criadoEm DateTime @default(now())
+
+  tenant     Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  matriculas Matricula[]
+
+  @@unique([tenantId, slug])
+  @@index([tenantId, ativo, ordem])
+  @@map("cursos")
+}
+
+enum StatusMatricula {
+  INSCRITO
+  CONFIRMADO
+  CURSANDO
+  CONCLUIDO
+  CANCELADO
+}
+
+model Matricula {
+  id       String @id @default(cuid())
+  tenantId String
+  cursoId  String
+  pessoaId String?
+
+  nome     String  @db.VarChar(160)
+  email    String? @db.VarChar(254)
+  telefone String? @db.VarChar(20)
+
+  status      StatusMatricula @default(INSCRITO)
+  observacoes String?         @db.Text
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  tenant Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  curso  Curso   @relation(fields: [cursoId], references: [id], onDelete: Cascade)
+  pessoa Pessoa? @relation(fields: [pessoaId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, cursoId, status])
+  @@index([tenantId, criadoEm])
+  @@map("matriculas")
+}
+
+/// Mensagem / pregação publicada (vídeo do YouTube, série, etc.).
+model Mensagem {
+  id       String @id @default(cuid())
+  tenantId String
+
+  titulo    String  @db.VarChar(200)
+  slug      String  @db.VarChar(120)
+  descricao String? @db.Text
+  preletor  String? @db.VarChar(160)
+  serie     String? @db.VarChar(120)
+
+  /// SOMENTE o ID do vídeo (11 caracteres), nunca a URL crua vinda do
+  /// usuário — assim o `src` do iframe é sempre montado por nós.
+  youtubeVideoId String? @db.VarChar(20)
+  duracaoSegundos Int?
+  data           DateTime? @db.Date
+
+  capaArquivoId String?
+  publicado     Boolean @default(false)
+  destaque      Boolean @default(false)
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  tenant Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  capa   Arquivo? @relation(fields: [capaArquivoId], references: [id], onDelete: SetNull)
+
+  @@unique([tenantId, slug])
+  @@index([tenantId, publicado, data])
+  @@map("mensagens")
+}
+
+// =============================================================================
+// WHITELABEL — site editável pelo próprio cliente
+// =============================================================================
+
+/// Identidade visual e conteúdo global do site/app de uma igreja.
+/// É o coração do whitelabel: trocar aqui muda site e PWA de uma vez.
+model SiteConfig {
+  id       String @id @default(cuid())
+  tenantId String @unique
+
+  // --- Marca
+  nomeExibicao String  @db.VarChar(120)
+  tagline      String? @db.VarChar(200)
+  descricaoSeo String? @db.VarChar(300)
+
+  logoClaroId  String? // logo para fundo escuro
+  logoEscuroId String? // logo para fundo claro
+  faviconId    String?
+  ogImageId    String?
+
+  // --- Cores. Guardadas como HEX e SEMPRE validadas com regex antes de
+  // virarem CSS custom properties — senão seria injeção de CSS.
+  // Ver src/lib/site/theme.ts
+  corAcento      String @default("#C2A15C") @db.VarChar(9)
+  corAcentoClara String @default("#DCC08A") @db.VarChar(9)
+  corTinta       String @default("#0B0D11") @db.VarChar(9)
+  corPapel       String @default("#FBF8F1") @db.VarChar(9)
+
+  fonteTitulo String @default("Fraunces") @db.VarChar(60)
+  fonteTexto  String @default("Instrument Sans") @db.VarChar(60)
+
+  // --- Hero da home
+  heroTitulo    String? @db.VarChar(200)
+  heroSubtitulo String? @db.VarChar(400)
+  heroEyebrow   String? @db.VarChar(80)
+  heroImagemId  String?
+  heroVideoUrl  String? @db.VarChar(500)
+  heroCtaTexto  String? @db.VarChar(60)
+  heroCtaLink   String? @db.VarChar(200)
+
+  // --- Contato
+  emailContato   String? @db.VarChar(254)
+  telefoneContato String? @db.VarChar(20)
+  whatsapp       String? @db.VarChar(20)
+
+  instagram String? @db.VarChar(200)
+  facebook  String? @db.VarChar(200)
+  youtube   String? @db.VarChar(200)
+  spotify   String? @db.VarChar(200)
+
+  // --- Contribuição
+  pixChave     String? @db.VarChar(200)
+  pixTitular   String? @db.VarChar(160)
+  pixDescricao String? @db.Text
+  /// Dados bancários. Criptografados em repouso (AES-256-GCM) porque são
+  /// alvo óbvio para fraude de boleto/transferência.
+  dadosBancariosCriptografados String? @db.Text
+
+  // --- PWA
+  pwaNome      String? @db.VarChar(60)
+  pwaNomeCurto String? @db.VarChar(20)
+  pwaIconeId   String?
+  pwaCorTema   String @default("#0B0D11") @db.VarChar(9)
+
+  /// Liga/desliga módulos no site e no app por igreja.
+  modulos Json @default("{}")
+
+  atualizadoEm DateTime @updatedAt
+  criadoEm     DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("site_configs")
+}
+
+/// Página do site. O conteúdo fica em `blocos` (JSON estruturado),
+/// nunca em HTML cru — o cliente escolhe blocos prontos e preenche campos.
+/// Essa decisão elimina a classe inteira de XSS armazenado via editor.
+model SitePagina {
+  id       String @id @default(cuid())
+  tenantId String
+
+  slug   String  @db.VarChar(80) // "home", "quem-somos", "pastores"...
+  titulo String  @db.VarChar(160)
+
+  seoTitulo    String? @db.VarChar(200)
+  seoDescricao String? @db.VarChar(300)
+
+  /// Array de blocos: [{ tipo: "hero", props: {...} }, ...]
+  /// Validado por Zod discriminado em src/lib/validation/site.ts na escrita
+  /// e re-validado na leitura antes de renderizar.
+  blocos Json @default("[]")
+
+  publicada  Boolean @default(false)
+  ordemMenu  Int?
+  mostrarMenu Boolean @default(true)
+  sistema    Boolean @default(false) // páginas que não podem ser excluídas
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, slug])
+  @@index([tenantId, publicada, ordemMenu])
+  @@map("site_paginas")
+}
+
+/// Configuração do "Ao Vivo". O indicador pisca no site e no app quando
+/// o canal está transmitindo.
+model LiveConfig {
+  id       String @id @default(cuid())
+  tenantId String @unique
+
+  /// ID do canal (UC...). Preferido: permite detectar live automaticamente.
+  youtubeChannelId String? @db.VarChar(40)
+  /// Fallback: o cliente cola a URL/ID de uma transmissão específica.
+  youtubeVideoIdManual String? @db.VarChar(20)
+
+  /// Modo de operação:
+  ///   AUTO   - consulta a API do YouTube e detecta sozinho
+  ///   MANUAL - só fica ao vivo se `forcarAoVivo` estiver ligado
+  ///   AGENDA - fica ao vivo apenas nas janelas de `janelas`
+  modo String @default("AUTO") @db.VarChar(10)
+
+  forcarAoVivo Boolean @default(false)
+
+  /// Janelas de culto: [{ diaSemana: 0, inicio: "18:00", fim: "21:00" }].
+  /// Fora delas nem consultamos a API — economiza cota e evita falso positivo
+  /// com vídeo de ensaio.
+  janelas Json @default("[]")
+
+  fusoHorario String @default("America/Sao_Paulo") @db.VarChar(60)
+
+  mensagemAoVivo String? @db.VarChar(120)
+  exibirNoSite   Boolean @default(true)
+  exibirNoApp    Boolean @default(true)
+
+  // Cache do último resultado — evita estourar a cota da API do YouTube.
+  ultimoCheckEm     DateTime?
+  ultimoCheckAoVivo Boolean   @default(false)
+  ultimoVideoId     String?   @db.VarChar(20)
+  ultimoTitulo      String?   @db.VarChar(200)
+  /// Backoff quando a API falha ou a cota estoura.
+  falhasConsecutivas Int      @default(0)
+
+  atualizadoEm DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("live_configs")
+}
+
+/// Arquivo enviado por um tenant. O binário NUNCA fica em public/:
+/// mora em STORAGE_DIR/<tenantId>/... e sai só pela rota autorizada.
+model Arquivo {
+  id       String @id @default(cuid())
+  tenantId String
+
+  nomeOriginal String @db.VarChar(255)
+  /// Nome no disco: aleatório, sem relação com o nome enviado. Impede
+  /// path traversal e colisão.
+  nomeArmazenado String @db.VarChar(80)
+  /// Caminho relativo a STORAGE_DIR, sempre iniciando por "<tenantId>/".
+  caminho String @db.VarChar(400)
+
+  /// MIME detectado pelos MAGIC BYTES do conteúdo — não pelo Content-Type
+  /// enviado pelo cliente, que é trivialmente forjável.
+  mimeType String @db.VarChar(100)
+  tamanhoBytes Int
+  /// SHA-256 do conteúdo: deduplicação e verificação de integridade.
+  sha256 String @db.VarChar(64)
+
+  largura Int?
+  altura  Int?
+
+  /// true = pode ser servido sem sessão (logo, foto do site).
+  /// false = exige sessão + membership no tenant.
+  publico Boolean @default(false)
+
+  enviadoPorId String?  @db.VarChar(30)
+  criadoEm     DateTime @default(now())
+
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  mensagens Mensagem[]
+
+  @@index([tenantId, criadoEm])
+  @@index([tenantId, sha256])
+  @@map("arquivos")
+}
+
+/// Auditoria por igreja. O ADMIN do tenant lê a sua; nunca a de outro.
+model AuditLog {
+  id       String @id @default(cuid())
+  tenantId String
+
+  atorUserId String? @db.VarChar(30)
+  atorNome   String? @db.VarChar(160)
+  atorPapel  String? @db.VarChar(20)
+  /// Preenchido quando a ação veio de uma sessão de impersonação.
+  impersonadoPor String? @db.VarChar(254)
+
+  acao     String  @db.VarChar(80) // "pessoa.criar", "oracao.ler", ...
+  alvoTipo String? @db.VarChar(60)
+  alvoId   String? @db.VarChar(60)
+
+  /// Diferença antes/depois, já com campos sensíveis mascarados
+  /// (ver src/lib/audit/redact.ts). Nunca gravar senha ou token aqui.
+  detalhes Json?
+
+  ipHash    String? @db.VarChar(64)
+  userAgent String? @db.VarChar(255)
+
+  criadoEm DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, criadoEm])
+  @@index([tenantId, acao, criadoEm])
+  @@index([tenantId, atorUserId, criadoEm])
+  @@map("audit_logs")
+}
+
+/// Notificação para o app do membro.
+model Notificacao {
+  id       String @id @default(cuid())
+  tenantId String
+
+  titulo    String  @db.VarChar(160)
+  corpo     String  @db.Text
+  link      String? @db.VarChar(300)
+
+  /// Null = broadcast para todos os membros do tenant.
+  destinatarioUserId String? @db.VarChar(30)
+
+  lidaEm      DateTime?
+  agendadaPara DateTime?
+  enviadaEm   DateTime?
+
+  criadoEm DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, destinatarioUserId, lidaEm])
+  @@index([tenantId, criadoEm])
+  @@map("notificacoes")
+}
