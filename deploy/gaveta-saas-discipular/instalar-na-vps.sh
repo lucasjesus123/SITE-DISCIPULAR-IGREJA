@@ -161,35 +161,44 @@ $COMPOSE build
 titulo "Subindo o banco de dados"
 $COMPOSE up -d postgres
 echo "Aguardando o Postgres ficar pronto..."
-for i in $(seq 1 30); do
-  if $COMPOSE exec -T postgres pg_isready -U discipular_app >/dev/null 2>&1; then break; fi
+for i in $(seq 1 40); do
+  if $COMPOSE exec -T postgres pg_isready -U discipular -d discipular >/dev/null 2>&1; then break; fi
   sleep 2
 done
 
-titulo "Aplicando as migrations do banco"
-$COMPOSE --profile migracao run --rm migrador || {
-  amarelo "Migração via profile falhou; tentando pelo container do app..."
-  $COMPOSE run --rm app npx prisma migrate deploy
-}
+# ---------------------------------------------------------------------------
+# Migrations + seed num contêiner Node DESCARTÁVEL (como root).
+#
+# Por que não pelas imagens do compose:
+#   - o 'migrador' roda como usuário 1001 e não consegue gravar o engine do
+#     Prisma em node_modules (erro "Can't write to @prisma/engines");
+#   - a imagem de produção do 'app' é standalone: não tem o CLI do Prisma nem
+#     o script de seed, e não tem HOME gravável para o npm.
+# Este contêiner tem o node_modules completo, roda como root (escrita liberada)
+# e fica na MESMA rede do banco, então resolve o host 'postgres'.
+# ---------------------------------------------------------------------------
+titulo "Migrando o banco${SEMEAR:+ e semeando a sua igreja}"
+REDE_DADOS="$(docker network ls --format '{{.Name}}' | grep -E '(^|_)dados$' | grep discipular | head -1)"
+REDE_DADOS="${REDE_DADOS:-discipular_dados}"
 
+COMANDO_DB="npm ci --no-audit --no-fund && npx prisma generate && npx prisma migrate deploy"
 if [[ "${SEMEAR:-0}" == "1" ]]; then
-  titulo "Semeando dados de demonstração (2 igrejas + primeiro admin)"
-  # A imagem de produção não traz tsx/seed, e o migrador roda sem permissão de
-  # gerar o cliente Prisma. Então semeamos num contêiner Node descartável, como
-  # root, ligado à MESMA rede do banco. É o jeito que funciona sem depender do
-  # conteúdo das imagens. Anote as senhas que aparecerem no fim — só aparecem uma vez.
-  REDE_DADOS="$(docker network ls --format '{{.Name}}' | grep -E '(^|_)dados$' | grep discipular | head -1)"
-  REDE_DADOS="${REDE_DADOS:-discipular_dados}"
-  if docker run --rm --network "$REDE_DADOS" -v "$PWD":/app -w /app --env-file .env \
-        -e SEED_PERMITIR_PRODUCAO=sim \
-        -e SEED_ADMIN_EMAIL="admin@${DOMINIO}" \
-        node:22-bookworm-slim \
-        sh -c "npm ci --no-audit --no-fund --silent && npx prisma generate && npm run db:seed"; then
-    verde "Dados criados. O domínio ${DOMINIO} já serve o site da sua igreja E a central do super admin."
-    amarelo ">>> ANOTE AGORA as senhas impressas acima (super admin: admin@${DOMINIO}). Elas só aparecem uma vez."
-  else
-    amarelo "Seed falhou (não é crítico agora). Para criar o primeiro admin depois, rode este mesmo comando dentro de $GAVETA."
+  COMANDO_DB="${COMANDO_DB} && npm run db:seed"
+fi
+
+if docker run --rm --network "$REDE_DADOS" -v "$PWD":/app -w /app --env-file .env \
+      -e HOME=/root \
+      -e SEED_PERMITIR_PRODUCAO=sim \
+      -e SEED_ADMIN_EMAIL="admin@${DOMINIO}" \
+      node:22-bookworm-slim \
+      sh -c "$COMANDO_DB"; then
+  verde "Banco migrado com sucesso."
+  if [[ "${SEMEAR:-0}" == "1" ]]; then
+    amarelo ">>> ANOTE AGORA as senhas impressas acima (super admin: admin@${DOMINIO}). Só aparecem uma vez."
   fi
+else
+  vermelho "Falha ao migrar/semear o banco. Copie o erro acima e me envie."
+  exit 1
 fi
 
 titulo "Subindo a aplicação"
