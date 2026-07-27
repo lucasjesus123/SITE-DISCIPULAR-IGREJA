@@ -1,0 +1,214 @@
+# =============================================================================
+# Discipular SaaS — unit systemd
+#
+# ALTERNATIVA ao docker-compose.yml, para quem prefere rodar o Node direto no
+# host. Use um OU outro, nunca os dois: os dois disputariam a porta 3000 e o
+# mesmo diretório de storage.
+#
+# Instalar:
+#   sudo cp deploy/discipular.service /etc/systemd/system/discipular.service
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now discipular
+#
+# Acompanhar:
+#   systemctl status discipular
+#   journalctl -u discipular -f
+#
+# Conferir o efeito do hardening abaixo (nota de 0 a 10, quanto menor melhor):
+#   systemd-analyze security discipular.service
+#
+# PRÉ-REQUISITOS (ver deploy/primeiros-passos.md):
+#   - usuário de sistema `discipular`, sem shell:
+#       sudo useradd --system --home /opt/discipular --shell /usr/sbin/nologin discipular
+#   - build standalone publicado em /opt/discipular/current
+#       (contém server.js, .next/static, public/, node_modules/.prisma)
+#   - /etc/discipular/discipular.env com as variáveis, chmod 600, dono root
+#   - Node 22 em /usr/bin/node
+# =============================================================================
+
+[Unit]
+Description=Discipular SaaS (Next.js)
+Documentation=https://github.com/discipular/site-discipular-igreja
+
+# network-online (e não apenas network) porque o app resolve DNS e abre
+# conexão com o Postgres já no boot; subir antes da rede pronta só produz um
+# ciclo de falha/restart barulhento no journal.
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+# `After` não é dependência: se o Postgres estiver em outra máquina, remova a
+# linha abaixo. Se for local, ela evita subir o app com o banco fora.
+Requires=postgresql.service
+
+# Se o processo morrer 5 vezes em 60s, para de tentar. Sem isto, um erro de
+# configuração vira laço de restart infinito que enche o disco de log e
+# esconde a causa real no meio de milhares de linhas.
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+
+# ---------------------------------------------------------------------------
+# Identidade
+# ---------------------------------------------------------------------------
+# Usuário dedicado, sem shell e sem home de verdade. Nunca root: o processo
+# escuta na porta 3000 (>1024), então não precisa de privilégio nenhum para
+# fazer bind.
+User=discipular
+Group=discipular
+
+WorkingDirectory=/opt/discipular/current
+
+# ---------------------------------------------------------------------------
+# Ambiente
+# ---------------------------------------------------------------------------
+# O systemd lê este arquivo como root, ANTES de baixar para o usuário
+# `discipular`. Ou seja: o arquivo pode (e deve) ser 600 root:root, e o
+# processo da aplicação não consegue lê-lo diretamente do disco. Se um dia
+# houver leitura arbitrária de arquivo na aplicação, o .env não vaza por ali.
+EnvironmentFile=/etc/discipular/discipular.env
+
+Environment=NODE_ENV=production
+Environment=HOSTNAME=127.0.0.1
+Environment=NEXT_TELEMETRY_DISABLED=1
+# Teto de heap do V8 ABAIXO do MemoryMax definido lá embaixo. O V8 não enxerga
+# o limite do cgroup: sem isto ele deixa a heap crescer até o kernel matar o
+# processo por OOM, sem stack trace e sem chance de coletar lixo antes.
+Environment=NODE_OPTIONS=--max-old-space-size=1536
+
+# HOSTNAME=127.0.0.1 acima faz o Next escutar SÓ no loopback. O Nginx é a
+# única porta de entrada; expor 3000 na interface pública contornaria o
+# bloqueio de Host forjado, o rate limit e o limite de corpo do nginx.
+
+ExecStart=/usr/bin/node server.js
+
+# ---------------------------------------------------------------------------
+# Ciclo de vida
+# ---------------------------------------------------------------------------
+Restart=always
+RestartSec=3
+
+# SIGTERM deixa o Next drenar as requisições em andamento. 30s é folgado para
+# o perfil de tráfego deste sistema e evita cortar um upload no meio.
+KillSignal=SIGTERM
+KillMode=mixed
+TimeoutStopSec=30
+
+# ---------------------------------------------------------------------------
+# Isolamento de sistema de arquivos
+# ---------------------------------------------------------------------------
+# ProtectSystem=strict deixa TODO o sistema de arquivos somente-leitura,
+# inclusive /usr, /boot e /etc. O processo não reescreve o próprio bundle nem
+# instala nada — com execução de código arbitrário, o atacante não consegue
+# persistir depois de um restart.
+ProtectSystem=strict
+
+# /home, /root e /run/user ficam inacessíveis. A aplicação não tem nada a
+# fazer lá, e é onde costumam morar chaves SSH e credenciais de admin.
+ProtectHome=yes
+
+# /tmp privado, destruído no stop. Impede que outro processo do host leia
+# arquivo temporário de upload — ou plante um lá para ser processado.
+PrivateTmp=yes
+
+# StateDirectory cria /var/lib/discipular já com o dono certo a cada start, e
+# o torna gravável apesar do ProtectSystem=strict. Vale para o STORAGE_DIR.
+StateDirectory=discipular
+StateDirectoryMode=0750
+
+# Única exceção de escrita fora do StateDirectory. Se STORAGE_DIR apontar para
+# outro lugar no .env, acrescente o caminho aqui — senão o upload falha com
+# EROFS (que é exatamente o comportamento desejado por padrão).
+ReadWritePaths=/var/lib/discipular
+
+# Arquivo novo nasce 0600/0700: upload de igreja não fica legível para
+# qualquer usuário do host.
+UMask=0077
+
+# ---------------------------------------------------------------------------
+# Isolamento de kernel e de processo
+# ---------------------------------------------------------------------------
+# Impede que o processo ganhe privilégio via binário setuid. Com isto, mesmo
+# um /usr/bin/sudo intacto no host não serve de escada.
+NoNewPrivileges=yes
+
+# Nenhuma capability. O processo não faz bind em porta baixa, não altera hora,
+# não carrega módulo, não mexe em rede bruta.
+CapabilityBoundingSet=
+AmbientCapabilities=
+
+# /dev com apenas os pseudo-dispositivos (null, zero, random...). Sem acesso a
+# disco bruto, sem /dev/kmsg.
+PrivateDevices=yes
+
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+
+# /proc só mostra os próprios processos. Sem isto, um comprometimento permite
+# enumerar tudo que roda no host — inclusive linhas de comando com segredo.
+ProtectProc=invisible
+ProcSubset=pid
+
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+
+# Só os sockets que o app realmente usa: TCP/IP para Postgres, YouTube e SMTP,
+# e UNIX para o que o runtime do Node faz internamente. Fecha AF_NETLINK e
+# AF_PACKET, usados por ferramenta de reconhecimento de rede.
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources @obsolete
+# Chamada bloqueada devolve EPERM em vez de SIGSYS. Erro tratável polui menos
+# o journal e não derruba o processo inteiro por causa de uma sonda isolada.
+SystemCallErrorNumber=EPERM
+
+# ATENÇÃO — NÃO habilite MemoryDenyWriteExecute=yes aqui.
+# O V8 compila JavaScript para código de máquina em runtime e precisa de
+# páginas graváveis-e-executáveis. Com esta opção ligada o processo morre com
+# SIGSEGV logo no start. É a proteção que todo checklist de hardening manda
+# ligar e que quebra qualquer runtime com JIT.
+MemoryDenyWriteExecute=no
+
+# ---------------------------------------------------------------------------
+# Limites de recurso (VPS de 4 vCPU / 8 GB, ~30 igrejas / ~90 simultâneos)
+# ---------------------------------------------------------------------------
+# 3 GB de teto duro; a partir de 2,5 GB o kernel aperta a recuperação de
+# memória do cgroup, o que na prática força o GC antes do OOM.
+MemoryMax=3G
+MemoryHigh=2560M
+
+# 250% = 2,5 dos 4 vCPU. Sobra CPU para o Postgres, o nginx e o SO mesmo com o
+# app em pico — servidor sem folga trava justamente no domingo de manhã.
+CPUQuota=250%
+CPUWeight=100
+
+# Node com keepalive do nginx + pool do Prisma + arquivos abertos passa
+# folgado do padrão de 1024.
+LimitNOFILE=65535
+
+# Teto de threads/processos. Contém fork bomb vinda de uma dependência
+# comprometida.
+TasksMax=512
+
+# Se estourar a memória, o kernel mata este serviço primeiro — antes do
+# Postgres, cuja morte abrupta é bem mais cara de recuperar.
+OOMScoreAdjust=200
+
+# ---------------------------------------------------------------------------
+# Log
+# ---------------------------------------------------------------------------
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=discipular
+
+[Install]
+WantedBy=multi-user.target

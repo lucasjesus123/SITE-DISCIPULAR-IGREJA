@@ -1,0 +1,82 @@
+# =============================================================================
+# Contexto de build do Docker
+#
+# Duas razões para esta lista, nesta ordem de importância:
+#
+#   1. SEGURANÇA. Tudo que entra no contexto pode acabar dentro de uma camada
+#      da imagem, e camada de imagem é pública para quem tem acesso ao registry
+#      ou ao host. Um `.env` copiado por um `COPY . .` distraído fica gravado
+#      para sempre no histórico — `docker history` o entrega. Mesma coisa para
+#      o .git, que carrega TODO o histórico, inclusive segredos já removidos.
+#
+#   2. Velocidade. node_modules e .next locais somam centenas de MB que o
+#      daemon teria que receber a cada build, só para serem sobrescritos.
+# =============================================================================
+
+# --- Segredos e credenciais (nunca, em hipótese alguma) ---------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+secrets/
+.secrets
+
+# --- Histórico e metadados do Git -------------------------------------------
+.git
+.github
+.gitignore
+.gitattributes
+
+# --- Dependências e artefatos de build locais -------------------------------
+# Reinstalados/reconstruídos dentro da imagem. Copiar os locais traria binários
+# compilados para a arquitetura errada (macOS/glibc) para dentro do Alpine.
+node_modules
+.next
+out
+build
+dist
+.turbo
+*.tsbuildinfo
+.eslintcache
+
+# --- Dados de runtime que jamais pertencem à imagem -------------------------
+# Uploads de igreja são dados de cliente (LGPD). Vivem em volume, não em imagem.
+storage/
+uploads/
+public/uploads/
+logs/
+*.log
+backups/
+*.dump
+*.sql.gz
+
+# --- Infra e documentação (não são necessários para rodar o app) ------------
+Dockerfile
+.dockerignore
+docker-compose.yml
+docker-compose.*.yml
+nginx/
+deploy/
+README.md
+*.md
+!prisma/**/*.md
+
+# --- Testes e relatórios de auditoria ---------------------------------------
+coverage/
+.nyc_output/
+.audit/
+semgrep.json
+gitleaks-report.json
+trivy-report.json
+osv-report.json
+
+# --- Editor e sistema operacional -------------------------------------------
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+*.swp

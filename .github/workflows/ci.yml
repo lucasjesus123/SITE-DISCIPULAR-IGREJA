@@ -1,0 +1,319 @@
+# =============================================================================
+# Discipular SaaS — integração contínua
+#
+# Este pipeline é o portão de qualidade antes de qualquer coisa chegar à VPS
+# que atende 30 igrejas. Ele roda seis verificações independentes, em paralelo:
+#
+#   typecheck   erro de tipo já pegou bug de vazamento entre tenants aqui
+#   lint        regras do next/core-web-vitals
+#   prisma      schema válido e formatado
+#   build       o build de produção realmente compila
+#   auditoria   dependências com vulnerabilidade conhecida
+#   gitleaks    segredo commitado por acidente
+#
+# REGRA ABSOLUTA DESTE ARQUIVO: nenhum passo pode imprimir segredo no log.
+# Log de Actions fica visível para quem tem acesso de leitura ao repositório e
+# é retido por 90 dias. Por isso:
+#   - as variáveis de ambiente abaixo são DESCARTÁVEIS, não são segredos reais;
+#   - o gitleaks roda com --redact;
+#   - nada aqui usa `secrets.*` nem faz `env | sort`, `set -x` ou `cat .env`.
+# =============================================================================
+
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+# Permissão mínima. O padrão do GitHub dá escrita em `contents` para o
+# GITHUB_TOKEN; nenhum job aqui precisa escrever nada no repositório, e um
+# workflow comprometido com token de escrita consegue commitar direto na main.
+permissions:
+  contents: read
+
+# Push novo na mesma branch cancela a execução anterior. Economiza minutos e
+# evita que um resultado antigo chegue depois do novo e confunda a revisão.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "22"
+
+  # ---------------------------------------------------------------------------
+  # Ambiente de COMPILAÇÃO — valores falsos, propositalmente públicos.
+  #
+  # src/lib/env.ts valida tudo com Zod no import, e `next build` roda com
+  # NODE_ENV=production: sem estas variáveis o build nem começa. Elas precisam
+  # passar nas travas de produção do env.ts (https, três segredos distintos,
+  # sem placeholders do .env.example).
+  #
+  # NÃO troque por `secrets.*`. O build não conecta em banco nenhum e não
+  # precisa de valor real; usar segredo de produção aqui só criaria uma nova
+  # cópia dele em um lugar a mais.
+  # ---------------------------------------------------------------------------
+  DATABASE_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
+  DIRECT_DATABASE_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?schema=public"
+  SESSION_SECRET: "Y2ktbmFvLWVoLXNlZ3JlZG8tZGUtcHJvZHVjYW8tc2Vzc2FvLTAwMDAwMDE="
+  ENCRYPTION_KEY: "Y2ktbmFvLWVoLXNlZ3JlZG8tZGUtcHJvZHVjYW8tY2lmcmEtMDAwMDAwMDI="
+  CSRF_SECRET: "Y2ktbmFvLWVoLXNlZ3JlZG8tZGUtcHJvZHVjYW8tY3NyZi0wMDAwMDAwMDAz"
+  ROOT_DOMAIN: "exemplo.invalid"
+  APP_URL: "https://exemplo.invalid"
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  # ===========================================================================
+  # 1. TYPECHECK
+  # ===========================================================================
+  typecheck:
+    name: Typecheck (tsc --noEmit)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # Cache manual em vez de `cache: npm` do setup-node: aquele exige um
+      # lockfile e falha o workflow inteiro se ele não existir.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('package-lock.json', 'package.json') }}
+          restore-keys: npm-${{ runner.os }}-
+
+      - name: Instalar dependências
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --ignore-scripts --no-audit --no-fund
+          else
+            echo "::warning::package-lock.json ausente — build nao reprodutivel. Commite o lockfile."
+            npm install --ignore-scripts --no-audit --no-fund
+          fi
+
+      # O `tsc` precisa dos tipos gerados do Prisma (@prisma/client). Sem o
+      # generate, todo import de model vira erro de tipo e o job falha por um
+      # motivo que não tem nada a ver com o código.
+      - name: Gerar cliente Prisma
+        run: npx --no-install prisma generate
+
+      - name: Verificar tipos
+        run: npm run typecheck
+
+  # ===========================================================================
+  # 2. LINT
+  # ===========================================================================
+  lint:
+    name: Lint (eslint)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('package-lock.json', 'package.json') }}
+          restore-keys: npm-${{ runner.os }}-
+
+      - name: Instalar dependências
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --ignore-scripts --no-audit --no-fund
+          else
+            npm install --ignore-scripts --no-audit --no-fund
+          fi
+
+      - name: Lint
+        run: npm run lint
+
+  # ===========================================================================
+  # 3. PRISMA
+  # ===========================================================================
+  prisma:
+    name: Prisma (validate + format)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('package-lock.json', 'package.json') }}
+          restore-keys: npm-${{ runner.os }}-
+
+      - name: Instalar dependências
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --ignore-scripts --no-audit --no-fund
+          else
+            npm install --ignore-scripts --no-audit --no-fund
+          fi
+
+      # `validate` não conecta no banco: só confere a sintaxe do schema, as
+      # relações e as referências. O DATABASE_URL do env é apenas para o
+      # datasource resolver — nenhum dado é acessado.
+      - name: Validar schema
+        run: npx --no-install prisma validate
+
+      # `format --check` mantém o schema num formato único. Schema
+      # desformatado gera diff gigante em PR e esconde a mudança real — que,
+      # neste projeto, pode ser a remoção de um `tenantId` de um índice.
+      - name: Conferir formatação do schema
+        run: npx --no-install prisma format --check
+
+      - name: Gerar cliente (garante que o schema é realmente gerável)
+        run: npx --no-install prisma generate
+
+  # ===========================================================================
+  # 4. BUILD
+  # ===========================================================================
+  build:
+    name: Build de produção
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    # Não faz sentido gastar 20 minutos de build se o tipo já está quebrado.
+    needs: [typecheck]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('package-lock.json', 'package.json') }}
+          restore-keys: npm-${{ runner.os }}-
+
+      - name: Instalar dependências
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --ignore-scripts --no-audit --no-fund
+          else
+            npm install --ignore-scripts --no-audit --no-fund
+          fi
+
+      # Reaproveita o cache de compilação do Next entre execuções. A chave
+      # inclui o hash do código-fonte: mudou o código, cache novo.
+      - uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: next-${{ runner.os }}-${{ hashFiles('package-lock.json', 'package.json') }}-${{ hashFiles('src/**/*.ts', 'src/**/*.tsx') }}
+          restore-keys: |
+            next-${{ runner.os }}-${{ hashFiles('package-lock.json', 'package.json') }}-
+
+      # `npm run build` = prisma generate && next build, com NODE_ENV=production.
+      - name: Build
+        env:
+          NODE_ENV: production
+        run: npm run build
+
+      # A imagem Docker depende de `output: "standalone"`. Se alguém remover
+      # essa opção do next.config.ts, o build continua passando mas o
+      # Dockerfile quebra só na hora do deploy. Falhar aqui é mais barato.
+      - name: Conferir saída standalone
+        run: |
+          test -f .next/standalone/server.js \
+            || { echo "::error::.next/standalone/server.js nao foi gerado. O output standalone do next.config.ts e requisito do Dockerfile."; exit 1; }
+          test -d .next/static \
+            || { echo "::error::.next/static ausente."; exit 1; }
+
+  # ===========================================================================
+  # 5. AUDITORIA DE DEPENDÊNCIAS
+  # ===========================================================================
+  auditoria:
+    name: Auditoria de dependências (npm audit)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # `npm audit` exige um lockfile. Se ele não estiver commitado, geramos um
+      # aqui só para a análise (--package-lock-only não baixa nada).
+      - name: Garantir lockfile para a análise
+        run: |
+          if [ ! -f package-lock.json ]; then
+            echo "::warning::package-lock.json ausente — gerando um temporario apenas para a auditoria."
+            npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+          fi
+
+      # Bloqueante: vulnerabilidade alta ou crítica não entra na main. Este é
+      # um sistema que guarda dado pessoal de membros de igreja sob LGPD.
+      - name: Vulnerabilidades altas e críticas (bloqueia o merge)
+        run: npm audit --audit-level=high
+
+      # Informativo: moderadas costumam vir de dependência transitiva sem
+      # correção disponível. Ficam visíveis no log para triagem, sem travar
+      # todo deploy — travar por algo insolúvel só ensina a ignorar o CI.
+      - name: Vulnerabilidades moderadas (informativo)
+        continue-on-error: true
+        run: npm audit --audit-level=moderate
+
+  # ===========================================================================
+  # 6. GITLEAKS — segredo commitado
+  # ===========================================================================
+  gitleaks:
+    name: Gitleaks (segredos no histórico)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Histórico completo: segredo removido no commit seguinte continua
+          # recuperável e continua comprometido. Varrer só o último commit
+          # daria falsa sensação de segurança.
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Rodamos a imagem oficial em vez da action de marketplace: a action
+      # exige licença para organizações, e a imagem é a mesma ferramenta com
+      # a versão fixada — sem surpresa quando o upstream publicar uma major.
+      - name: Varrer o repositório
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}:/repo:ro" \
+            zricethezav/gitleaks:v8.21.2 \
+            detect \
+              --source=/repo \
+              --redact \
+              --no-banner \
+              --verbose \
+              --exit-code 1
+        # --redact é OBRIGATÓRIO aqui: sem ele, o gitleaks imprime o segredo
+        # encontrado no log do Actions. O relatório que denuncia o vazamento
+        # viraria o vazamento — e num lugar retido por 90 dias.
+        #
+        # Achou algo? O procedimento é, nesta ordem:
+        #   1. ROTACIONAR o segredo (ele já está comprometido — remover o
+        #      commit não desfaz quem já leu);
+        #   2. remover do histórico (git filter-repo / BFG);
+        #   3. só então corrigir o .gitignore.

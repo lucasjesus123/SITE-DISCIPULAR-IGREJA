@@ -1,0 +1,385 @@
+# =============================================================================
+# Discipular SaaS — orquestração de produção
+#
+# Alvo dimensionado: VPS de 4 vCPU / 8 GB RAM, ~30 igrejas e ~90 usuários
+# simultâneos. Os limites em `deploy.resources` abaixo somam propositalmente
+# menos que a máquina inteira: o Nginx, o SO e o pico de um `pg_dump` precisam
+# de folga. Servidor 100% alocado é servidor que trava no primeiro domingo de
+# manhã, que é exatamente o horário de pico deste produto.
+#
+#   Subir:      docker compose up -d --build
+#   Migrar:     docker compose --profile migracao run --rm migrador
+#   Backup:     docker compose --profile backup run --rm backup
+#   Logs:       docker compose logs -f app
+#
+# Todas as variáveis vêm do arquivo `.env` na raiz (ver .env.example).
+# O `.env` NUNCA é commitado e deve estar com permissão 600.
+# =============================================================================
+
+name: discipular
+
+# -----------------------------------------------------------------------------
+# Redes
+#
+# Duas redes de propósito diferente:
+#
+#   dados — `internal: true`. Sem gateway para fora. O Postgres vive só aqui,
+#           então mesmo que alguém consiga executar código dentro do container
+#           do banco, ele não tem rota para a internet: não baixa ferramenta,
+#           não exfiltra dump para um servidor externo.
+#
+#   borda — rede normal com saída. Só o app participa, porque ele precisa
+#           falar com a API do YouTube e com o SMTP.
+# -----------------------------------------------------------------------------
+networks:
+  dados:
+    driver: bridge
+    internal: true
+  borda:
+    driver: bridge
+
+volumes:
+  # Dados do Postgres. Volume nomeado (e não bind mount) para o Docker cuidar
+  # de permissão e para não haver risco de alguém apagar a pasta "limpando" o
+  # diretório do projeto.
+  pgdata:
+    driver: local
+  # Uploads das igrejas. É dado pessoal sob LGPD — entra na rotina de backup
+  # junto com o banco (ver deploy/backup.sh).
+  arquivos:
+    driver: local
+  # Destino dos dumps. Bind mount para /var/backups/discipular no host, porque
+  # o backup precisa ser fácil de copiar para fora da máquina — backup que só
+  # existe dentro do mesmo servidor não protege contra perder o servidor.
+  backups:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/backups/discipular
+
+# -----------------------------------------------------------------------------
+# Blocos reaproveitados
+# -----------------------------------------------------------------------------
+x-logging: &logging
+  # Sem rotação, o json-file cresce até encher o disco — e disco cheio derruba
+  # o Postgres. 3 arquivos de 20 MB por serviço é teto suficiente para
+  # diagnosticar um incidente sem virar um problema por si só.
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "3"
+
+x-seguranca-base: &seguranca-base
+  security_opt:
+    # Impede escalonamento por binário setuid dentro do container. Nenhum
+    # serviço aqui precisa trocar de usuário depois de iniciado.
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+
+services:
+  # ===========================================================================
+  # POSTGRES 16
+  # ===========================================================================
+  postgres:
+    image: postgres:16.6-alpine
+    restart: unless-stopped
+    logging: *logging
+
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      # O entrypoint oficial sobe como root só para ajustar o dono do PGDATA e
+      # então cair para o usuário `postgres` via gosu. Sem estas cinco
+      # capabilities ele não consegue nem fazer o chown nem trocar de usuário,
+      # e o container morre no primeiro boot. Todas as demais continuam
+      # descartadas — em especial NET_RAW e SYS_ADMIN.
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+
+    # NENHUMA porta publicada. O banco é alcançável apenas pela rede `dados`,
+    # de dentro do Docker. Publicar 5432 no host — mesmo em 127.0.0.1 — abre a
+    # porta para qualquer processo local e é o erro que mais transforma VPS em
+    # vazamento de dados. Para abrir um psql, use:
+    #   docker compose exec postgres psql -U "$POSTGRES_ADMIN_USER" discipular
+    networks:
+      - dados
+
+    environment:
+      # Superusuário de BOOTSTRAP. Não é o usuário da aplicação nem o de
+      # migração — ele só existe para criar os outros dois e para manutenção.
+      # Ver deploy/primeiros-passos.md, seção "os dois usuários do Postgres".
+      POSTGRES_USER: ${POSTGRES_ADMIN_USER:?defina POSTGRES_ADMIN_USER no .env}
+      POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD:?defina POSTGRES_ADMIN_PASSWORD no .env}
+      POSTGRES_DB: ${POSTGRES_DB:-discipular}
+      # scram-sha-256 em vez do md5 histórico. Também vale para conexões
+      # locais dentro do container.
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256 --data-checksums"
+      PGDATA: /var/lib/postgresql/data/pgdata
+      TZ: ${TZ:-America/Sao_Paulo}
+
+    # /dev/shm padrão do Docker é 64 MB. O Postgres usa memória compartilhada
+    # para hash joins e workers paralelos; com 64 MB, relatórios maiores
+    # estouram com "could not resize shared memory segment".
+    shm_size: 256mb
+
+    command:
+      - postgres
+      # --- Memória (perfil 8 GB de RAM, ~2,5 GB reservados ao banco) --------
+      - -c
+      - shared_buffers=768MB
+      - -c
+      - effective_cache_size=2560MB
+      - -c
+      - maintenance_work_mem=192MB
+      # work_mem é POR operação de ordenação, não por conexão. 8 MB x algumas
+      # dezenas de queries concorrentes ainda cabe; subir muito aqui é a
+      # maneira mais fácil de causar OOM sem perceber.
+      - -c
+      - work_mem=8MB
+      # --- Conexões ---------------------------------------------------------
+      # O app usa connection_limit=10 por processo (ver DATABASE_URL). 100 dá
+      # margem confortável para app + migrador + backup + um psql de plantão.
+      - -c
+      - max_connections=100
+      # --- Disco SSD --------------------------------------------------------
+      - -c
+      - random_page_cost=1.1
+      - -c
+      - effective_io_concurrency=200
+      # --- WAL / checkpoint -------------------------------------------------
+      - -c
+      - wal_compression=on
+      - -c
+      - max_wal_size=2GB
+      - -c
+      - min_wal_size=512MB
+      - -c
+      - checkpoint_completion_target=0.9
+      # --- Observabilidade --------------------------------------------------
+      # Loga só queries lentas. Logar tudo despejaria dados pessoais dos
+      # membros das igrejas no log do container — problema de LGPD, não só de
+      # espaço em disco.
+      - -c
+      - log_min_duration_statement=500ms
+      - -c
+      - log_connections=on
+      - -c
+      - log_disconnections=on
+      - -c
+      - log_lock_waits=on
+      - -c
+      - log_statement=ddl
+      # --- Robustez ---------------------------------------------------------
+      # Derruba transação esquecida segurando lock (deploy trava por causa
+      # disso com frequência) e sessão ociosa consumindo slot de conexão.
+      - -c
+      - idle_in_transaction_session_timeout=60s
+      - -c
+      - statement_timeout=30s
+      - -c
+      - timezone=${TZ:-America/Sao_Paulo}
+
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+    healthcheck:
+      # `pg_isready` sozinho responde "ok" antes do banco aceitar queries.
+      # Um SELECT real é o que garante que o `depends_on: healthy` do app
+      # signifique de fato "pronto para consultar".
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\" -q && psql -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\" -tAc 'SELECT 1' > /dev/null",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+
+    stop_grace_period: 60s
+
+    deploy:
+      resources:
+        limits:
+          cpus: "1.5"
+          memory: 3G
+        reservations:
+          cpus: "0.50"
+          memory: 1G
+
+  # ===========================================================================
+  # APLICAÇÃO (Next.js standalone)
+  # ===========================================================================
+  app:
+    build:
+      context: .
+      target: runner
+    image: discipular:${TAG_IMAGEM:-latest}
+    restart: unless-stopped
+    <<: *seguranca-base
+    logging: *logging
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    networks:
+      - dados # para falar com o Postgres
+      - borda # para YouTube API e SMTP
+
+    # Exposta APENAS no loopback do host. O Nginx (rodando no host) faz o
+    # proxy reverso para cá. Publicar em 0.0.0.0 deixaria o Next acessível
+    # direto pela porta 3000, contornando o Nginx — e com isso o bloqueio de
+    # Host forjado, o rate limit e o limite de body simplesmente não existiriam.
+    ports:
+      - "127.0.0.1:${PORT:-3000}:3000"
+
+    env_file:
+      - .env
+
+    environment:
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+      STORAGE_DIR: /var/lib/discipular/storage
+      # ATENÇÃO ao DATABASE_URL do .env: dentro da rede Docker o host do banco
+      # é `postgres` (o nome do serviço), NÃO `localhost`. O .env.example usa
+      # localhost porque foi escrito para desenvolvimento. Em produção com
+      # Docker o valor correto é:
+      #   postgresql://discipular_app:SENHA@postgres:5432/discipular?schema=public&connection_limit=10&pool_timeout=20
+      # `localhost` dentro do container aponta para o próprio container e o app
+      # sobe travado em ECONNREFUSED.
+      # Teto de heap ABAIXO do limite do cgroup (3G). O V8 não enxerga o
+      # limite do container: sem isto ele deixa a heap crescer até o kernel
+      # matar o processo com OOM, sem stack trace e sem chance de GC.
+      NODE_OPTIONS: --max-old-space-size=1536
+      TZ: ${TZ:-America/Sao_Paulo}
+
+    # Sistema de arquivos raiz imutável. Com RCE, o atacante não consegue
+    # escrever webshell nem alterar o próprio bundle para persistir após o
+    # restart. Todo caminho gravável é declarado explicitamente abaixo.
+    read_only: true
+
+    tmpfs:
+      # noexec/nosuid: mesmo conseguindo gravar um binário aqui, ele não roda.
+      - /tmp:rw,noexec,nosuid,size=128m
+      - /app/.next/cache:rw,noexec,nosuid,uid=1001,gid=1001,size=256m
+
+    volumes:
+      # Único ponto gravável persistente: os uploads das igrejas.
+      - arquivos:/var/lib/discipular/storage
+
+    # PID 1 correto vem do tini na imagem; `init` aqui é redundante e fica
+    # desligado de propósito para não empilhar dois supervisores.
+    init: false
+
+    # Tempo para drenar requisições em andamento antes do SIGKILL.
+    stop_grace_period: 30s
+
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 3G
+        reservations:
+          cpus: "1.0"
+          memory: 1G
+
+  # ===========================================================================
+  # MIGRADOR (perfil "migracao") — não sobe com `up`
+  #
+  # Roda uma vez por deploy, com o usuário que TEM DDL, e morre. Manter isso
+  # fora do container de aplicação é o que garante que o processo que atende
+  # a internet não consiga alterar o schema.
+  #
+  #   docker compose --profile migracao run --rm migrador
+  # ===========================================================================
+  migrador:
+    profiles: ["migracao"]
+    build:
+      context: .
+      target: migrador
+    image: discipular-migrador:${TAG_IMAGEM:-latest}
+    restart: "no"
+    <<: *seguranca-base
+    logging: *logging
+    networks:
+      - dados
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      # O Prisma lê DATABASE_URL para o datasource e DIRECT_DATABASE_URL para
+      # a conexão direta. Aqui os dois apontam para o usuário COM DDL — é o
+      # único contexto do sistema em que isso acontece.
+      DATABASE_URL: ${DIRECT_DATABASE_URL:?defina DIRECT_DATABASE_URL no .env}
+      DIRECT_DATABASE_URL: ${DIRECT_DATABASE_URL}
+      TZ: ${TZ:-America/Sao_Paulo}
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+
+  # ===========================================================================
+  # BACKUP (perfil "backup") — não sobe com `up`
+  #
+  # Serviço de execução única, disparado pelo cron/systemd timer do HOST:
+  #
+  #   docker compose --profile backup run --rm backup
+  #
+  # Por que não um container em loop com `sleep 86400`: um supervisor de
+  # verdade (systemd/cron) já existe no host, sabe reportar falha, sabe
+  # recuperar depois de reboot e não perde o agendamento quando o container é
+  # recriado. Reimplementar cron dentro do Docker só adiciona um jeito novo de
+  # o backup silenciosamente parar de rodar.
+  #
+  # A imagem é a MESMA versão do Postgres do serviço acima: `pg_dump` de versão
+  # anterior à do servidor se recusa a rodar.
+  # ===========================================================================
+  backup:
+    profiles: ["backup"]
+    image: postgres:16.6-alpine
+    restart: "no"
+    <<: *seguranca-base
+    logging: *logging
+    networks:
+      - dados
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # Usuário sem privilégio dentro do container (o uid 70 é o `postgres` da
+    # imagem alpine). O dump não precisa de root para nada.
+    user: "70:70"
+    environment:
+      PGHOST: postgres
+      PGPORT: "5432"
+      PGDATABASE: ${POSTGRES_DB:-discipular}
+      # Usuário dedicado de leitura para backup (criado em primeiros-passos.md).
+      PGUSER: ${BACKUP_DB_USER:-discipular_backup}
+      PGPASSWORD: ${BACKUP_DB_PASSWORD:?defina BACKUP_DB_PASSWORD no .env}
+      DIR_BACKUP: /backups
+      RETENCAO_DIAS: ${BACKUP_RETENCAO_DIAS:-14}
+      TZ: ${TZ:-America/Sao_Paulo}
+    volumes:
+      # Scripts entram como somente-leitura: o container de backup não tem
+      # motivo nenhum para conseguir alterar o próprio script.
+      - ./deploy:/opt/deploy:ro
+      - backups:/backups
+      # Os uploads entram no backup junto com o banco. Restaurar só o banco
+      # deixaria registros de Arquivo apontando para bytes que não existem mais.
+      - arquivos:/dados/arquivos:ro
+    entrypoint: ["/bin/sh", "/opt/deploy/backup.sh"]
+    deploy:
+      resources:
+        limits:
+          cpus: "0.75"
+          memory: 512M
