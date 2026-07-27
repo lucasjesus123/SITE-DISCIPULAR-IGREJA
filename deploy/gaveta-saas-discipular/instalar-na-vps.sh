@@ -186,9 +186,17 @@ titulo "Migrando o banco${SEMEAR:+ e semeando a sua igreja}"
 REDE_DADOS="$(docker network ls --format '{{.Name}}' | grep -E '(^|_)dados$' | grep discipular | head -1)"
 REDE_DADOS="${REDE_DADOS:-discipular_dados}"
 
-COMANDO_DB="npx prisma migrate deploy"
+# `migrate deploy` normal. Se uma tentativa ANTERIOR falhou (ex.: a migração
+# de RLS rodou antes da inicial num deploy quebrado), o Prisma guarda essa
+# migração como "falha" e se recusa a seguir (erro P3009) até alguém resolver.
+# Como aqui é instalação nova (sem dados), marcamos a migração de RLS como
+# "revertida" e tentamos de novo — aí ela roda na ordem certa, DEPOIS da
+# inicial. Numa base 100% limpa esse resolve não acha nada e o `|| true` deixa
+# passar; a 2ª tentativa é idêntica à 1ª. Nada é apagado.
+DEPLOY_DB='npx prisma migrate deploy || { echo "Tentando recuperar migração anterior falha..."; npx prisma migrate resolve --rolled-back 20260101000000_rls 2>/dev/null || true; npx prisma migrate deploy; }'
+COMANDO_DB="$DEPLOY_DB"
 if [[ "${SEMEAR:-0}" == "1" ]]; then
-  COMANDO_DB="${COMANDO_DB} && npm run db:seed"
+  COMANDO_DB="${DEPLOY_DB} && npm run db:seed"
 fi
 
 if docker run --rm --network "$REDE_DADOS" --env-file .env \
