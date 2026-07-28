@@ -637,6 +637,75 @@ input, textarea, select { font: inherit; color: inherit; }
 .hero__fato-v { font-family: var(--font-display); font-size: var(--step-1); margin-top: 0.25rem; }
 
 /* -----------------------------------------------------------------------------
+   HERO CENTRALIZADO + CÍRCULOS FLUTUANTES + ENTRADA ANIMADA
+   -------------------------------------------------------------------------- */
+.hero--centro { align-items: center; text-align: center; }
+.hero--centro .hero__sub { margin-inline: auto; }
+.hero--centro .hero__acoes { justify-content: center; }
+.hero--centro .hero__fatos { justify-content: center; }
+.hero--centro .hero__fato-k,
+.hero--centro .hero__fato-v { text-align: center; }
+.hero--centro .eyebrow { justify-content: center; }
+
+/* Círculos grandes, bem transparentes, com leve brilho — flutuam devagar. */
+.hero__orbs { position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none; }
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(46px);
+  background: radial-gradient(circle at 50% 50%, rgb(244 244 242 / 0.14), rgb(244 244 242 / 0.04) 55%, transparent 72%);
+  will-change: transform;
+}
+.orb--1 { width: 44vw; height: 44vw; max-width: 620px; max-height: 620px; left: 6%;  top: 8%;  animation: flutuar-a 20s ease-in-out infinite; }
+.orb--2 { width: 34vw; height: 34vw; max-width: 480px; max-height: 480px; right: 4%; top: 22%; animation: flutuar-b 26s ease-in-out infinite; }
+.orb--3 { width: 26vw; height: 26vw; max-width: 380px; max-height: 380px; left: 34%; bottom: 4%; animation: flutuar-c 23s ease-in-out infinite; }
+@keyframes flutuar-a { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(5%, -7%) scale(1.1); } }
+@keyframes flutuar-b { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-6%, 5%) scale(1.12); } }
+@keyframes flutuar-c { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(4%, 6%) scale(1.08); } }
+
+/* Entrada do hero: cada bloco sobe suavemente ao carregar (escalonado). */
+@media (prefers-reduced-motion: no-preference) {
+  .hero__conteudo .eyebrow { animation: subir-suave 0.8s var(--ease-out) both; }
+  .hero__titulo { animation: subir-suave 0.9s 0.08s var(--ease-out) both; }
+  .hero__sub { animation: subir-suave 0.9s 0.16s var(--ease-out) both; }
+  .hero__acoes { animation: subir-suave 0.9s 0.24s var(--ease-out) both; }
+  .hero__fatos { animation: subir-suave 0.9s 0.32s var(--ease-out) both; }
+}
+@keyframes subir-suave { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+
+/* -----------------------------------------------------------------------------
+   MOVIMENTO AO ROLAR — o site inteiro "respira": os blocos surgem ao entrar na
+   tela. Usa scroll-driven animations (CSS puro, sem JS). Onde o navegador não
+   suporta (@supports falha), o conteúdo simplesmente aparece normal — nada
+   quebra. Respeita quem pediu menos movimento no sistema.
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .section-head,
+    .section .card,
+    .section .value,
+    .section .info-line,
+    .section .frame,
+    .pix-card,
+    .stat,
+    .faq details,
+    .scripture__text,
+    .scripture__ref,
+    .split > div,
+    .footer-cta,
+    .footer-grid > div {
+      animation: revelar-rolagem linear both;
+      animation-timeline: view();
+      animation-range: entry 4% cover 20%;
+    }
+  }
+}
+@keyframes revelar-rolagem {
+  from { opacity: 0; transform: translateY(32px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* -----------------------------------------------------------------------------
    CARDS
    -------------------------------------------------------------------------- */
 .card {

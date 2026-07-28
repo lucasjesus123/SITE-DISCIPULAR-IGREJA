@@ -49,7 +49,7 @@ export default async function Home() {
   return (
     <>
       {/* --------------------------------------------------------------- HERO */}
-      <section className="hero">
+      <section className="hero hero--centro">
         {heroImagem && (
           <div className="hero__media">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -57,9 +57,16 @@ export default async function Home() {
           </div>
         )}
         <div className="hero__veu" aria-hidden="true" />
+        {/* Círculos grandes, bem transparentes, que flutuam devagar atrás do
+            título — dão vida ao hero sem competir com o texto. */}
+        <div className="hero__orbs" aria-hidden="true">
+          <span className="orb orb--1" />
+          <span className="orb orb--2" />
+          <span className="orb orb--3" />
+        </div>
         <div className="hero__conteudo">
           <div className="container container--wide">
-            {config.heroEyebrow && <p className="eyebrow">{config.heroEyebrow}</p>}
+            {config.heroEyebrow && <p className="eyebrow eyebrow--centered">{config.heroEyebrow}</p>}
             <h1 className="hero__titulo" style={{ marginTop: "1.2rem" }}>
               {config.heroTitulo ?? config.nomeExibicao}
             </h1>
