@@ -206,8 +206,13 @@ const TEMA_PB = {
   corAcento: "#0E0E10",
   corAcentoClara: "#000000",
   corTinta: "#0A0A0B",
-  corPapel: "#FFFFFF",
-  fonteTitulo: "Archivo",
+  // Papel branco levemente QUENTE (escolhido, não clínico): dá o repouso de
+  // galeria sem cair no "creme" datado. Ainda lê como branco editorial.
+  corPapel: "#F8F7F3",
+  // Contraste editorial restaurado: Fraunces (serif de alto contraste, com
+  // eixos ópticos) nos títulos + Archivo (grotesca sólida) no corpo/UI. Era a
+  // ausência desse par que deixava o site "chapado".
+  fonteTitulo: "Fraunces",
   fonteTexto: "Archivo",
 } as const;
 

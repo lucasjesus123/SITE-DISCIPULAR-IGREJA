@@ -151,13 +151,28 @@ export function cssDoTema(tema: TemaTenant): string {
  * Os nomes vêm da allowlist, então `encodeURIComponent` é redundância — mas
  * redundância barata numa string que vira `href` de `<link>`.
  */
+/**
+ * Monta o fragmento `family=...` de UMA família para o Google Fonts CSS2.
+ *
+ * A maioria das famílias pede só peso + itálico (300..800). Fraunces é o
+ * coração do display editorial: pedimos também o eixo ÓPTICO (`opsz` 9..144),
+ * que aumenta o contraste tipográfico nos tamanhos grandes (hero, versículo) e
+ * o afina no corpo — é o que dá o ar "de revista" com uma única família. Pedir
+ * um eixo que a fonte não tem faria o Google devolver 400, então isto é uma
+ * allowlist por família, não um palpite.
+ */
+function familiaGoogleFonts(nome: string): string {
+  const f = encodeURIComponent(nome).replace(/%20/g, "+");
+  if (nome === "Fraunces") {
+    return `family=${f}:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900`;
+  }
+  return `family=${f}:ital,wght@0,300..800;1,300..800`;
+}
+
 export function urlGoogleFonts(tema: TemaTenant): string {
   const t = normalizarTema(tema);
-  // Faixa 300..800: o tema "preto & branco moderno" usa pesos editoriais
-  // pesados (título do hero em 800, caixa-alta). Faixas menores deixavam o
-  // hero fino demais.
   const familias = [...new Set([t.fonteTitulo, t.fonteTexto])]
-    .map((f) => `family=${encodeURIComponent(f).replace(/%20/g, "+")}:ital,wght@0,300..800;1,300..800`)
+    .map(familiaGoogleFonts)
     .join("&");
   return `https://fonts.googleapis.com/css2?${familias}&display=swap`;
 }

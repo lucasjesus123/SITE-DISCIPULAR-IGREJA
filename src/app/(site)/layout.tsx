@@ -103,6 +103,9 @@ export default async function LayoutSite({ children }: { children: React.ReactNo
 
   const estadoLive = { aoVivo: live.aoVivo, videoId: live.videoId, titulo: live.titulo };
 
+  // Cidades atendidas (únicas), para a dateline do masthead editorial.
+  const cidades = [...new Set(dados.campi.map((c) => c.cidade).filter(Boolean))].join(" · ");
+
   // Acento neutro (cinza/preto) → ativa o tratamento "Preto & Branco Moderno":
   // acento branco nas seções escuras, hero em caixa-alta pesada. Ver globals.css.
   const classeModo = temaMonocromatico(dados.tema) ? "modo-mono" : undefined;
@@ -134,6 +137,25 @@ export default async function LayoutSite({ children }: { children: React.ReactNo
       )}
 
       <div className={["site-corpo", classeModo].filter(Boolean).join(" ")}>
+        {/*
+          Masthead — fita de jornal no topo. É o "gancho editorial" que trata a
+          igreja como uma publicação: wordmark, o lema e a dateline (cidades).
+          Puramente decorativo (aria-hidden): o conteúdo real vem abaixo.
+        */}
+        <div className="masthead" aria-hidden="true">
+          <div className="masthead__row">
+            <span className="masthead__c">{dados.config.nomeExibicao}</span>
+            {(dados.config.tagline || cidades) && (
+              <span className="masthead__mid">
+                {[dados.config.tagline, cidades].filter(Boolean).join("  ·  ")}
+              </span>
+            )}
+            <span className="masthead__c">
+              <span className="masthead__sep">—</span> Rio Grande do Sul
+            </span>
+          </div>
+        </div>
+
         <BannerAoVivo inicial={estadoLive} />
 
         <Cabecalho

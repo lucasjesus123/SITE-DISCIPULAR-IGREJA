@@ -1330,3 +1330,359 @@ body:has(.fundo-site) .theme-ink-800 {
 .marca { display: inline-flex; align-items: center; gap: 0.7rem; }
 .marca__icone { width: 30px; height: 30px; flex: none; }
 .marca__texto { font-family: var(--font-display); font-weight: 800; font-size: 1.28rem; letter-spacing: -0.01em; font-style: italic; }
+
+/* ============================================================================
+   REDESIGN "BROADSIDE" — Editorial Sacro Preto & Branco  (camada de refino)
+   ----------------------------------------------------------------------------
+   Nada acima foi removido. Esta camada eleva o SITE PÚBLICO a um padrão
+   editorial — "a igreja como publicação" — sem tocar no painel/plataforma/app.
+   Todo seletor é ancorado em `.site-corpo`, que embrulha só o site (ver
+   src/app/(site)/layout.tsx), então a especificidade vence a base e o escopo
+   fica isolado.
+
+   Direção: Fraunces (serif de alto contraste, com eixo óptico) para display +
+   Archivo (grotesca) para UI/corpo; papel quente e tinta quase-preta (nunca
+   #000/#fff cru); fios de 1px; grão de filme; plates duotone desenhados no
+   lugar de placeholders vazios; folios; micro-interações; e revelação no
+   scroll 100% ADITIVA (só via animation-timeline nativa, com queda limpa e
+   respeito a prefers-reduced-motion — nunca esconde conteúdo).
+   ========================================================================== */
+
+.site-corpo {
+  /* Neutros "escolhidos": a tinta ganha um respiro do preto absoluto e o osso
+     (texto sobre escuro) esquenta de leve — lê como revista, não como default. */
+  --bone: #f4f1e8;
+  --bone-dim: rgb(244 241 232 / 0.74);
+  --bone-faint: rgb(244 241 232 / 0.56);
+  --line-on-light: rgb(24 20 14 / 0.14);
+  --line-on-dark: rgb(244 241 232 / 0.16);
+  /* Ritmo tipográfico monumental do hero (research: preencher a viewport). */
+  --step-hero: clamp(3.1rem, 8.4vw, 9.25rem);
+  /* Vermelho litúrgico — ÚNICO acento cromático do site, < 5% de cobertura. */
+  --vivo: #e5361f;
+}
+.site-corpo.modo-mono { --bone: #f4f1e8; --bone-dim: rgb(244 241 232 / 0.74); --bone-faint: rgb(244 241 232 / 0.56); }
+
+/* ---------------------------------------------------------------------------
+   GRÃO DE FILME — textura de impressão, sutil, sobre todo o site.
+   Ruído fractal gerado inline (sem requisição externa). soft-light funciona em
+   fundo claro E escuro; opacidade baixíssima; nunca intercepta clique; estático
+   (não anima) — inofensivo para quem pediu menos movimento.
+   ------------------------------------------------------------------------- */
+.site-corpo::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='120'%20height='120'%3E%3Cfilter%20id='n'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.9'%20numOctaves='2'%20stitchTiles='stitch'/%3E%3C/filter%3E%3Crect%20width='100%25'%20height='100%25'%20filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 120px 120px;
+}
+
+/* ---------------------------------------------------------------------------
+   TIPOGRAFIA — restaura o contraste serif/grotesca e aciona o eixo óptico.
+   ------------------------------------------------------------------------- */
+.site-corpo h1, .site-corpo h2, .site-corpo h3, .site-corpo h4,
+.site-corpo .display, .site-corpo .hero__titulo,
+.site-corpo .scripture__text, .site-corpo .pullquote,
+.site-corpo .page-hero__title {
+  font-optical-sizing: auto;
+}
+/* Fraunces é de alto contraste: pesos leves ficam elegantes; pesos pesados
+   (o modo-mono forçava 680/840) ficam "gordos". Reequilibramos para o registro
+   editorial — leve no display grande, com tracking negativo firme. */
+.site-corpo.modo-mono h1, .site-corpo.modo-mono h2,
+.site-corpo.modo-mono h3, .site-corpo.modo-mono h4,
+.site-corpo.modo-mono .display {
+  font-weight: 430;
+  letter-spacing: -0.018em;
+  line-height: 1.02;
+}
+.site-corpo .lead { color: var(--fg-dim); font-weight: 400; }
+
+/* Hero: monumental, caixa mista (não mais caixa-alta pesada), Fraunces com ar. */
+.site-corpo.modo-mono .hero__titulo,
+.site-corpo .hero__titulo {
+  font-size: var(--step-hero);
+  text-transform: none;
+  font-weight: 440;
+  letter-spacing: -0.028em;
+  line-height: 0.92;
+}
+.site-corpo .hero__sub { color: var(--bone-dim); font-weight: 400; max-width: 46ch; }
+
+/* Títulos do site num degrau acima (editorial), Fraunces. */
+.site-corpo .section-head h2,
+.site-corpo .split h2,
+.site-corpo .scripture__text { letter-spacing: -0.02em; }
+.site-corpo .site-corpo h2 { font-size: clamp(2.15rem, 1.5rem + 2.3vw, 3.6rem); }
+
+/* Eyebrow: rótulo de masthead — mais fino, mais tracking, tick curto. */
+.site-corpo .eyebrow {
+  font-size: 0.7rem;
+  letter-spacing: 0.28em;
+  font-weight: 600;
+  color: var(--fg-dim);
+}
+.site-corpo .eyebrow::before,
+.site-corpo .eyebrow--centered::after { width: 1.5rem; opacity: 0.55; }
+.site-corpo .index-tag,
+.site-corpo .value__idx,
+.site-corpo .split__idx {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-weight: 420;
+  font-size: 1.15rem;
+  letter-spacing: 0;
+  color: var(--fg-dim);
+}
+
+/* ---------------------------------------------------------------------------
+   MASTHEAD — fita de jornal no topo absoluto do site (o "gancho inédito").
+   Renderizada pelo layout do site; aqui vive o estilo.
+   ------------------------------------------------------------------------- */
+.site-corpo .masthead {
+  background: var(--ink-900);
+  color: var(--bone-faint);
+  border-bottom: 1px solid var(--line-on-dark);
+  font-size: 0.62rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.site-corpo .masthead__row {
+  max-width: var(--container-wide);
+  margin-inline: auto;
+  padding: 0.5rem var(--gutter);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+.site-corpo .masthead__c { display: inline-flex; align-items: center; gap: 0.6rem; white-space: nowrap; }
+.site-corpo .masthead__sep { opacity: 0.4; }
+.site-corpo .masthead__mid { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: 0.85; }
+@media (max-width: 720px) { .site-corpo .masthead__mid { display: none; } }
+
+/* ---------------------------------------------------------------------------
+   HEADER — masthead da publicação: fio fino, wordmark serifado, nav grotesca.
+   ------------------------------------------------------------------------- */
+.site-corpo .site-header {
+  background: rgb(var(--ink-rgb) / 0.72);
+  backdrop-filter: blur(18px) saturate(1.3);
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  border-bottom: 1px solid var(--line-on-dark);
+}
+.site-corpo .brand__nome {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-weight: 430;
+  font-size: 1.32rem;
+  letter-spacing: -0.02em;
+}
+.site-corpo .nav__link {
+  font-size: 0.74rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 500;
+  opacity: 0.82;
+}
+.site-corpo .nav__link:hover { opacity: 1; }
+.site-corpo .mobile-nav__link {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-weight: 420;
+  letter-spacing: -0.02em;
+}
+
+/* ---------------------------------------------------------------------------
+   BOTÕES — editoriais, cantos quase-retos, um único preenchimento na interação.
+   Unifica raio e estados (elimina o "3 formas de botão" amador).
+   ------------------------------------------------------------------------- */
+.site-corpo .btn {
+  border-radius: 3px;
+  font-size: 0.74rem;
+  letter-spacing: 0.16em;
+  padding: 1.05em 1.9em;
+  transition: transform 0.5s var(--ease-out), box-shadow 0.5s var(--ease-out),
+    background-color 0.45s var(--ease-out), color 0.45s var(--ease-out), border-color 0.45s;
+}
+.site-corpo .btn--lg { padding: 1.2em 2.3em; font-size: 0.78rem; }
+.site-corpo .btn:not(.btn--ghost):not(.btn--outline-gold):hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 40px -20px rgb(0 0 0 / 0.55);
+}
+/* Link com sublinhado que "recolhe" ao passar (já existia) + tracking editorial. */
+.site-corpo .link { font-size: 0.74rem; letter-spacing: 0.14em; }
+
+/* ---------------------------------------------------------------------------
+   HERO — cinema contido. Véu mais rico, luz intencional (não "bolhas"),
+   fatos viram folio com fios. Um arco fino (a "casa/soleira") assina o rodapé.
+   ------------------------------------------------------------------------- */
+.site-corpo .hero { min-height: min(94vh, 940px); }
+.site-corpo .hero__veu {
+  background:
+    radial-gradient(120% 85% at 50% -10%, rgb(255 255 255 / 0.10), transparent 55%),
+    linear-gradient(to top, rgb(var(--ink-rgb) / 0.98) 0%, rgb(var(--ink-rgb) / 0.80) 42%, rgb(var(--ink-rgb) / 0.58) 100%),
+    rgb(var(--ink-rgb) / 0.30);
+}
+/* ATMOSFERA GENERATIVA "Luz da Soleira" — a peça inédita do hero.
+   Arte semeada (public/marca/atmos-soleira.jpg): um vão de porta feito de luz,
+   evocando a marca (a casa no círculo) e "Uma Casa de Discípulos". Entra pelo
+   container dos orbs, que no DOM fica ACIMA do véu — então o arco de luz
+   aparece nítido, enquanto o véu ainda escurece a base para o texto ler bem.
+   Só na home (`.hero--centro`); se a igreja subir uma FOTO, `.hero__media`
+   cobre tudo e a atmosfera não aparece (foto real tem prioridade). */
+.site-corpo .hero--centro .orb { display: none; }
+.site-corpo .hero--centro .hero__orbs {
+  background-image: url("/marca/atmos-soleira.jpg");
+  background-repeat: no-repeat;
+  background-position: center 45%;
+  background-size: min(1520px, 132%) auto;
+  mix-blend-mode: screen;
+  opacity: 0.92;
+}
+/* Vinheta lateral leve para o arco não "cortar" nas bordas largas. */
+.site-corpo .hero--centro .hero__orbs::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(75% 90% at 50% 45%, transparent 55%, var(--ink) 100%);
+  pointer-events: none;
+}
+.site-corpo .hero__fatos {
+  gap: 0;
+  border-top: 1px solid var(--line-on-dark);
+}
+.site-corpo .hero__fatos > * {
+  padding: 1.6rem clamp(1rem, 2.5vw, 2rem);
+  border-left: 1px solid var(--line-on-dark);
+}
+.site-corpo .hero--centro .hero__fatos > *:first-child { border-left: 0; }
+@media (max-width: 760px) {
+  .site-corpo .hero__fatos > * { border-left: 0; border-top: 1px solid var(--line-on-dark); padding-inline: 0; }
+  .site-corpo .hero--centro .hero__fatos > *:first-child { border-top: 0; }
+}
+.site-corpo .hero__fato-k { color: var(--bone-faint); font-size: 0.64rem; letter-spacing: 0.22em; }
+.site-corpo .hero__fato-v { font-family: var(--font-display); font-optical-sizing: auto; font-weight: 400; }
+
+/* ---------------------------------------------------------------------------
+   CARDS & PLATES — o conserto do "placeholder vazio".
+   Cards com fio + hover contido; molduras vazias viram PLATES DUOTONE
+   desenhados: gradiente de tinta, luz radial, marca-d'água da casa, grade
+   finíssima e legenda editorial. O vazio passa a parecer intenção, não falta.
+   ------------------------------------------------------------------------- */
+.site-corpo .card {
+  border-radius: 6px;
+  border-color: var(--card-line);
+  transition: transform 0.5s var(--ease-out), border-color 0.45s, box-shadow 0.5s var(--ease-out);
+}
+.site-corpo .card:hover {
+  transform: translateY(-4px);
+  border-color: rgb(var(--ink-rgb) / 0.28);
+  box-shadow: 0 24px 50px -34px rgb(0 0 0 / 0.5);
+}
+.site-corpo .theme-dark .card:hover { border-color: rgb(244 241 232 / 0.34); }
+.site-corpo .card__titulo { font-optical-sizing: auto; font-weight: 440; letter-spacing: -0.012em; }
+.site-corpo .card__icon { border-radius: 6px; border-color: var(--line); }
+
+.site-corpo .frame { border-radius: 8px; }
+.site-corpo .frame__mono {
+  background:
+    radial-gradient(130% 120% at 50% -20%, var(--ink-600), var(--ink-900) 72%);
+  border: 1px solid rgb(244 241 232 / 0.10);
+  overflow: hidden;
+  position: relative;
+}
+/* Marca-d'água da casa (o próprio símbolo), gigante e fantasma, no plate. */
+.site-corpo .frame__mono > img {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 52%; height: auto;
+  transform: translate(-50%, -50%);
+  opacity: 0.14;
+  filter: invert(1);
+  mix-blend-mode: screen;
+}
+/* Grade milimetrada → fina, fantasma, esvaindo nas bordas (papel técnico). */
+.site-corpo .frame__grid {
+  background-image:
+    linear-gradient(rgb(244 241 232 / 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(244 241 232 / 0.06) 1px, transparent 1px);
+  background-size: 30px 30px;
+  -webkit-mask-image: radial-gradient(120% 100% at 50% 40%, #000 45%, transparent 82%);
+  mask-image: radial-gradient(120% 100% at 50% 40%, #000 45%, transparent 82%);
+  opacity: 1;
+}
+.site-corpo .frame__cap {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-style: italic;
+  font-weight: 380;
+  color: var(--bone-dim);
+}
+.site-corpo .frame__badge {
+  border-color: rgb(244 241 232 / 0.16);
+  color: var(--bone-faint);
+  background: rgb(var(--ink-rgb) / 0.5);
+  backdrop-filter: blur(6px);
+}
+/* Etiqueta flutuante sobre plate: cartão editorial nítido. */
+.site-corpo .floating-tag { border-radius: 8px; box-shadow: 0 30px 60px -30px rgb(0 0 0 / 0.7); }
+
+/* ---------------------------------------------------------------------------
+   VERSÍCULO (scripture) — Fraunces grande, aspas fantasma refinadas, arco.
+   ------------------------------------------------------------------------- */
+.site-corpo .scripture__text { font-weight: 400; line-height: 1.16; }
+.site-corpo .scripture__mark { opacity: 0.045; font-weight: 300; }
+.site-corpo .scripture__ref { color: var(--fg-dim); }
+
+/* Arco fino da "casa/soleira" acima dos cabeçalhos centrais de seção — o
+   ornamento editorial ownable (metade de um vão de porta). Puramente aditivo. */
+.site-corpo .section-head::before {
+  content: "";
+  display: block;
+  width: 46px;
+  height: 23px;
+  margin: 0 auto 1.5rem;
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  border-radius: 46px 46px 0 0;
+  opacity: 0.9;
+}
+
+/* ---------------------------------------------------------------------------
+   MARQUEE — faixa de valores mais editorial (Fraunces, ponto como acento).
+   ------------------------------------------------------------------------- */
+.site-corpo .marquee { border-block: 1px solid var(--line); }
+.site-corpo .marquee__item { font-optical-sizing: auto; font-weight: 440; letter-spacing: -0.01em; }
+.site-corpo .marquee__item.ital { font-weight: 380; }
+.site-corpo .marquee__item::after { color: var(--fg-faint); }
+
+/* ---------------------------------------------------------------------------
+   RODAPÉ — pé de publicação: marca-d'água em Fraunces, fios, redes discretas.
+   ------------------------------------------------------------------------- */
+.site-corpo .footer-watermark { font-optical-sizing: auto; font-weight: 380; opacity: 0.04; }
+.site-corpo .footer-cta h2 { font-optical-sizing: auto; font-weight: 430; }
+.site-corpo .footer-social a { border-radius: 4px; }
+.site-corpo .footer-titulo { color: var(--bone-faint); letter-spacing: 0.24em; }
+
+/* ---------------------------------------------------------------------------
+   PIX / FORMULÁRIOS — cantos e fios coerentes com o resto.
+   ------------------------------------------------------------------------- */
+.site-corpo .pix-card, .site-corpo .pix-key, .site-corpo .pix-fact { border-radius: 8px; }
+.site-corpo .pix-key__val, .site-corpo .course__price, .site-corpo .info-line .v,
+.site-corpo .value__title { font-optical-sizing: auto; font-weight: 430; }
+.site-corpo .campo input, .site-corpo .campo select, .site-corpo .campo textarea { border-radius: 4px; }
+
+/* ---------------------------------------------------------------------------
+   REVELAÇÃO NO SCROLL — deliberadamente AUSENTE.
+   Uma tentativa anterior (documentada mais acima) escondeu blocos que não
+   voltavam. Repetimos a lição: mesmo `animation-timeline: view()` deixa tudo
+   abaixo da dobra em opacity:0 quando a viewport não rolou (impressão, leitores
+   de tela que "achatam" a página, alguns motores). Movimento aqui é só ADITIVO
+   e nunca condiciona a visibilidade do conteúdo: entrada do hero, Ken Burns da
+   foto, marquee e micro-interações de hover — nada que possa esconder texto.
+   ------------------------------------------------------------------------- */
