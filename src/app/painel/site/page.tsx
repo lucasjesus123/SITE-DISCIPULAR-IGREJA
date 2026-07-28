@@ -1,6 +1,8 @@
 import { exigirPermissao } from "@/lib/auth/rbac";
 import { fontesDisponiveis, normalizarTema } from "@/lib/site/theme";
 import { EditorSite } from "@/components/painel/EditorSite";
+import type { ArquivoEnviado } from "@/components/painel/CampoUpload";
+import { urlArquivoPublico } from "@/lib/storage/urls";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Site da igreja" };
@@ -24,7 +26,7 @@ export default async function PaginaConfigSite() {
       nomeExibicao: true, tagline: true, descricaoSeo: true,
       corAcento: true, corAcentoClara: true, corTinta: true, corPapel: true,
       fonteTitulo: true, fonteTexto: true,
-      heroEyebrow: true, heroTitulo: true, heroSubtitulo: true,
+      heroEyebrow: true, heroTitulo: true, heroSubtitulo: true, heroImagemId: true,
       heroCtaTexto: true, heroCtaLink: true,
       emailContato: true, telefoneContato: true, whatsapp: true,
       instagram: true, facebook: true, youtube: true, spotify: true,
@@ -35,6 +37,24 @@ export default async function PaginaConfigSite() {
   });
 
   const tema = normalizarTema(config);
+
+  // Detalhes da imagem de capa atual, para o campo de upload já mostrar a foto.
+  let heroImagemInicial: ArquivoEnviado | null = null;
+  if (config?.heroImagemId) {
+    const arq = await ctx.db.arquivo.findFirst({
+      where: { id: config.heroImagemId },
+      select: { id: true, nomeOriginal: true, mimeType: true, tamanhoBytes: true },
+    });
+    if (arq) {
+      heroImagemInicial = {
+        id: arq.id,
+        url: urlArquivoPublico(arq.id),
+        nome: arq.nomeOriginal,
+        mimeType: arq.mimeType,
+        tamanhoBytes: arq.tamanhoBytes,
+      };
+    }
+  }
 
   return (
     <>
@@ -66,6 +86,7 @@ export default async function PaginaConfigSite() {
           heroSubtitulo: config?.heroSubtitulo ?? "",
           heroCtaTexto: config?.heroCtaTexto ?? "",
           heroCtaLink: config?.heroCtaLink ?? "",
+          heroImagemId: config?.heroImagemId ?? "",
           emailContato: config?.emailContato ?? "",
           telefoneContato: config?.telefoneContato ?? "",
           whatsapp: config?.whatsapp ?? "",
@@ -81,6 +102,7 @@ export default async function PaginaConfigSite() {
           pwaCorTema: config?.pwaCorTema ?? tema.corTinta,
         }}
         fontes={fontesDisponiveis}
+        heroImagemInicial={heroImagemInicial}
       />
     </>
   );

@@ -62,6 +62,9 @@ const schemaMarca = z.object({
   heroSubtitulo: textoLongo(400).optional(),
   heroCtaTexto: textoLimpo(60).optional(),
   heroCtaLink: textoLimpo(200).optional(),
+  // Id do Arquivo (cuid) da imagem de capa. Vazio = sem imagem. A posse pelo
+  // tenant e o tipo (imagem) são checados abaixo, antes de gravar.
+  heroImagemId: z.string().max(30).optional(),
 
   emailContato: emailOpcional,
   telefoneContato: telefoneOpcional,
@@ -92,6 +95,28 @@ export async function salvarConfigSite(dadosBrutos: unknown): Promise<ResultadoA
     }
 
     const dados = schemaMarca.parse(dadosBrutos);
+
+    /**
+     * Imagem de capa: só aceitamos um Arquivo que pertença A ESTA igreja, que
+     * seja imagem e que esteja marcado como público. Sem esta checagem, alguém
+     * poderia mandar o id de um arquivo de OUTRO tenant e exibi-lo no seu site
+     * — vazamento entre igrejas — ou apontar para um PDF/secreto. Vazio limpa.
+     */
+    let heroImagemId: string | null = null;
+    if (dados.heroImagemId && dados.heroImagemId.length > 0) {
+      const arquivo = await ctx.db.arquivo.findFirst({
+        where: { id: dados.heroImagemId },
+        select: { id: true, mimeType: true, publico: true },
+      });
+      if (!arquivo || !arquivo.mimeType.startsWith("image/") || !arquivo.publico) {
+        return {
+          ok: false,
+          mensagem: "A imagem de capa é inválida. Envie o arquivo novamente.",
+          campos: { heroImagemId: ["Imagem não encontrada. Envie novamente."] },
+        };
+      }
+      heroImagemId = arquivo.id;
+    }
 
     /**
      * Dados bancários são criptografados com AES-256-GCM antes de ir para o
@@ -125,6 +150,7 @@ export async function salvarConfigSite(dadosBrutos: unknown): Promise<ResultadoA
         heroSubtitulo: dados.heroSubtitulo,
         heroCtaTexto: dados.heroCtaTexto,
         heroCtaLink: dados.heroCtaLink,
+        heroImagemId,
         emailContato: dados.emailContato,
         telefoneContato: dados.telefoneContato,
         whatsapp: dados.whatsapp,
@@ -155,6 +181,7 @@ export async function salvarConfigSite(dadosBrutos: unknown): Promise<ResultadoA
         heroSubtitulo: dados.heroSubtitulo ?? null,
         heroCtaTexto: dados.heroCtaTexto ?? null,
         heroCtaLink: dados.heroCtaLink ?? null,
+        heroImagemId,
         emailContato: dados.emailContato ?? null,
         telefoneContato: dados.telefoneContato ?? null,
         whatsapp: dados.whatsapp ?? null,

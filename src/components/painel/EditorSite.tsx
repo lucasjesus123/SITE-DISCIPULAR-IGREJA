@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { salvarConfigSite } from "@/app/painel/site/acoes";
+import { CampoUpload, type ArquivoEnviado } from "@/components/painel/CampoUpload";
 
 export interface DadosSiteForm {
   nomeExibicao: string;
@@ -19,6 +20,7 @@ export interface DadosSiteForm {
   heroSubtitulo: string;
   heroCtaTexto: string;
   heroCtaLink: string;
+  heroImagemId: string;
   emailContato: string;
   telefoneContato: string;
   whatsapp: string;
@@ -45,9 +47,11 @@ export interface DadosSiteForm {
 export function EditorSite({
   inicial,
   fontes,
+  heroImagemInicial,
 }: {
   inicial: DadosSiteForm;
   fontes: string[];
+  heroImagemInicial?: ArquivoEnviado | null;
 }) {
   const router = useRouter();
   const [pendente, iniciar] = useTransition();
@@ -134,6 +138,15 @@ export function EditorSite({
             <Texto rotulo="Texto do botão" {...campo("heroCtaTexto")} maxLength={60} />
             <Texto rotulo="Link do botão" {...campo("heroCtaLink")} maxLength={200} ajuda="Ex.: /quem-somos" />
           </div>
+          <CampoUpload
+            nome="heroImagemId"
+            rotulo="Imagem de fundo da capa"
+            publico
+            valorInicial={heroImagemInicial ?? null}
+            ajuda="Foto que aparece atrás do título, no topo do site. Ideal: larga (16:9), JPG/PNG/WEBP. Fotos escuras funcionam melhor."
+            aoEnviar={(a) => setDados((d) => ({ ...d, heroImagemId: a.id }))}
+            aoRemover={() => setDados((d) => ({ ...d, heroImagemId: "" }))}
+          />
         </Secao>
 
         <Secao titulo="Contato" desc="Aparece no rodapé e na página de contato.">
