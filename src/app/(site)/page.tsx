@@ -167,11 +167,11 @@ export default async function Home() {
             </p>
           </div>
           <div className="grid cols-3" style={{ marginTop: "clamp(2.5rem, 5vw, 3.5rem)" }}>
-            <ProximoPasso indice="01" titulo="Células" href="/celulas" cta="Encontre uma célula"
+            <ProximoPasso indice="01" titulo="Células" href="/celulas" cta="Encontre uma célula" icone={<IconeCelulas />}
               texto="A igreja reunida em pequenos grupos, perto de você, para adorar, ouvir a Palavra e interceder." />
-            <ProximoPasso indice="02" titulo="Escola Discipular" href="/escola" cta="Faça sua inscrição"
+            <ProximoPasso indice="02" titulo="Escola Discipular" href="/escola" cta="Faça sua inscrição" icone={<IconeLivro />}
               texto="Teologia Discipular e Trilha Discipular: fundamentos sólidos para uma fé que sustenta a vida." />
-            <ProximoPasso indice="03" titulo="Contribua" href="/contribua" cta="Seja generoso"
+            <ProximoPasso indice="03" titulo="Contribua" href="/contribua" cta="Seja generoso" icone={<IconeCoracao />}
               texto="Sua generosidade avança a proclamação do Evangelho. Juntos, construímos uma história com e para Jesus." />
           </div>
         </div>
@@ -293,27 +293,29 @@ export default async function Home() {
               <Horario dia="Durante a semana" titulo="Células nos lares" hora="Vários horários" />
             </div>
           </div>
-          <div className="split__media grid" style={{ gap: "1.2rem" }}>
-            {(campi.length > 0
-              ? campi
-              : [
-                  { id: "a", nome: "Sede Lajeado", logradouro: "RSC-453", numero: "1186", bairro: "Floresta", cidade: "Lajeado", uf: "RS", descricao: "Nossa casa principal" },
-                  { id: "b", nome: "Campus Vera Cruz", logradouro: "R. Jacob Schneider", numero: "111", bairro: "Centro", cidade: "Vera Cruz", uf: "RS", descricao: "Uma igreja, dois lugares" },
-                ]
-            ).map((campus, i) => (
-              <article className="card" key={campus.id}>
-                <p className="index-tag">{String(i + 1).padStart(2, "0")}</p>
-                <h3 className="card__titulo">{campus.nome}</h3>
-                <p className="card__texto">
-                  {[campus.logradouro, campus.numero].filter(Boolean).join(", ")}
-                  {campus.bairro && ` – ${campus.bairro}`}
-                  {campus.cidade && `, ${campus.cidade}`}
-                  {campus.uf && `/${campus.uf}`}
-                </p>
-                {campus.descricao && <p className="card__texto">{campus.descricao}</p>}
-              </article>
-            ))}
-            <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+          <div className="split__media">
+            <div className="grid" style={{ gap: "1.2rem" }}>
+              {(campi.length > 0
+                ? campi
+                : [
+                    { id: "a", nome: "Sede Lajeado", logradouro: "RSC-453", numero: "1186", bairro: "Floresta", cidade: "Lajeado", uf: "RS", descricao: "Nossa casa principal" },
+                    { id: "b", nome: "Campus Vera Cruz", logradouro: "R. Jacob Schneider", numero: "111", bairro: "Centro", cidade: "Vera Cruz", uf: "RS", descricao: "Uma igreja, dois lugares" },
+                  ]
+              ).map((campus, i) => (
+                <article className="card" key={campus.id}>
+                  <p className="index-tag">{String(i + 1).padStart(2, "0")}</p>
+                  <h3 className="card__titulo">{campus.nome}</h3>
+                  <p className="card__texto">
+                    {[campus.logradouro, campus.numero].filter(Boolean).join(", ")}
+                    {campus.bairro && ` – ${campus.bairro}`}
+                    {campus.cidade && `, ${campus.cidade}`}
+                    {campus.uf && `/${campus.uf}`}
+                  </p>
+                  {campus.descricao && <p className="card__texto">{campus.descricao}</p>}
+                </article>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginTop: "1.4rem" }}>
               <Link href="/contato" className="btn">Fale conosco</Link>
               <Link href="/contato" className="link">Ver no mapa <span aria-hidden="true">→</span></Link>
             </div>
@@ -363,7 +365,7 @@ export default async function Home() {
       </section>
 
       {/* ----------------------------------------------------------- CONTRIBUA */}
-      <section className="section theme-dark">
+      <section className="section theme-cream">
         <div className="container split">
           <div className="stack">
             <p className="eyebrow">Oferte &amp; Contribua</p>
@@ -405,9 +407,10 @@ export default async function Home() {
   );
 }
 
-function ProximoPasso({ indice, titulo, texto, href, cta }: { indice: string; titulo: string; texto: string; href: string; cta: string }) {
+function ProximoPasso({ indice, titulo, texto, href, cta, icone }: { indice: string; titulo: string; texto: string; href: string; cta: string; icone?: React.ReactNode }) {
   return (
     <article className="card">
+      {icone && <span className="card__icon" aria-hidden="true">{icone}</span>}
       <p className="index-tag">{indice}</p>
       <h3 className="card__titulo">{titulo}</h3>
       <p className="card__texto">{texto}</p>
@@ -456,6 +459,32 @@ function Check() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
       <path d="M5 12l5 5L20 6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function IconeCelulas() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="9" cy="8" r="3" />
+      <circle cx="17" cy="10" r="2.2" />
+      <path d="M3 20c0-3 2.7-5 6-5s6 2 6 5" />
+      <path d="M15.5 20c.2-2 1.7-3.4 4-3.4S23 18 23 20" />
+    </svg>
+  );
+}
+function IconeLivro() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 5.5A2 2 0 0 1 6 4h6v15H6a2 2 0 0 0-2 1.5z" />
+      <path d="M20 5.5A2 2 0 0 0 18 4h-6v15h6a2 2 0 0 1 2 1.5z" />
+    </svg>
+  );
+}
+function IconeCoracao() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 20s-7-4.3-9-8.5C1.5 8 3.5 5 6.5 5 8.4 5 11 6.5 12 8.5 13 6.5 15.6 5 17.5 5c3 0 5 3 3.5 6.5C19 15.7 12 20 12 20z" />
     </svg>
   );
 }

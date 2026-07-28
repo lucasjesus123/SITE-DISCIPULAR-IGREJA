@@ -26,7 +26,8 @@ export function MolduraFoto({
           loading="lazy"
           style={{ width: "100%", height: "100%", objectFit: "cover" }}
         />
-        {legenda && <span className="frame__cap">{legenda}</span>}
+        <span className="frame__scrim" aria-hidden="true" />
+        {legenda && <span className="frame__cap frame__cap--foto">{legenda}</span>}
       </div>
     );
   }

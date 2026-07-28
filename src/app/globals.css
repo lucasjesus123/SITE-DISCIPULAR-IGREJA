@@ -256,10 +256,16 @@ input, textarea, select { font: inherit; color: inherit; }
 }
 .modo-mono .hero__titulo {
   text-transform: uppercase;
-  font-weight: 800;
-  letter-spacing: -0.012em;
-  line-height: 0.92;
+  font-weight: 840;
+  letter-spacing: -0.035em;
+  line-height: 0.9;
 }
+/* Tipografia "menor" da REVISÃO 3 do design oficial: os títulos do SITE
+   (não do painel) seguem uma escala mais enxuta e editorial. Escopado em
+   .site-corpo para não mexer no painel. */
+.site-corpo h2,
+.site-corpo .h2 { font-size: clamp(1.9rem, 1.5rem + 1.4vw, 2.9rem); }
+.site-corpo .scripture__text { font-size: clamp(1.7rem, 1.25rem + 1.6vw, 2.7rem); }
 .modo-mono .pullquote { font-weight: 560; }
 /* Hover do botão outline no P&B: ao passar o mouse o fundo vira a cor de acento.
    Em seção CLARA o acento é quase-preto → texto BRANCO (--paper). Em seção
@@ -706,6 +712,19 @@ input, textarea, select { font: inherit; color: inherit; }
 .card:hover { transform: translateY(-4px); border-color: var(--gold-line); }
 .card__titulo { font-family: var(--font-display); font-size: var(--step-2); }
 .card__texto { color: var(--fg-dim); font-size: var(--step--1); }
+/* Ícone do card: quadrado com contorno, herda a cor do tema da seção. */
+.card__icon {
+  display: inline-grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--gold);
+  margin-bottom: 0.2rem;
+}
+.card__icon svg { width: 1.4rem; height: 1.4rem; }
+.card:hover .card__icon { border-color: var(--gold-line); }
 
 .frame {
   position: relative;
@@ -1159,7 +1178,31 @@ input, textarea, select { font: inherit; color: inherit; }
   color: var(--bone);
   padding-block: clamp(6rem, 12vw, 10rem) clamp(3rem, 7vw, 6rem);
   overflow: hidden;
+  /* Malha de brilho sutil (mesmo tratamento do hero da home): tira o retângulo
+     preto chapado dos topos das páginas internas sem esconder conteúdo. */
+  background-image:
+    radial-gradient(42% 55% at 15% 18%, rgb(255 255 255 / 0.08), transparent 60%),
+    radial-gradient(46% 50% at 85% 12%, rgb(255 255 255 / 0.05), transparent 62%),
+    radial-gradient(60% 60% at 74% 96%, rgb(255 255 255 / 0.045), transparent 60%);
 }
+/* Círculo grande e transparente flutuando no topo das páginas internas —
+   o mesmo movimento vivo do hero da home, em dose menor. */
+.page-hero::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  width: 42vw; height: 42vw; max-width: 560px; max-height: 560px;
+  right: -6%; top: -12%;
+  border-radius: 50%;
+  filter: blur(46px);
+  mix-blend-mode: screen;
+  background: radial-gradient(circle at 50% 50%, rgb(255 255 255 / 0.30), rgb(255 255 255 / 0.08) 50%, transparent 70%);
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .page-hero::before { animation: flutuar-b 24s ease-in-out infinite; }
+}
+.page-hero > * { position: relative; z-index: 1; }
 .page-hero__title { font-family: var(--font-display); font-size: clamp(2.6rem, 1.9rem + 3vw, 5rem); line-height: 0.98; letter-spacing: -0.022em; overflow-wrap: break-word; hyphens: auto; }
 .page-hero .lead { max-width: 60ch; margin-top: 1.6rem; }
 /* breadcrumb: subiu de --fg-faint p/ --fg-dim para passar o contraste AA. */
@@ -1187,9 +1230,14 @@ input, textarea, select { font: inherit; color: inherit; }
 /* Frames de imagem/placeholder */
 .frame--tall { aspect-ratio: 3 / 4; }
 .frame--wide { aspect-ratio: 4 / 3; }
+/* Véu de baixo→cima sobre a foto: garante que a legenda (frame__cap) leia bem
+   mesmo em fotos claras, e integra a foto ao tema P&B. */
+.frame__scrim { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(180deg, rgb(var(--ink-rgb) / 0.10) 0%, rgb(var(--ink-rgb) / 0) 38%, rgb(var(--ink-rgb) / 0.62) 100%); }
 .frame__mono { display: grid; place-items: center; background: var(--card); border: 1px solid var(--card-line); }
 .frame__mono svg, .frame__mono img { width: 62%; height: auto; opacity: 0.9; }
 .frame__cap { position: absolute; top: 1.1rem; right: 1.2rem; font-family: var(--font-display); font-style: italic; font-size: 0.95rem; color: var(--fg-dim); z-index: 2; }
+/* Legenda sobre FOTO: sempre branca, com sombra — lê bem em qualquer imagem. */
+.frame__cap--foto { color: #fff; text-shadow: 0 1px 10px rgb(0 0 0 / 0.55); }
 .frame__badge { position: absolute; left: 1.1rem; bottom: 1.1rem; z-index: 2; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.55rem 1rem; border: 1px solid var(--line); border-radius: 100px; font-size: 0.66rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-dim); background: rgb(var(--ink-rgb) / 0.4); backdrop-filter: blur(6px); }
 .frame__grid { position: absolute; inset: 0; background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 44px 44px; opacity: 0.5; }
 /* Tag flutuante sobre imagem */
