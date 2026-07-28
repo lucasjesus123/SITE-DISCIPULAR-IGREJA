@@ -33,7 +33,7 @@ server {
   # Enquanto não houver certificado, o site responde em HTTP mesmo.
 
   # Corpo máximo coerente com o limite de upload da aplicação (5 MB) + folga.
-  client_max_body_size 6m;
+  client_max_body_size 30m;
 
   # ---- Cabeçalhos de segurança na borda (o app também os envia; reforço) ----
   add_header X-Content-Type-Options "nosniff" always;

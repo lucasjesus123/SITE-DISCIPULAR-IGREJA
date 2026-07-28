@@ -138,7 +138,7 @@ else
     printf '%s\n' "ENCRYPTION_KEY=${ENCRYPTION_KEY}"
     printf '%s\n' "CSRF_SECRET=${CSRF_SECRET}"
     printf '%s\n' "STORAGE_DIR=/var/lib/discipular/storage"
-    printf '%s\n' "MAX_UPLOAD_BYTES=5242880"
+    printf '%s\n' "MAX_UPLOAD_BYTES=26214400"
     printf '%s\n' "YOUTUBE_API_KEY="
     printf '%s\n' "SMTP_HOST="
     printf '%s\n' "SMTP_PORT=587"

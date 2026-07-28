@@ -41,7 +41,7 @@ const schema = z.object({
   TRUSTED_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(1),
 
   STORAGE_DIR: z.string().min(1).default("/var/lib/discipular/storage"),
-  MAX_UPLOAD_BYTES: z.coerce.number().int().positive().default(5 * 1024 * 1024),
+  MAX_UPLOAD_BYTES: z.coerce.number().int().positive().default(25 * 1024 * 1024),
 
   YOUTUBE_API_KEY: z.string().optional().default(""),
   YOUTUBE_LIVE_CACHE_SECONDS: z.coerce.number().int().min(15).default(60),

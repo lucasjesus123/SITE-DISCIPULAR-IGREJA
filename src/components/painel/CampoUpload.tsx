@@ -37,7 +37,7 @@ const TIPOS_ACEITOS = [
 const EXTENSOES_AMIGAVEIS = "JPG, PNG, WEBP, AVIF, GIF ou PDF";
 
 /** Espelha o padrão de MAX_UPLOAD_BYTES. Sobrescrevível pela prop `maxBytes`. */
-const MAX_PADRAO = 5 * 1024 * 1024;
+const MAX_PADRAO = 25 * 1024 * 1024;
 
 export interface ArquivoEnviado {
   id: string;
