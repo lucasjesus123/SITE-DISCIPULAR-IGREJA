@@ -7,6 +7,7 @@ import { estadoAoVivo } from "@/lib/youtube/live";
 import { Cabecalho } from "@/components/site/Cabecalho";
 import { Rodape } from "@/components/site/Rodape";
 import { BannerAoVivo } from "@/components/site/AoVivo";
+import { MovimentoAoRolar } from "@/components/site/MovimentoAoRolar";
 import { urlArquivoPublico } from "@/lib/storage/urls";
 
 /**
@@ -144,6 +145,7 @@ export default async function LayoutSite({ children }: { children: React.ReactNo
         />
 
         <main id="conteudo">{children}</main>
+        <MovimentoAoRolar />
 
         <Rodape
           config={dados.config}

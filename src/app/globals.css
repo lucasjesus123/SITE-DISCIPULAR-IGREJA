@@ -652,8 +652,11 @@ input, textarea, select { font: inherit; color: inherit; }
 .orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(46px);
-  background: radial-gradient(circle at 50% 50%, rgb(244 244 242 / 0.14), rgb(244 244 242 / 0.04) 55%, transparent 72%);
+  filter: blur(40px);
+  /* `screen` faz o brilho SOMAR sobre o fundo escuro — os círculos aparecem
+     como um clarão suave e visível, mesmo por cima da foto. */
+  mix-blend-mode: screen;
+  background: radial-gradient(circle at 50% 50%, rgb(255 255 255 / 0.42), rgb(255 255 255 / 0.12) 50%, transparent 70%);
   will-change: transform;
 }
 .orb--1 { width: 44vw; height: 44vw; max-width: 620px; max-height: 620px; left: 6%;  top: 8%;  animation: flutuar-a 20s ease-in-out infinite; }
@@ -674,35 +677,20 @@ input, textarea, select { font: inherit; color: inherit; }
 @keyframes subir-suave { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
 
 /* -----------------------------------------------------------------------------
-   MOVIMENTO AO ROLAR — o site inteiro "respira": os blocos surgem ao entrar na
-   tela. Usa scroll-driven animations (CSS puro, sem JS). Onde o navegador não
-   suporta (@supports falha), o conteúdo simplesmente aparece normal — nada
-   quebra. Respeita quem pediu menos movimento no sistema.
+   MOVIMENTO AO ROLAR — os blocos surgem suavemente ao entrar na tela.
+   Controlado pelo componente MovimentoAoRolar (IntersectionObserver): ele só
+   adiciona `.mov-ready` DEPOIS de confirmar que vai revelar os blocos. Sem JS
+   (ou com "menos movimento" ligado), nada é escondido — o site aparece normal.
    -------------------------------------------------------------------------- */
-@media (prefers-reduced-motion: no-preference) {
-  @supports (animation-timeline: view()) {
-    .section-head,
-    .section .card,
-    .section .value,
-    .section .info-line,
-    .section .frame,
-    .pix-card,
-    .stat,
-    .faq details,
-    .scripture__text,
-    .scripture__ref,
-    .split > div,
-    .footer-cta,
-    .footer-grid > div {
-      animation: revelar-rolagem linear both;
-      animation-timeline: view();
-      animation-range: entry 4% cover 20%;
-    }
-  }
+.mov-ready [data-revelar] {
+  opacity: 0;
+  transform: translateY(34px);
+  transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out);
+  transition-delay: calc(var(--mov-i, 0) * 0.06s);
 }
-@keyframes revelar-rolagem {
-  from { opacity: 0; transform: translateY(32px); }
-  to { opacity: 1; transform: translateY(0); }
+.mov-ready [data-revelar].visivel {
+  opacity: 1;
+  transform: none;
 }
 
 /* -----------------------------------------------------------------------------
