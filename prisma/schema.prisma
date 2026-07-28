@@ -871,6 +871,10 @@ model SiteConfig {
   heroImagemId  String?
   /// Imagem de fundo do site inteiro, exibida bem transparente atrás de tudo.
   fundoImagemId String?
+  /// Fotos das seções (pastores). Preenchidas pelo painel; caem no lugar dos
+  /// placeholders na home e na página Pastores.
+  fotoPastorId  String?
+  fotoPastoraId String?
   heroVideoUrl  String? @db.VarChar(500)
   heroCtaTexto  String? @db.VarChar(60)
   heroCtaLink   String? @db.VarChar(200)

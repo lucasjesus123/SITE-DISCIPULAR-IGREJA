@@ -26,7 +26,7 @@ export default async function PaginaConfigSite() {
       nomeExibicao: true, tagline: true, descricaoSeo: true,
       corAcento: true, corAcentoClara: true, corTinta: true, corPapel: true,
       fonteTitulo: true, fonteTexto: true,
-      heroEyebrow: true, heroTitulo: true, heroSubtitulo: true, heroImagemId: true, fundoImagemId: true,
+      heroEyebrow: true, heroTitulo: true, heroSubtitulo: true, heroImagemId: true, fundoImagemId: true, fotoPastorId: true, fotoPastoraId: true,
       heroCtaTexto: true, heroCtaLink: true,
       emailContato: true, telefoneContato: true, whatsapp: true,
       instagram: true, facebook: true, youtube: true, spotify: true,
@@ -56,6 +56,8 @@ export default async function PaginaConfigSite() {
   }
   const heroImagemInicial = await carregarImagem(config?.heroImagemId);
   const fundoImagemInicial = await carregarImagem(config?.fundoImagemId);
+  const fotoPastorInicial = await carregarImagem(config?.fotoPastorId);
+  const fotoPastoraInicial = await carregarImagem(config?.fotoPastoraId);
 
   return (
     <>
@@ -89,6 +91,8 @@ export default async function PaginaConfigSite() {
           heroCtaLink: config?.heroCtaLink ?? "",
           heroImagemId: config?.heroImagemId ?? "",
           fundoImagemId: config?.fundoImagemId ?? "",
+          fotoPastorId: config?.fotoPastorId ?? "",
+          fotoPastoraId: config?.fotoPastoraId ?? "",
           emailContato: config?.emailContato ?? "",
           telefoneContato: config?.telefoneContato ?? "",
           whatsapp: config?.whatsapp ?? "",
@@ -106,6 +110,8 @@ export default async function PaginaConfigSite() {
         fontes={fontesDisponiveis}
         heroImagemInicial={heroImagemInicial}
         fundoImagemInicial={fundoImagemInicial}
+        fotoPastorInicial={fotoPastorInicial}
+        fotoPastoraInicial={fotoPastoraInicial}
       />
     </>
   );

@@ -66,6 +66,8 @@ const schemaMarca = z.object({
   // o tipo (imagem) são checados abaixo, antes de gravar.
   heroImagemId: z.string().max(30).optional(),
   fundoImagemId: z.string().max(30).optional(),
+  fotoPastorId: z.string().max(30).optional(),
+  fotoPastoraId: z.string().max(30).optional(),
 
   emailContato: emailOpcional,
   telefoneContato: telefoneOpcional,
@@ -115,13 +117,20 @@ export async function salvarConfigSite(dadosBrutos: unknown): Promise<ResultadoA
 
     const heroImagemId = await idImagemValida(dados.heroImagemId);
     const fundoImagemId = await idImagemValida(dados.fundoImagemId);
-    if (heroImagemId === false || fundoImagemId === false) {
+    const fotoPastorId = await idImagemValida(dados.fotoPastorId);
+    const fotoPastoraId = await idImagemValida(dados.fotoPastoraId);
+    if (
+      heroImagemId === false || fundoImagemId === false ||
+      fotoPastorId === false || fotoPastoraId === false
+    ) {
       return {
         ok: false,
         mensagem: "Uma das imagens é inválida. Envie o arquivo novamente.",
         campos: {
           ...(heroImagemId === false ? { heroImagemId: ["Imagem não encontrada. Envie novamente."] } : {}),
           ...(fundoImagemId === false ? { fundoImagemId: ["Imagem não encontrada. Envie novamente."] } : {}),
+          ...(fotoPastorId === false ? { fotoPastorId: ["Imagem não encontrada. Envie novamente."] } : {}),
+          ...(fotoPastoraId === false ? { fotoPastoraId: ["Imagem não encontrada. Envie novamente."] } : {}),
         },
       };
     }
@@ -160,6 +169,8 @@ export async function salvarConfigSite(dadosBrutos: unknown): Promise<ResultadoA
         heroCtaLink: dados.heroCtaLink,
         heroImagemId,
         fundoImagemId,
+        fotoPastorId,
+        fotoPastoraId,
         emailContato: dados.emailContato,
         telefoneContato: dados.telefoneContato,
         whatsapp: dados.whatsapp,
@@ -192,6 +203,8 @@ export async function salvarConfigSite(dadosBrutos: unknown): Promise<ResultadoA
         heroCtaLink: dados.heroCtaLink ?? null,
         heroImagemId,
         fundoImagemId,
+        fotoPastorId,
+        fotoPastoraId,
         emailContato: dados.emailContato ?? null,
         telefoneContato: dados.telefoneContato ?? null,
         whatsapp: dados.whatsapp ?? null,

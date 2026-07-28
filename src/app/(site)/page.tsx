@@ -5,6 +5,7 @@ import { carregarDadosSite, carregarMensagens } from "@/lib/services/site";
 import { estadoAoVivo, urlMiniatura } from "@/lib/youtube/live";
 import { PlayerAoVivo } from "@/components/site/AoVivo";
 import { CopiarChave } from "@/components/site/CopiarChave";
+import { MolduraFoto } from "@/components/site/MolduraFoto";
 import { urlArquivoPublico } from "@/lib/storage/urls";
 
 /**
@@ -173,8 +174,8 @@ export default async function Home() {
       <section className="section theme-dark">
         <div className="container split split--reverse">
           <div className="split__media" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-            <FrameRetrato legenda="Pr. Tiago" />
-            <FrameRetrato legenda="Pra. Cássia" />
+            <MolduraFoto fotoId={config.fotoPastorId} legenda="Pr. Tiago" placeholder="Foto do Pr. Tiago" />
+            <MolduraFoto fotoId={config.fotoPastoraId} legenda="Pra. Cássia" placeholder="Foto da Pra. Cássia" />
           </div>
           <div className="stack">
             <p className="eyebrow">Nossos Pastores</p>
@@ -421,15 +422,6 @@ function CursoCard({ dia, nome, texto }: { dia: string; nome: string; texto: str
       </p>
       <Link href="/escola" className="btn btn--sm">Inscrever-me</Link>
     </article>
-  );
-}
-
-function FrameRetrato({ legenda }: { legenda: string }) {
-  return (
-    <div className="frame frame--tall frame__mono">
-      <div className="frame__grid" aria-hidden="true" />
-      <span className="frame__cap">{legenda}</span>
-    </div>
   );
 }
 

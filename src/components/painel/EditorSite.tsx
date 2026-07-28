@@ -22,6 +22,8 @@ export interface DadosSiteForm {
   heroCtaLink: string;
   heroImagemId: string;
   fundoImagemId: string;
+  fotoPastorId: string;
+  fotoPastoraId: string;
   emailContato: string;
   telefoneContato: string;
   whatsapp: string;
@@ -50,11 +52,15 @@ export function EditorSite({
   fontes,
   heroImagemInicial,
   fundoImagemInicial,
+  fotoPastorInicial,
+  fotoPastoraInicial,
 }: {
   inicial: DadosSiteForm;
   fontes: string[];
   heroImagemInicial?: ArquivoEnviado | null;
   fundoImagemInicial?: ArquivoEnviado | null;
+  fotoPastorInicial?: ArquivoEnviado | null;
+  fotoPastoraInicial?: ArquivoEnviado | null;
 }) {
   const router = useRouter();
   const [pendente, iniciar] = useTransition();
@@ -159,6 +165,29 @@ export function EditorSite({
             aoEnviar={(a) => setDados((d) => ({ ...d, fundoImagemId: a.id }))}
             aoRemover={() => setDados((d) => ({ ...d, fundoImagemId: "" }))}
           />
+        </Secao>
+
+        <Secao titulo="Fotos dos pastores" desc="Aparecem na home e na página Pastores, no lugar dos placeholders.">
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+            <CampoUpload
+              nome="fotoPastorId"
+              rotulo="Foto do Pastor (Tiago)"
+              publico
+              valorInicial={fotoPastorInicial ?? null}
+              ajuda="Retrato em pé (vertical) fica melhor."
+              aoEnviar={(a) => setDados((d) => ({ ...d, fotoPastorId: a.id }))}
+              aoRemover={() => setDados((d) => ({ ...d, fotoPastorId: "" }))}
+            />
+            <CampoUpload
+              nome="fotoPastoraId"
+              rotulo="Foto da Pastora (Cássia)"
+              publico
+              valorInicial={fotoPastoraInicial ?? null}
+              ajuda="Retrato em pé (vertical) fica melhor."
+              aoEnviar={(a) => setDados((d) => ({ ...d, fotoPastoraId: a.id }))}
+              aoRemover={() => setDados((d) => ({ ...d, fotoPastoraId: "" }))}
+            />
+          </div>
         </Secao>
 
         <Secao titulo="Contato" desc="Aparece no rodapé e na página de contato.">

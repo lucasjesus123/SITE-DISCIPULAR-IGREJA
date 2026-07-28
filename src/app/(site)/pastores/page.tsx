@@ -1,11 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import { tenantDaRequisicao } from "@/lib/tenant/resolve";
+import { carregarDadosSite } from "@/lib/services/site";
+import { MolduraFoto } from "@/components/site/MolduraFoto";
 
 export const metadata: Metadata = {
   title: "Pastores",
 };
 
-export default function Pastores() {
+export default async function Pastores() {
+  const tenant = await tenantDaRequisicao();
+  if (!tenant) notFound();
+  const { config } = await carregarDadosSite(tenant.id);
+
   return (
     <>
       <section className="page-hero">
@@ -29,11 +37,11 @@ export default function Pastores() {
       <section className="section theme-light">
         <div className="container split">
           <div className="split__media">
-            <div className="frame frame--tall frame__mono">
-              <div className="frame__grid" />
-              <span className="frame__cap">Pr. Tiago Facchi</span>
-              <span className="frame__badge">Foto do Pr. Tiago aqui</span>
-            </div>
+            <MolduraFoto
+              fotoId={config.fotoPastorId}
+              legenda="Pr. Tiago Facchi"
+              placeholder="Foto do Pr. Tiago aqui"
+            />
           </div>
           <div>
             <p className="eyebrow">Pastor</p>
@@ -57,11 +65,11 @@ export default function Pastores() {
       <section className="section theme-dark">
         <div className="container split split--reverse">
           <div className="split__media">
-            <div className="frame frame--tall frame__mono">
-              <div className="frame__grid" />
-              <span className="frame__cap">Pra. Cássia Facchi</span>
-              <span className="frame__badge">Foto da Pra. Cássia aqui</span>
-            </div>
+            <MolduraFoto
+              fotoId={config.fotoPastoraId}
+              legenda="Pra. Cássia Facchi"
+              placeholder="Foto da Pra. Cássia aqui"
+            />
           </div>
           <div>
             <p className="eyebrow">Pastora</p>
