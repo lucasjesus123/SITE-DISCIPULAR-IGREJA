@@ -123,7 +123,16 @@ export default async function LayoutSite({ children }: { children: React.ReactNo
         Pular para o conteúdo
       </a>
 
-      <div className={classeModo}>
+      {/* Fundo do site: imagem bem transparente atrás de todo o conteúdo. */}
+      {dados.config.fundoImagemId && (
+        <div
+          className="fundo-site"
+          aria-hidden="true"
+          style={{ backgroundImage: `url(${urlArquivoPublico(dados.config.fundoImagemId)})` }}
+        />
+      )}
+
+      <div className={["site-corpo", classeModo].filter(Boolean).join(" ")}>
         <BannerAoVivo inicial={estadoLive} />
 
         <Cabecalho

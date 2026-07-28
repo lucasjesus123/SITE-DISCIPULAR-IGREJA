@@ -869,6 +869,8 @@ model SiteConfig {
   heroSubtitulo String? @db.VarChar(400)
   heroEyebrow   String? @db.VarChar(80)
   heroImagemId  String?
+  /// Imagem de fundo do site inteiro, exibida bem transparente atrás de tudo.
+  fundoImagemId String?
   heroVideoUrl  String? @db.VarChar(500)
   heroCtaTexto  String? @db.VarChar(60)
   heroCtaLink   String? @db.VarChar(200)

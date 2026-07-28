@@ -21,6 +21,7 @@ export interface DadosSiteForm {
   heroCtaTexto: string;
   heroCtaLink: string;
   heroImagemId: string;
+  fundoImagemId: string;
   emailContato: string;
   telefoneContato: string;
   whatsapp: string;
@@ -48,10 +49,12 @@ export function EditorSite({
   inicial,
   fontes,
   heroImagemInicial,
+  fundoImagemInicial,
 }: {
   inicial: DadosSiteForm;
   fontes: string[];
   heroImagemInicial?: ArquivoEnviado | null;
+  fundoImagemInicial?: ArquivoEnviado | null;
 }) {
   const router = useRouter();
   const [pendente, iniciar] = useTransition();
@@ -146,6 +149,15 @@ export function EditorSite({
             ajuda="Foto que aparece atrás do título, no topo do site. Ideal: larga (16:9), JPG/PNG/WEBP. Fotos escuras funcionam melhor."
             aoEnviar={(a) => setDados((d) => ({ ...d, heroImagemId: a.id }))}
             aoRemover={() => setDados((d) => ({ ...d, heroImagemId: "" }))}
+          />
+          <CampoUpload
+            nome="fundoImagemId"
+            rotulo="Imagem de fundo do site (bem transparente)"
+            publico
+            valorInicial={fundoImagemInicial ?? null}
+            ajuda="Foto exibida bem apagada atrás de todo o site, como textura. Fotos de louvor/congregação ficam ótimas. Deixe vazio para não usar."
+            aoEnviar={(a) => setDados((d) => ({ ...d, fundoImagemId: a.id }))}
+            aoRemover={() => setDados((d) => ({ ...d, fundoImagemId: "" }))}
           />
         </Secao>
 

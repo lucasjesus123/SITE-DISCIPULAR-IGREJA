@@ -1117,6 +1117,35 @@ input, textarea, select { font: inherit; color: inherit; }
 .site-footer { position: relative; overflow: hidden; }
 .site-footer > .container { position: relative; z-index: 1; }
 
+/* -----------------------------------------------------------------------------
+   FUNDO DO SITE — foto exibida bem transparente atrás de tudo
+   O layout injeta `.fundo-site` (posição fixa) só quando a igreja envia uma
+   imagem de fundo. A foto fica atrás do conteúdo; as seções ESCURAS ficam
+   levemente translúcidas para a foto aparecer suave, e as seções CLARAS seguem
+   sólidas (mantêm a leitura limpa). Usa `:has()` (navegadores atuais); onde não
+   houver suporte, o fundo simplesmente não aparece e nada quebra.
+   -------------------------------------------------------------------------- */
+.fundo-site {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-size: cover;
+  background-position: center;
+  filter: grayscale(1) brightness(0.85);
+  pointer-events: none;
+}
+body:has(.fundo-site) { background: #0a0a0b; }
+.site-corpo { position: relative; z-index: 1; }
+/* Seções escuras deixam a foto vazar ~14%; claras seguem sólidas. */
+body:has(.fundo-site) .theme-dark,
+body:has(.fundo-site) .hero,
+body:has(.fundo-site) .site-footer {
+  background-color: rgb(var(--ink-rgb) / 0.86);
+}
+body:has(.fundo-site) .theme-ink-800 {
+  background-color: rgb(var(--ink-rgb) / 0.7);
+}
+
 /* Marca inline (logo desenhado) para quem não tem logo próprio */
 .marca { display: inline-flex; align-items: center; gap: 0.7rem; }
 .marca__icone { width: 30px; height: 30px; flex: none; }

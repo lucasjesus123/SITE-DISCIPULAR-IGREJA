@@ -62,9 +62,10 @@ const schemaMarca = z.object({
   heroSubtitulo: textoLongo(400).optional(),
   heroCtaTexto: textoLimpo(60).optional(),
   heroCtaLink: textoLimpo(200).optional(),
-  // Id do Arquivo (cuid) da imagem de capa. Vazio = sem imagem. A posse pelo
-  // tenant e o tipo (imagem) são checados abaixo, antes de gravar.
+  // Ids de Arquivo (cuid) de imagens. Vazio = sem imagem. A posse pelo tenant e
+  // o tipo (imagem) são checados abaixo, antes de gravar.
   heroImagemId: z.string().max(30).optional(),
+  fundoImagemId: z.string().max(30).optional(),
 
   emailContato: emailOpcional,
   telefoneContato: telefoneOpcional,
@@ -102,20 +103,27 @@ export async function salvarConfigSite(dadosBrutos: unknown): Promise<ResultadoA
      * poderia mandar o id de um arquivo de OUTRO tenant e exibi-lo no seu site
      * — vazamento entre igrejas — ou apontar para um PDF/secreto. Vazio limpa.
      */
-    let heroImagemId: string | null = null;
-    if (dados.heroImagemId && dados.heroImagemId.length > 0) {
+    async function idImagemValida(id: string | undefined): Promise<string | null | false> {
+      if (!id || id.length === 0) return null; // vazio = sem imagem
       const arquivo = await ctx.db.arquivo.findFirst({
-        where: { id: dados.heroImagemId },
+        where: { id },
         select: { id: true, mimeType: true, publico: true },
       });
-      if (!arquivo || !arquivo.mimeType.startsWith("image/") || !arquivo.publico) {
-        return {
-          ok: false,
-          mensagem: "A imagem de capa é inválida. Envie o arquivo novamente.",
-          campos: { heroImagemId: ["Imagem não encontrada. Envie novamente."] },
-        };
-      }
-      heroImagemId = arquivo.id;
+      if (!arquivo || !arquivo.mimeType.startsWith("image/") || !arquivo.publico) return false;
+      return arquivo.id;
+    }
+
+    const heroImagemId = await idImagemValida(dados.heroImagemId);
+    const fundoImagemId = await idImagemValida(dados.fundoImagemId);
+    if (heroImagemId === false || fundoImagemId === false) {
+      return {
+        ok: false,
+        mensagem: "Uma das imagens é inválida. Envie o arquivo novamente.",
+        campos: {
+          ...(heroImagemId === false ? { heroImagemId: ["Imagem não encontrada. Envie novamente."] } : {}),
+          ...(fundoImagemId === false ? { fundoImagemId: ["Imagem não encontrada. Envie novamente."] } : {}),
+        },
+      };
     }
 
     /**
@@ -151,6 +159,7 @@ export async function salvarConfigSite(dadosBrutos: unknown): Promise<ResultadoA
         heroCtaTexto: dados.heroCtaTexto,
         heroCtaLink: dados.heroCtaLink,
         heroImagemId,
+        fundoImagemId,
         emailContato: dados.emailContato,
         telefoneContato: dados.telefoneContato,
         whatsapp: dados.whatsapp,
@@ -182,6 +191,7 @@ export async function salvarConfigSite(dadosBrutos: unknown): Promise<ResultadoA
         heroCtaTexto: dados.heroCtaTexto ?? null,
         heroCtaLink: dados.heroCtaLink ?? null,
         heroImagemId,
+        fundoImagemId,
         emailContato: dados.emailContato ?? null,
         telefoneContato: dados.telefoneContato ?? null,
         whatsapp: dados.whatsapp ?? null,

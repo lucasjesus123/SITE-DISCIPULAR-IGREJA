@@ -26,7 +26,7 @@ export default async function PaginaConfigSite() {
       nomeExibicao: true, tagline: true, descricaoSeo: true,
       corAcento: true, corAcentoClara: true, corTinta: true, corPapel: true,
       fonteTitulo: true, fonteTexto: true,
-      heroEyebrow: true, heroTitulo: true, heroSubtitulo: true, heroImagemId: true,
+      heroEyebrow: true, heroTitulo: true, heroSubtitulo: true, heroImagemId: true, fundoImagemId: true,
       heroCtaTexto: true, heroCtaLink: true,
       emailContato: true, telefoneContato: true, whatsapp: true,
       instagram: true, facebook: true, youtube: true, spotify: true,
@@ -38,23 +38,24 @@ export default async function PaginaConfigSite() {
 
   const tema = normalizarTema(config);
 
-  // Detalhes da imagem de capa atual, para o campo de upload já mostrar a foto.
-  let heroImagemInicial: ArquivoEnviado | null = null;
-  if (config?.heroImagemId) {
+  // Detalhes das imagens atuais, para os campos de upload já mostrarem a foto.
+  async function carregarImagem(id: string | null | undefined): Promise<ArquivoEnviado | null> {
+    if (!id) return null;
     const arq = await ctx.db.arquivo.findFirst({
-      where: { id: config.heroImagemId },
+      where: { id },
       select: { id: true, nomeOriginal: true, mimeType: true, tamanhoBytes: true },
     });
-    if (arq) {
-      heroImagemInicial = {
-        id: arq.id,
-        url: urlArquivoPublico(arq.id),
-        nome: arq.nomeOriginal,
-        mimeType: arq.mimeType,
-        tamanhoBytes: arq.tamanhoBytes,
-      };
-    }
+    if (!arq) return null;
+    return {
+      id: arq.id,
+      url: urlArquivoPublico(arq.id),
+      nome: arq.nomeOriginal,
+      mimeType: arq.mimeType,
+      tamanhoBytes: arq.tamanhoBytes,
+    };
   }
+  const heroImagemInicial = await carregarImagem(config?.heroImagemId);
+  const fundoImagemInicial = await carregarImagem(config?.fundoImagemId);
 
   return (
     <>
@@ -87,6 +88,7 @@ export default async function PaginaConfigSite() {
           heroCtaTexto: config?.heroCtaTexto ?? "",
           heroCtaLink: config?.heroCtaLink ?? "",
           heroImagemId: config?.heroImagemId ?? "",
+          fundoImagemId: config?.fundoImagemId ?? "",
           emailContato: config?.emailContato ?? "",
           telefoneContato: config?.telefoneContato ?? "",
           whatsapp: config?.whatsapp ?? "",
@@ -103,6 +105,7 @@ export default async function PaginaConfigSite() {
         }}
         fontes={fontesDisponiveis}
         heroImagemInicial={heroImagemInicial}
+        fundoImagemInicial={fundoImagemInicial}
       />
     </>
   );

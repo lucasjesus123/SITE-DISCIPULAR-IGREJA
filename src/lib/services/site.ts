@@ -38,6 +38,7 @@ export interface ConfigSite {
   heroCtaTexto: string | null;
   heroCtaLink: string | null;
   heroImagemId: string | null;
+  fundoImagemId: string | null;
   logoClaroId: string | null;
   logoEscuroId: string | null;
   faviconId: string | null;
@@ -113,6 +114,7 @@ const CONFIG_PADRAO: ConfigSite = {
   heroCtaTexto: null,
   heroCtaLink: null,
   heroImagemId: null,
+  fundoImagemId: null,
   logoClaroId: null,
   logoEscuroId: null,
   faviconId: null,
