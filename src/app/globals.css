@@ -603,8 +603,13 @@ input, textarea, select { font: inherit; color: inherit; }
   position: absolute;
   inset: 0;
   z-index: 1;
+  /* Duas camadas: um escurecimento GERAL (para fotos com muita luz de palco não
+     ofuscarem o título) + um degradê que reforça a base, onde ficam o texto e a
+     linha de fatos. Assim o "DISCIPULAR IGREJA" sempre lê bem, seja qual for a
+     foto que a igreja subir. */
   background:
-    linear-gradient(to top, rgb(var(--ink-rgb) / 0.96) 0%, rgb(var(--ink-rgb) / 0.55) 45%, rgb(var(--ink-rgb) / 0.3) 100%);
+    linear-gradient(to top, rgb(var(--ink-rgb) / 0.97) 0%, rgb(var(--ink-rgb) / 0.82) 45%, rgb(var(--ink-rgb) / 0.66) 100%),
+    rgb(var(--ink-rgb) / 0.28);
 }
 .hero__conteudo { position: relative; z-index: 2; padding-block: clamp(3rem, 8vw, 6rem); width: 100%; }
 /* overflow-wrap evita que uma palavra longa em caixa-alta estoure a viewport
