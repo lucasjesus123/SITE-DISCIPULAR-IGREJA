@@ -676,22 +676,9 @@ input, textarea, select { font: inherit; color: inherit; }
 }
 @keyframes subir-suave { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
 
-/* -----------------------------------------------------------------------------
-   MOVIMENTO AO ROLAR — os blocos surgem suavemente ao entrar na tela.
-   Controlado pelo componente MovimentoAoRolar (IntersectionObserver): ele só
-   adiciona `.mov-ready` DEPOIS de confirmar que vai revelar os blocos. Sem JS
-   (ou com "menos movimento" ligado), nada é escondido — o site aparece normal.
-   -------------------------------------------------------------------------- */
-.mov-ready [data-revelar] {
-  opacity: 0;
-  transform: translateY(34px);
-  transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out);
-  transition-delay: calc(var(--mov-i, 0) * 0.06s);
-}
-.mov-ready [data-revelar].visivel {
-  opacity: 1;
-  transform: none;
-}
+/* (Removido o "surgir ao rolar": ele escondia blocos e, em alguns navegadores,
+   não os revelava de volta. Ficam só efeitos ADITIVOS que nunca escondem nada —
+   círculos flutuantes do hero, entrada do hero e a faixa deslizante.) */
 
 /* -----------------------------------------------------------------------------
    CARDS
