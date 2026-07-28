@@ -79,7 +79,54 @@ function extrairIp(request: NextRequest, saltos: number): string {
   return cadeia[Math.max(0, Math.min(indice, cadeia.length - 1))] ?? "0.0.0.0";
 }
 
-export function middleware(request: NextRequest) {
+// -----------------------------------------------------------------------------
+// COOKIE CSRF gerado no middleware (Edge)
+//
+// O Next 15 proíbe gravar cookie durante o render de uma PÁGINA. As páginas
+// públicas de formulário (contato, escola, oração...) chamavam obterTokenCsrf()
+// no render, que tentava gravar o cookie — e a página inteira quebrava com
+// "Cookies can only be modified in a Server Action or Route Handler".
+//
+// O middleware roda ANTES do render e PODE gravar cookies. Aqui garantimos que
+// todo visitante já chega com um cookie CSRF válido. A assinatura HMAC-SHA256 é
+// feita com Web Crypto (compatível com Edge) e produz EXATAMENTE o mesmo token
+// que o node:crypto do servidor (`assinarCsrf`), então `validarFormato` aceita.
+// -----------------------------------------------------------------------------
+const NOME_CSRF = "__Host-discipular-csrf";
+const NOME_CSRF_DEV = "discipular-csrf";
+
+function paraBase64Url(bytes: Uint8Array): string {
+  let bin = "";
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+function base64ParaBytes(base64: string): Uint8Array {
+  const bin = atob(base64);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+/** Gera `valor.assinatura` idêntico ao `assinarCsrf` do node (testado). */
+async function gerarTokenCsrf(segredoBase64: string): Promise<string> {
+  const valorBytes = crypto.getRandomValues(new Uint8Array(32));
+  const valor = paraBase64Url(valorBytes);
+  const chave = await crypto.subtle.importKey(
+    "raw",
+    base64ParaBytes(segredoBase64) as BufferSource,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const assinatura = await crypto.subtle.sign(
+    "HMAC",
+    chave,
+    new TextEncoder().encode(valor) as BufferSource,
+  );
+  return `${valor}.${paraBase64Url(new Uint8Array(assinatura))}`;
+}
+
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const desenvolvimento = process.env.NODE_ENV !== "production";
   const saltos = Number(process.env.TRUSTED_PROXY_HOPS ?? "1");
@@ -137,7 +184,38 @@ export function middleware(request: NextRequest) {
   headersRequisicao.set(HEADER_NONCE, nonce);
   headersRequisicao.set(HEADER_IP_INTERNO, ip);
 
+  // Garante o cookie CSRF ANTES do render (o render de página não pode gravá-lo).
+  const nomeCsrf = desenvolvimento ? NOME_CSRF_DEV : NOME_CSRF;
+  const csrfAtual = request.cookies.get(nomeCsrf)?.value;
+  let csrfNovo: string | null = null;
+  if ((!csrfAtual || !csrfAtual.includes(".")) && process.env.CSRF_SECRET) {
+    try {
+      csrfNovo = await gerarTokenCsrf(process.env.CSRF_SECRET);
+      // Injeta no header `cookie` da requisição para que o obterTokenCsrf() do
+      // render já LEIA este valor (e não tente gravar).
+      const cookieAtual = headersRequisicao.get("cookie") ?? "";
+      const semAntigo = cookieAtual
+        .split(";")
+        .map((c) => c.trim())
+        .filter((c) => c && !c.startsWith(`${nomeCsrf}=`))
+        .join("; ");
+      headersRequisicao.set("cookie", (semAntigo ? `${semAntigo}; ` : "") + `${nomeCsrf}=${csrfNovo}`);
+    } catch {
+      csrfNovo = null; // sem segredo/entropia: o reforço no obterTokenCsrf cobre.
+    }
+  }
+
   const resposta = NextResponse.next({ request: { headers: headersRequisicao } });
+
+  if (csrfNovo) {
+    resposta.cookies.set(nomeCsrf, csrfNovo, {
+      httpOnly: false, // legível por JS para ir no header de upload/fetch
+      secure: !desenvolvimento,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 8,
+    });
+  }
 
   // ---------------------------------------------------------------------------
   // 3. CSP na resposta

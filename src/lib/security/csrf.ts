@@ -59,13 +59,24 @@ export async function obterTokenCsrf(): Promise<string> {
   const valor = gerarToken(32);
   const token = `${valor}.${assinarCsrf(valor)}`;
 
-  jar.set(nomeCookie(), token, {
-    httpOnly: false, // precisa ser legível por JS para ir no header em fetch()
-    secure: isProd,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 8,
-  });
+  // O Next 15 PROÍBE gravar cookie durante o render de uma página (só em Server
+  // Action ou Route Handler). Numa página pública de formulário (contato,
+  // escola) isso lançava exceção e derrubava a página inteira. Quem GARANTE o
+  // cookie é o middleware (src/middleware.ts), que roda antes e pode gravá-lo.
+  // Aqui o set é só um reforço: se falhar (contexto de render), engolimos o
+  // erro e devolvemos o token — a página renderiza e o cookie do middleware
+  // cobre o envio do formulário.
+  try {
+    jar.set(nomeCookie(), token, {
+      httpOnly: false, // precisa ser legível por JS para ir no header em fetch()
+      secure: isProd,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 8,
+    });
+  } catch {
+    // Render de página: o middleware já cuidou (ou cuidará) do cookie.
+  }
 
   return token;
 }
