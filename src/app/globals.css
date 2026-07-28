@@ -599,6 +599,16 @@ input, textarea, select { font: inherit; color: inherit; }
 .hero__media { position: absolute; inset: 0; z-index: 0; }
 .hero__media img,
 .hero__media video { width: 100%; height: 100%; object-fit: cover; }
+/* Ken Burns: a foto do hero faz um zoom/deslocamento MUITO lento e contínuo.
+   É o efeito de movimento mais visível do site — dá vida sem distrair nem
+   esconder nada. Respeita quem pediu menos movimento no sistema. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero__media img { animation: ken-burns 28s ease-in-out infinite alternate; transform-origin: 50% 45%; }
+}
+@keyframes ken-burns {
+  from { transform: scale(1.05) translate(0, 0); }
+  to   { transform: scale(1.16) translate(-1.5%, -1.5%); }
+}
 .hero__veu {
   position: absolute;
   inset: 0;
