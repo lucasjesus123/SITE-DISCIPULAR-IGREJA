@@ -221,6 +221,8 @@ input, textarea, select { font: inherit; color: inherit; }
 .modo-mono .hero .btn:not(.btn--ghost):not(.btn--outline-gold),
 .modo-mono .page-hero .btn:not(.btn--ghost):not(.btn--outline-gold),
 .modo-mono .theme-ink-800 .btn:not(.btn--ghost):not(.btn--outline-gold),
+.modo-mono .site-header .btn:not(.btn--ghost):not(.btn--outline-gold),
+.modo-mono .mobile-nav .btn:not(.btn--ghost):not(.btn--outline-gold),
 .modo-mono .site-footer .btn:not(.btn--ghost):not(.btn--outline-gold) { --btn-fg: var(--ink); }
 /* Tipografia editorial da referência: Archivo pesada; hero em caixa-alta. */
 .modo-mono h1,
