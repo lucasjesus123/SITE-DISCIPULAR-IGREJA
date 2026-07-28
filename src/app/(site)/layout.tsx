@@ -87,6 +87,7 @@ export default async function LayoutSite({ children }: { children: React.ReactNo
   ]);
 
   const menu = [
+    { rotulo: "Início", href: "/" },
     { rotulo: "Quem Somos", href: "/quem-somos" },
     { rotulo: "Pastores", href: "/pastores" },
     { rotulo: "Células", href: "/celulas" },

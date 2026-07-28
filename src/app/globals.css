@@ -202,6 +202,8 @@ input, textarea, select { font: inherit; color: inherit; }
 .modo-mono .theme-dark,
 .modo-mono .theme-ink-800,
 .modo-mono .hero,
+.modo-mono .page-hero,
+.modo-mono .scripture,
 .modo-mono .site-header,
 .modo-mono .mobile-nav,
 .modo-mono .site-footer {
@@ -210,6 +212,16 @@ input, textarea, select { font: inherit; color: inherit; }
   --gold-rgb: 244 244 242;
   --gold-line: rgb(244 244 242 / 0.24);
 }
+
+/* BOTÃO PRIMÁRIO no P&B: o fundo do botão é a cor de acento (--gold).
+   Em seção CLARA o acento é quase-preto → o texto precisa ser BRANCO.
+   Em seção ESCURA o acento vira branco → o texto volta a ser escuro (--ink). */
+.modo-mono .btn:not(.btn--ghost):not(.btn--outline-gold) { --btn-fg: var(--paper); }
+.modo-mono .theme-dark .btn:not(.btn--ghost):not(.btn--outline-gold),
+.modo-mono .hero .btn:not(.btn--ghost):not(.btn--outline-gold),
+.modo-mono .page-hero .btn:not(.btn--ghost):not(.btn--outline-gold),
+.modo-mono .theme-ink-800 .btn:not(.btn--ghost):not(.btn--outline-gold),
+.modo-mono .site-footer .btn:not(.btn--ghost):not(.btn--outline-gold) { --btn-fg: var(--ink); }
 /* Tipografia editorial da referência: Archivo pesada; hero em caixa-alta. */
 .modo-mono h1,
 .modo-mono h2,
@@ -1029,7 +1041,20 @@ input, textarea, select { font: inherit; color: inherit; }
 .split__idx { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.2em; color: var(--gold); }
 
 /* Page-hero (topo das páginas internas) */
-.page-hero { position: relative; background: var(--ink); color: var(--bone); padding-block: clamp(6rem, 12vw, 10rem) clamp(3rem, 7vw, 6rem); overflow: hidden; }
+.page-hero {
+  position: relative;
+  background: var(--ink);
+  /* Contexto ESCURO: sem redefinir estas variáveis, o subtítulo (--fg-dim), o
+     breadcrumb (--fg-faint) e as linhas ficavam com a cor de texto CLARA
+     (escura) sobre o fundo escuro — invisíveis. */
+  --fg: var(--bone);
+  --fg-dim: var(--bone-dim);
+  --fg-faint: var(--bone-faint);
+  --line: var(--line-on-dark);
+  color: var(--bone);
+  padding-block: clamp(6rem, 12vw, 10rem) clamp(3rem, 7vw, 6rem);
+  overflow: hidden;
+}
 .page-hero__title { font-family: var(--font-display); font-size: clamp(2.6rem, 1.9rem + 3vw, 5rem); line-height: 0.98; letter-spacing: -0.022em; }
 .page-hero .lead { max-width: 60ch; margin-top: 1.6rem; }
 .breadcrumb { display: flex; gap: 0.6rem; font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-faint); margin-bottom: 1.8rem; }
