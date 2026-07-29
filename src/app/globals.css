@@ -1407,9 +1407,20 @@ body:has(.fundo-site) .theme-ink-800 {
 .site-corpo .hero__titulo {
   font-size: var(--step-hero);
   text-transform: none;
-  font-weight: 440;
+  font-weight: 500;
   letter-spacing: -0.028em;
-  line-height: 0.92;
+  line-height: 0.9;
+}
+/* Acabamento de alta-costura: a última palavra do título sai em itálico
+   serifado, mais leve — o contraste romano/itálico é o "algo bem legal na
+   fonte". Um leve degradê dá brilho de tinta ao itálico. */
+.site-corpo .hero__titulo-ac {
+  font-style: italic;
+  font-weight: 360;
+  background: linear-gradient(180deg, var(--bone) 0%, rgb(244 241 232 / 0.72) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 .site-corpo .hero__sub { color: var(--bone-dim); font-weight: 400; max-width: 46ch; }
 

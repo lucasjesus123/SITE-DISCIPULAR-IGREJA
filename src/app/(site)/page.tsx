@@ -68,7 +68,7 @@ export default async function Home() {
           <div className="container container--wide">
             {config.heroEyebrow && <p className="eyebrow eyebrow--centered">{config.heroEyebrow}</p>}
             <h1 className="hero__titulo" style={{ marginTop: "1.2rem" }}>
-              {config.heroTitulo ?? config.nomeExibicao}
+              <TituloHero texto={config.heroTitulo ?? config.nomeExibicao} />
             </h1>
             {(config.heroSubtitulo ?? config.tagline) && (
               <p className="hero__sub">{config.heroSubtitulo ?? config.tagline}</p>
@@ -403,6 +403,24 @@ export default async function Home() {
           )}
         </div>
       </section>
+    </>
+  );
+}
+
+/**
+ * Título do hero com acabamento editorial: a ÚLTIMA palavra sai em itálico
+ * serifado (Fraunces), ecoando os acentos "discípulos"/"conosco" do resto do
+ * site. Dá um toque de alta-costura à capa sem depender de foto. Um título de
+ * uma só palavra fica inteiro em romano (nada a acentuar).
+ */
+function TituloHero({ texto }: { texto: string }) {
+  const palavras = texto.trim().split(/\s+/).filter(Boolean);
+  if (palavras.length < 2) return <>{texto}</>;
+  const ultima = palavras[palavras.length - 1];
+  const inicio = palavras.slice(0, -1).join(" ");
+  return (
+    <>
+      {inicio} <span className="hero__titulo-ac">{ultima}</span>
     </>
   );
 }
