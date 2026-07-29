@@ -63,7 +63,7 @@ export default async function Home() {
           <div className="container container--wide">
             {config.heroEyebrow && <p className="eyebrow">{config.heroEyebrow}</p>}
             <h1 className="hero__titulo" style={{ marginTop: "1.2rem" }}>
-              {config.heroTitulo ?? config.nomeExibicao}
+              <HeroTitulo texto={config.heroTitulo ?? config.nomeExibicao} />
             </h1>
             {(config.heroSubtitulo ?? config.tagline) && (
               <p className="hero__sub">{config.heroSubtitulo ?? config.tagline}</p>
@@ -398,6 +398,24 @@ export default async function Home() {
           )}
         </div>
       </section>
+    </>
+  );
+}
+
+/**
+ * Título do hero EMPILHADO: as palavras iniciais menores em cima e a última
+ * palavra grande embaixo (ex.: "DISCIPULAR" em cima, "IGREJA" embaixo). Título
+ * de uma só palavra fica numa linha só, no tamanho grande.
+ */
+function HeroTitulo({ texto }: { texto: string }) {
+  const palavras = texto.trim().split(/\s+/).filter(Boolean);
+  if (palavras.length < 2) return <span className="hero__titulo-big">{texto}</span>;
+  const ultima = palavras[palavras.length - 1];
+  const inicio = palavras.slice(0, -1).join(" ");
+  return (
+    <>
+      <span className="hero__titulo-top">{inicio}</span>
+      <span className="hero__titulo-big">{ultima}</span>
     </>
   );
 }
