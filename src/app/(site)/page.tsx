@@ -49,7 +49,9 @@ export default async function Home() {
   return (
     <>
       {/* --------------------------------------------------------------- HERO */}
-      <section className="hero hero--centro">
+      {/* Alinhado à ESQUERDA e com o título em Archivo caixa-alta (preferência
+          do cliente — ver `.hero--esq` no globals.css). */}
+      <section className="hero hero--esq">
         {heroImagem && (
           <div className="hero__media">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -57,18 +59,11 @@ export default async function Home() {
           </div>
         )}
         <div className="hero__veu" aria-hidden="true" />
-        {/* Círculos grandes, bem transparentes, que flutuam devagar atrás do
-            título — dão vida ao hero sem competir com o texto. */}
-        <div className="hero__orbs" aria-hidden="true">
-          <span className="orb orb--1" />
-          <span className="orb orb--2" />
-          <span className="orb orb--3" />
-        </div>
         <div className="hero__conteudo">
           <div className="container container--wide">
-            {config.heroEyebrow && <p className="eyebrow eyebrow--centered">{config.heroEyebrow}</p>}
+            {config.heroEyebrow && <p className="eyebrow">{config.heroEyebrow}</p>}
             <h1 className="hero__titulo" style={{ marginTop: "1.2rem" }}>
-              <TituloHero texto={config.heroTitulo ?? config.nomeExibicao} />
+              {config.heroTitulo ?? config.nomeExibicao}
             </h1>
             {(config.heroSubtitulo ?? config.tagline) && (
               <p className="hero__sub">{config.heroSubtitulo ?? config.tagline}</p>
@@ -403,24 +398,6 @@ export default async function Home() {
           )}
         </div>
       </section>
-    </>
-  );
-}
-
-/**
- * Título do hero com acabamento editorial: a ÚLTIMA palavra sai em itálico
- * serifado (Fraunces), ecoando os acentos "discípulos"/"conosco" do resto do
- * site. Dá um toque de alta-costura à capa sem depender de foto. Um título de
- * uma só palavra fica inteiro em romano (nada a acentuar).
- */
-function TituloHero({ texto }: { texto: string }) {
-  const palavras = texto.trim().split(/\s+/).filter(Boolean);
-  if (palavras.length < 2) return <>{texto}</>;
-  const ultima = palavras[palavras.length - 1];
-  const inicio = palavras.slice(0, -1).join(" ");
-  return (
-    <>
-      {inicio} <span className="hero__titulo-ac">{ultima}</span>
     </>
   );
 }
