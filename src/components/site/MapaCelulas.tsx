@@ -103,7 +103,27 @@ export function MapaCelulas({ compacto = false }: { compacto?: boolean }) {
 
   return (
     <div className={`mapa-celulas${compacto ? " mapa-celulas--compacto" : ""}`}>
-      {!compacto && (
+      {compacto ? (
+        // Home: seletor compacto (dropdown) para trocar de cidade.
+        <div className="mapa-celulas__seletor">
+          <label htmlFor="mapa-cidade-home" className="mapa-celulas__sel-lb">
+            Cidade
+          </label>
+          <select
+            id="mapa-cidade-home"
+            className="mapa-celulas__sel"
+            value={cidade}
+            onChange={(e) => setCidade(e.target.value)}
+          >
+            <option value="Todas">Todas as cidades</option>
+            {CIDADES.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
+      ) : (
         <div className="mapa-celulas__filtros" role="group" aria-label="Filtrar por cidade">
           <button
             type="button"
