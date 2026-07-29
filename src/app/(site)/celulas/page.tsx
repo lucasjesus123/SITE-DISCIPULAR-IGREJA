@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { tenantDaRequisicao } from "@/lib/tenant/resolve";
 import { carregarDadosSite } from "@/lib/services/site";
+import { MapaCelulas } from "@/components/site/MapaCelulas";
+import { CELULAS, CIDADES, linkRota } from "@/lib/celulas/dados";
 
 /**
  * "A igreja, perto de você" — a rede Discipular Células.
@@ -77,43 +79,56 @@ export default async function PaginaCelulas() {
         </div>
       </section>
 
-      {/* ---------------------------------------------------------- O QUE É */}
+      {/* ------------------------------------------------- MAPA DAS CÉLULAS */}
       <section className="section theme-light">
-        <div className="container split">
-          <div>
-            <p className="eyebrow">O que é uma célula</p>
+        <div className="container">
+          <div style={{ maxWidth: "760px" }}>
+            <p className="eyebrow">Encontre a sua célula</p>
             <h2 style={{ marginTop: "1.2rem" }}>
-              Fé que se vive <span className="serif-italic accent">em comunidade.</span>
+              A igreja, <span className="serif-italic accent">perto de você.</span>
             </h2>
             <p className="lead" style={{ marginTop: "1.4rem" }}>
-              A rede celular Discipular Células é a igreja, em comunhão, reunida em pequenos grupos —
-              com o propósito de adorar, proclamar a Palavra e interceder.
+              Escolha a sua cidade no mapa e toque no ponto mais perto de você. Cada pino mostra o
+              anfitrião, o dia e o horário — e abre a rota direto no seu celular.
             </p>
-            <p style={{ marginTop: "1.2rem" }}>
-              É onde a fé sai das quatro paredes e ganha a vida real: na sua rua, no seu bairro, com
-              pessoas que caminham ao seu lado. Um lugar para pertencer, crescer e cuidar uns dos
-              outros.
-            </p>
-            <a
-              href={LINK_MAPA}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn--lg"
-              style={{ marginTop: "2rem" }}
-            >
-              Encontre uma célula
-            </a>
           </div>
 
-          <div className="split__media">
-            <div className="frame frame--wide frame__mono">
-              <div className="frame__grid" />
-              <span className="frame__cap">Discipular Células</span>
-              <div className="floating-tag">
-                <div className="k">Casas de Discípulos</div>
-                <div className="v">Pela cidade toda</div>
+          <div style={{ marginTop: "clamp(2rem, 4vw, 3rem)" }}>
+            <MapaCelulas />
+          </div>
+
+          {/* Lista completa (acessível, indexável e útil para quem prefere ler). */}
+          <div className="celulas-lista">
+            {CIDADES.map((cid) => (
+              <div className="celulas-cidade" key={cid}>
+                <h3 className="celulas-cidade__nome">{cid}</h3>
+                <div className="celulas-cidade__itens">
+                  {CELULAS.filter((c) => c.cidade === cid).map((c, i) => (
+                    <article className="celula-item" key={i}>
+                      <p className="celula-item__lideres">
+                        {c.lideres}
+                        {c.tipo && <span className="celula-item__tipo">{c.tipo}</span>}
+                      </p>
+                      <p className="celula-item__quando">
+                        {c.dia} · {c.horario}
+                      </p>
+                      <p className="celula-item__end">
+                        {c.endereco}
+                        {c.bairro ? ` — ${c.bairro}` : ""}
+                      </p>
+                      <a
+                        className="celula-item__rota"
+                        href={linkRota(c)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Ver rota <span aria-hidden="true">→</span>
+                      </a>
+                    </article>
+                  ))}
+                </div>
               </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>

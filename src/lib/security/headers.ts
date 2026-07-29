@@ -73,7 +73,17 @@ export function montarCsp({ nonce, desenvolvimento, permitirYoutube }: OpcoesCsp
     "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
     "font-src": ["'self'", "https://fonts.gstatic.com", "data:"],
 
-    "img-src": ["'self'", "data:", "blob:", ...youtubeImagens],
+    // Tiles do mapa das células (OpenStreetMap, sem chave de API). São imagens
+    // <img>, então basta o img-src — nada de connect-src. Cobre os subdomínios
+    // a/b/c.tile e o host sem subdomínio.
+    "img-src": [
+      "'self'",
+      "data:",
+      "blob:",
+      "https://*.tile.openstreetmap.org",
+      "https://tile.openstreetmap.org",
+      ...youtubeImagens,
+    ],
     "media-src": ["'self'", "blob:"],
 
     // Só falamos com a nossa própria origem. Se um XSS acontecesse, ele não

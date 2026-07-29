@@ -1707,3 +1707,92 @@ body:has(.fundo-site) .theme-ink-800 {
    e nunca condiciona a visibilidade do conteúdo: entrada do hero, Ken Burns da
    foto, marquee e micro-interações de hover — nada que possa esconder texto.
    ------------------------------------------------------------------------- */
+
+/* ============================================================================
+   MAPA DAS CÉLULAS (Leaflet + OpenStreetMap) + lista
+   ========================================================================== */
+.site-corpo .mapa-celulas__filtros { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+.site-corpo .chip-cidade {
+  padding: 0.5rem 1.05rem;
+  border: 1px solid var(--line);
+  border-radius: 100px;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  background: var(--card);
+  color: var(--fg-dim);
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background-color 0.2s;
+}
+.site-corpo .chip-cidade:hover { border-color: var(--fg); color: var(--fg); }
+.site-corpo .chip-cidade.is-on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.modo-mono .chip-cidade.is-on { color: var(--paper); }
+
+.site-corpo .mapa-celulas__mapa {
+  height: clamp(380px, 58vh, 560px);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: #e9e6df;
+  z-index: 0; /* mantém os controles do mapa abaixo do header sticky */
+}
+.site-corpo .mapa-celulas--compacto .mapa-celulas__mapa { height: clamp(320px, 42vh, 440px); }
+.site-corpo .mapa-celulas__nota { margin-top: 0.9rem; font-size: 0.82rem; color: var(--fg-dim); }
+
+/* Pino teardrop com o símbolo da Discipular (divIcon do Leaflet). */
+.pin-celula { background: none; border: 0; }
+.pin-celula__disco {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  background: #fff;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  box-shadow: 0 5px 12px rgb(0 0 0 / 0.35);
+  border: 1px solid rgb(0 0 0 / 0.18);
+}
+.pin-celula__disco img { width: 58%; height: auto; transform: rotate(45deg); }
+
+/* Popup do Leaflet — sempre claro (caixa branca sobre o mapa). */
+.leaflet-popup-content-wrapper { border-radius: 9px; box-shadow: 0 12px 34px -12px rgb(0 0 0 / 0.45); }
+.leaflet-popup-content { margin: 0.85rem 1rem; }
+.pc__cidade { font-family: var(--font-sans, sans-serif); font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: #6b6459; font-weight: 700; margin: 0 0 0.25rem; }
+.pc__tag { display: inline-block; font-family: var(--font-sans, sans-serif); font-size: 0.58rem; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; color: #0a0a0b; background: #efe9dd; border-radius: 100px; padding: 0.16rem 0.55rem; margin-bottom: 0.35rem; }
+.pc__lideres { font-family: var(--font-display, Georgia, serif); font-size: 1.15rem; line-height: 1.1; margin: 0.1rem 0; font-weight: 500; color: #0a0a0b; }
+.pc__quando { font-family: var(--font-sans, sans-serif); font-size: 0.8rem; color: #6b6459; font-weight: 600; margin: 0.15rem 0; }
+.pc__end { font-family: var(--font-sans, sans-serif); font-size: 0.85rem; color: #3a352d; margin: 0.25rem 0 0.55rem; }
+.pc__rota { display: inline-block; font-family: var(--font-sans, sans-serif); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #0a0a0b; border-bottom: 2px solid #0a0a0b; padding-bottom: 1px; }
+
+/* Lista completa das células (acessível/indexável). */
+.site-corpo .celulas-lista { margin-top: clamp(2.5rem, 5vw, 3.5rem); display: grid; gap: 2.2rem; }
+.site-corpo .celulas-cidade__nome {
+  font-family: var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--fg);
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 1.2rem;
+}
+.site-corpo .celulas-cidade__itens { display: grid; grid-template-columns: repeat(auto-fill, minmax(255px, 1fr)); gap: 1.1rem; }
+.site-corpo .celula-item {
+  border: 1px solid var(--card-line);
+  border-radius: 8px;
+  padding: 1.1rem 1.2rem;
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  transition: border-color 0.3s;
+}
+.site-corpo .celula-item:hover { border-color: rgb(var(--ink-rgb) / 0.28); }
+.site-corpo .celula-item__lideres { font-family: var(--font-display); font-optical-sizing: auto; font-size: 1.12rem; font-weight: 500; letter-spacing: -0.01em; }
+.site-corpo .celula-item__tipo { display: block; font-family: var(--font-sans); font-size: 0.64rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fg-dim); font-weight: 600; margin-top: 0.25rem; }
+.site-corpo .celula-item__quando { font-size: 0.8rem; color: var(--fg-dim); font-weight: 600; }
+.site-corpo .celula-item__end { font-size: 0.88rem; color: var(--fg-dim); }
+.site-corpo .celula-item__rota { margin-top: 0.45rem; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg); display: inline-flex; gap: 0.4em; align-items: center; }
+.site-corpo .celula-item__rota:hover { color: var(--fg-dim); }
