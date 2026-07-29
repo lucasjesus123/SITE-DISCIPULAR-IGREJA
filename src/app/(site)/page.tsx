@@ -6,6 +6,7 @@ import { estadoAoVivo, urlMiniatura } from "@/lib/youtube/live";
 import { PlayerAoVivo } from "@/components/site/AoVivo";
 import { CopiarChave } from "@/components/site/CopiarChave";
 import { MolduraFoto } from "@/components/site/MolduraFoto";
+import { MapaCelulas } from "@/components/site/MapaCelulas";
 import { urlArquivoPublico } from "@/lib/storage/urls";
 
 /**
@@ -239,17 +240,13 @@ export default async function Home() {
             </div>
           </div>
           <div className="split__media">
+            {/* Por padrão, o "mapinha" compacto das células (filtro e lista
+                completos ficam em /celulas). Se a igreja subir uma foto de
+                células no painel, ela assume o lugar do mapa. */}
             {config.fotoCelulasId ? (
               <MolduraFoto fotoId={config.fotoCelulasId} legenda="Discipular Células" className="frame frame--wide" />
             ) : (
-              <div className="frame frame--wide frame__mono">
-                <div className="frame__grid" aria-hidden="true" />
-                <span className="frame__cap">Discipular Células</span>
-                <div className="floating-tag">
-                  <p className="k">Casas de Discípulos</p>
-                  <p className="v">Pela cidade toda</p>
-                </div>
-              </div>
+              <MapaCelulas compacto />
             )}
           </div>
         </div>
