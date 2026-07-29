@@ -1532,36 +1532,27 @@ body:has(.fundo-site) .theme-ink-800 {
    HERO — cinema contido. Véu mais rico, luz intencional (não "bolhas"),
    fatos viram folio com fios. Um arco fino (a "casa/soleira") assina o rodapé.
    ------------------------------------------------------------------------- */
-.site-corpo .hero { min-height: min(94vh, 940px); }
+.site-corpo .hero {
+  min-height: min(94vh, 940px);
+  /* Contexto escuro: os textos "mudos" (eyebrow, legendas) precisam do tom
+     claro — sem isto o "Seja bem-vindo" saía escuro sobre o preto. */
+  --fg-dim: var(--bone-dim);
+  --fg-faint: var(--bone-faint);
+}
 .site-corpo .hero__veu {
   background:
     radial-gradient(120% 85% at 50% -10%, rgb(255 255 255 / 0.10), transparent 55%),
     linear-gradient(to top, rgb(var(--ink-rgb) / 0.98) 0%, rgb(var(--ink-rgb) / 0.80) 42%, rgb(var(--ink-rgb) / 0.58) 100%),
     rgb(var(--ink-rgb) / 0.30);
 }
-/* ATMOSFERA GENERATIVA "Luz da Soleira" — a peça inédita do hero.
-   Arte semeada (public/marca/atmos-soleira.jpg): um vão de porta feito de luz,
-   evocando a marca (a casa no círculo) e "Uma Casa de Discípulos". Entra pelo
-   container dos orbs, que no DOM fica ACIMA do véu — então o arco de luz
-   aparece nítido, enquanto o véu ainda escurece a base para o texto ler bem.
-   Só na home (`.hero--centro`); se a igreja subir uma FOTO, `.hero__media`
-   cobre tudo e a atmosfera não aparece (foto real tem prioridade). */
+/* HERO LIMPO — sem o "portal"/arco de luz (o cliente não curtiu).
+   A capa passa a viver na TIPOGRAFIA: Fraunces monumental (com a última palavra
+   em itálico) sobre um fundo escuro refinado. No lugar do arco, só um respiro
+   de luz DIFUSO e largo no alto — nunca uma forma de arco/porta. Se a igreja
+   subir uma foto, `.hero__media` cobre tudo e a foto tem prioridade. */
 .site-corpo .hero--centro .orb { display: none; }
 .site-corpo .hero--centro .hero__orbs {
-  background-image: url("/marca/atmos-soleira.jpg");
-  background-repeat: no-repeat;
-  background-position: center 45%;
-  background-size: min(1520px, 132%) auto;
-  mix-blend-mode: screen;
-  opacity: 0.92;
-}
-/* Vinheta lateral leve para o arco não "cortar" nas bordas largas. */
-.site-corpo .hero--centro .hero__orbs::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(75% 90% at 50% 45%, transparent 55%, var(--ink) 100%);
-  pointer-events: none;
+  background: radial-gradient(150% 95% at 50% -35%, rgb(255 255 255 / 0.06), transparent 55%);
 }
 .site-corpo .hero__fatos {
   gap: 0;
