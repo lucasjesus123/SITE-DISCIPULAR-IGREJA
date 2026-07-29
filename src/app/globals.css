@@ -1415,18 +1415,17 @@ body:has(.fundo-site) .theme-ink-800 {
   letter-spacing: -0.02em;
   line-height: 0.9;
 }
-/* Título EMPILHADO: 1ª palavra menor em cima, última palavra grande embaixo. */
+/* Título EMPILHADO em duas linhas, MESMO tamanho (preferência do cliente):
+   "DISCIPULAR" em cima e "IGREJA" embaixo, ambos grandes. */
 .site-corpo .hero__titulo-top {
   display: block;
-  font-size: 0.44em;
-  letter-spacing: 0.005em;
-  line-height: 1;
-  opacity: 0.9;
+  font-size: 1em;
+  line-height: 0.92;
 }
 .site-corpo .hero__titulo-big {
   display: block;
   font-size: 1em;
-  line-height: 0.84;
+  line-height: 0.86;
 }
 .site-corpo .hero__sub { color: var(--bone-dim); font-weight: 400; max-width: 46ch; }
 
