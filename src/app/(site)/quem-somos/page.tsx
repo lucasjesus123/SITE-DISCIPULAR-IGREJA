@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import { tenantDaRequisicao } from "@/lib/tenant/resolve";
+import { carregarDadosSite } from "@/lib/services/site";
+import { MolduraFoto } from "@/components/site/MolduraFoto";
 
 export const metadata: Metadata = {
   title: "Quem Somos",
@@ -44,7 +48,11 @@ const PILARES = [
   },
 ] as const;
 
-export default function QuemSomos() {
+export default async function QuemSomos() {
+  const tenant = await tenantDaRequisicao();
+  if (!tenant) notFound();
+  const { config } = await carregarDadosSite(tenant.id);
+
   return (
     <>
       <section className="page-hero">
@@ -68,11 +76,15 @@ export default function QuemSomos() {
       <section className="section theme-light">
         <div className="container split">
           <div className="split__media">
-            <div className="frame frame--tall frame__mono">
-              <div className="frame__grid" />
-              <span className="frame__cap">família de Deus</span>
-              <span className="frame__badge">Foto da comunidade aqui</span>
-            </div>
+            {config.fotoComunidadeId ? (
+              <MolduraFoto fotoId={config.fotoComunidadeId} legenda="família de Deus" className="frame frame--tall" />
+            ) : (
+              <div className="frame frame--tall frame__mono">
+                <div className="frame__grid" />
+                <span className="frame__cap">família de Deus</span>
+                <span className="frame__badge">Foto da comunidade aqui</span>
+              </div>
+            )}
           </div>
           <div>
             <p className="eyebrow">Nossa essência</p>

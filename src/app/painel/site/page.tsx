@@ -27,6 +27,7 @@ export default async function PaginaConfigSite() {
       corAcento: true, corAcentoClara: true, corTinta: true, corPapel: true,
       fonteTitulo: true, fonteTexto: true,
       heroEyebrow: true, heroTitulo: true, heroSubtitulo: true, heroImagemId: true, fundoImagemId: true, fotoPastorId: true, fotoPastoraId: true,
+      fotoComunidadeId: true, fotoSobreId: true, fotoCelulasId: true,
       heroCtaTexto: true, heroCtaLink: true,
       emailContato: true, telefoneContato: true, whatsapp: true,
       instagram: true, facebook: true, youtube: true, spotify: true,
@@ -58,6 +59,9 @@ export default async function PaginaConfigSite() {
   const fundoImagemInicial = await carregarImagem(config?.fundoImagemId);
   const fotoPastorInicial = await carregarImagem(config?.fotoPastorId);
   const fotoPastoraInicial = await carregarImagem(config?.fotoPastoraId);
+  const fotoComunidadeInicial = await carregarImagem(config?.fotoComunidadeId);
+  const fotoSobreInicial = await carregarImagem(config?.fotoSobreId);
+  const fotoCelulasInicial = await carregarImagem(config?.fotoCelulasId);
 
   return (
     <>
@@ -93,6 +97,9 @@ export default async function PaginaConfigSite() {
           fundoImagemId: config?.fundoImagemId ?? "",
           fotoPastorId: config?.fotoPastorId ?? "",
           fotoPastoraId: config?.fotoPastoraId ?? "",
+          fotoComunidadeId: config?.fotoComunidadeId ?? "",
+          fotoSobreId: config?.fotoSobreId ?? "",
+          fotoCelulasId: config?.fotoCelulasId ?? "",
           emailContato: config?.emailContato ?? "",
           telefoneContato: config?.telefoneContato ?? "",
           whatsapp: config?.whatsapp ?? "",
@@ -112,6 +119,9 @@ export default async function PaginaConfigSite() {
         fundoImagemInicial={fundoImagemInicial}
         fotoPastorInicial={fotoPastorInicial}
         fotoPastoraInicial={fotoPastoraInicial}
+        fotoComunidadeInicial={fotoComunidadeInicial}
+        fotoSobreInicial={fotoSobreInicial}
+        fotoCelulasInicial={fotoCelulasInicial}
       />
     </>
   );

@@ -875,6 +875,12 @@ model SiteConfig {
   /// placeholders na home e na página Pastores.
   fotoPastorId  String?
   fotoPastoraId String?
+  /// Fotos de comunidade das seções (preenchidas pelo painel; caem no lugar dos
+  /// placeholders desenhados). Quem Somos ("família de Deus"), e as seções
+  /// "Sobre" e "Células" da home.
+  fotoComunidadeId String?
+  fotoSobreId      String?
+  fotoCelulasId    String?
   heroVideoUrl  String? @db.VarChar(500)
   heroCtaTexto  String? @db.VarChar(60)
   heroCtaLink   String? @db.VarChar(200)

@@ -68,6 +68,9 @@ const schemaMarca = z.object({
   fundoImagemId: z.string().max(30).optional(),
   fotoPastorId: z.string().max(30).optional(),
   fotoPastoraId: z.string().max(30).optional(),
+  fotoComunidadeId: z.string().max(30).optional(),
+  fotoSobreId: z.string().max(30).optional(),
+  fotoCelulasId: z.string().max(30).optional(),
 
   emailContato: emailOpcional,
   telefoneContato: telefoneOpcional,
@@ -119,9 +122,13 @@ export async function salvarConfigSite(dadosBrutos: unknown): Promise<ResultadoA
     const fundoImagemId = await idImagemValida(dados.fundoImagemId);
     const fotoPastorId = await idImagemValida(dados.fotoPastorId);
     const fotoPastoraId = await idImagemValida(dados.fotoPastoraId);
+    const fotoComunidadeId = await idImagemValida(dados.fotoComunidadeId);
+    const fotoSobreId = await idImagemValida(dados.fotoSobreId);
+    const fotoCelulasId = await idImagemValida(dados.fotoCelulasId);
     if (
       heroImagemId === false || fundoImagemId === false ||
-      fotoPastorId === false || fotoPastoraId === false
+      fotoPastorId === false || fotoPastoraId === false ||
+      fotoComunidadeId === false || fotoSobreId === false || fotoCelulasId === false
     ) {
       return {
         ok: false,
@@ -131,6 +138,9 @@ export async function salvarConfigSite(dadosBrutos: unknown): Promise<ResultadoA
           ...(fundoImagemId === false ? { fundoImagemId: ["Imagem não encontrada. Envie novamente."] } : {}),
           ...(fotoPastorId === false ? { fotoPastorId: ["Imagem não encontrada. Envie novamente."] } : {}),
           ...(fotoPastoraId === false ? { fotoPastoraId: ["Imagem não encontrada. Envie novamente."] } : {}),
+          ...(fotoComunidadeId === false ? { fotoComunidadeId: ["Imagem não encontrada. Envie novamente."] } : {}),
+          ...(fotoSobreId === false ? { fotoSobreId: ["Imagem não encontrada. Envie novamente."] } : {}),
+          ...(fotoCelulasId === false ? { fotoCelulasId: ["Imagem não encontrada. Envie novamente."] } : {}),
         },
       };
     }
@@ -171,6 +181,9 @@ export async function salvarConfigSite(dadosBrutos: unknown): Promise<ResultadoA
         fundoImagemId,
         fotoPastorId,
         fotoPastoraId,
+        fotoComunidadeId,
+        fotoSobreId,
+        fotoCelulasId,
         emailContato: dados.emailContato,
         telefoneContato: dados.telefoneContato,
         whatsapp: dados.whatsapp,
@@ -205,6 +218,9 @@ export async function salvarConfigSite(dadosBrutos: unknown): Promise<ResultadoA
         fundoImagemId,
         fotoPastorId,
         fotoPastoraId,
+        fotoComunidadeId,
+        fotoSobreId,
+        fotoCelulasId,
         emailContato: dados.emailContato ?? null,
         telefoneContato: dados.telefoneContato ?? null,
         whatsapp: dados.whatsapp ?? null,

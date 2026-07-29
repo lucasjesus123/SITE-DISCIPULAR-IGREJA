@@ -95,11 +95,15 @@ export default async function Home() {
       <section className="section theme-light">
         <div className="container split">
           <div className="split__media">
-            <div className="frame frame--wide frame__mono">
-              <div className="frame__grid" aria-hidden="true" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/marca/mark-dark.png" alt="" aria-hidden="true" />
-            </div>
+            {config.fotoSobreId ? (
+              <MolduraFoto fotoId={config.fotoSobreId} legenda="Nossa comunidade" className="frame frame--wide" />
+            ) : (
+              <div className="frame frame--wide frame__mono">
+                <div className="frame__grid" aria-hidden="true" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/marca/mark-dark.png" alt="" aria-hidden="true" />
+              </div>
+            )}
           </div>
           <div className="stack">
             <p className="eyebrow">{config.nomeExibicao}</p>
@@ -235,14 +239,18 @@ export default async function Home() {
             </div>
           </div>
           <div className="split__media">
-            <div className="frame frame--wide frame__mono">
-              <div className="frame__grid" aria-hidden="true" />
-              <span className="frame__cap">Discipular Células</span>
-              <div className="floating-tag">
-                <p className="k">Casas de Discípulos</p>
-                <p className="v">Pela cidade toda</p>
+            {config.fotoCelulasId ? (
+              <MolduraFoto fotoId={config.fotoCelulasId} legenda="Discipular Células" className="frame frame--wide" />
+            ) : (
+              <div className="frame frame--wide frame__mono">
+                <div className="frame__grid" aria-hidden="true" />
+                <span className="frame__cap">Discipular Células</span>
+                <div className="floating-tag">
+                  <p className="k">Casas de Discípulos</p>
+                  <p className="v">Pela cidade toda</p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </section>

@@ -24,6 +24,9 @@ export interface DadosSiteForm {
   fundoImagemId: string;
   fotoPastorId: string;
   fotoPastoraId: string;
+  fotoComunidadeId: string;
+  fotoSobreId: string;
+  fotoCelulasId: string;
   emailContato: string;
   telefoneContato: string;
   whatsapp: string;
@@ -54,6 +57,9 @@ export function EditorSite({
   fundoImagemInicial,
   fotoPastorInicial,
   fotoPastoraInicial,
+  fotoComunidadeInicial,
+  fotoSobreInicial,
+  fotoCelulasInicial,
 }: {
   inicial: DadosSiteForm;
   fontes: string[];
@@ -61,6 +67,9 @@ export function EditorSite({
   fundoImagemInicial?: ArquivoEnviado | null;
   fotoPastorInicial?: ArquivoEnviado | null;
   fotoPastoraInicial?: ArquivoEnviado | null;
+  fotoComunidadeInicial?: ArquivoEnviado | null;
+  fotoSobreInicial?: ArquivoEnviado | null;
+  fotoCelulasInicial?: ArquivoEnviado | null;
 }) {
   const router = useRouter();
   const [pendente, iniciar] = useTransition();
@@ -188,6 +197,39 @@ export function EditorSite({
               aoRemover={() => setDados((d) => ({ ...d, fotoPastoraId: "" }))}
             />
           </div>
+        </Secao>
+
+        <Secao
+          titulo="Fotos das seções"
+          desc="Entram no lugar dos espaços desenhados. Fotos de louvor/comunidade (larga, horizontal) ficam ótimas. Deixe vazio para manter o espaço desenhado."
+        >
+          <CampoUpload
+            nome="fotoComunidadeId"
+            rotulo="Quem Somos — foto da comunidade"
+            publico
+            valorInicial={fotoComunidadeInicial ?? null}
+            ajuda="Aparece na página Quem Somos, no espaço 'família de Deus'. Vertical (retrato) fica melhor aqui."
+            aoEnviar={(a) => setDados((d) => ({ ...d, fotoComunidadeId: a.id }))}
+            aoRemover={() => setDados((d) => ({ ...d, fotoComunidadeId: "" }))}
+          />
+          <CampoUpload
+            nome="fotoSobreId"
+            rotulo="Home — foto da seção 'Uma casa de discípulos'"
+            publico
+            valorInicial={fotoSobreInicial ?? null}
+            ajuda="Aparece na home, ao lado do texto 'Uma casa de discípulos'. Horizontal (paisagem) fica melhor."
+            aoEnviar={(a) => setDados((d) => ({ ...d, fotoSobreId: a.id }))}
+            aoRemover={() => setDados((d) => ({ ...d, fotoSobreId: "" }))}
+          />
+          <CampoUpload
+            nome="fotoCelulasId"
+            rotulo="Home — foto da seção 'Células'"
+            publico
+            valorInicial={fotoCelulasInicial ?? null}
+            ajuda="Aparece na home, na seção 'A igreja em pequenos grupos'. Horizontal (paisagem) fica melhor."
+            aoEnviar={(a) => setDados((d) => ({ ...d, fotoCelulasId: a.id }))}
+            aoRemover={() => setDados((d) => ({ ...d, fotoCelulasId: "" }))}
+          />
         </Secao>
 
         <Secao titulo="Contato" desc="Aparece no rodapé e na página de contato.">
