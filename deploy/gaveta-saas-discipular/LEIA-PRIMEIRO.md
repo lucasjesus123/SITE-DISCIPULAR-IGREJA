@@ -49,9 +49,9 @@ DOMINIO="SEU_DOMINIO.com.br"
 # 2) instala git, baixa o sistema para a gaveta e roda a instalação:
 apt-get update -y && apt-get install -y git
 git clone https://github.com/lucasjesus123/site-discipular-igreja.git /var/www/saas-discipular \
-  || (cd /var/www/saas-discipular && git pull)
+  || (cd /var/www/saas-discipular && git fetch origin)
 cd /var/www/saas-discipular
-git checkout claude/saas-church-system-3tayab
+git checkout claude/abrir-sistema-f13hhp && git pull origin claude/abrir-sistema-f13hhp
 SEMEAR=1 bash deploy/gaveta-saas-discipular/instalar-na-vps.sh "$DOMINIO"
 ```
 
