@@ -1669,10 +1669,18 @@ body:has(.fundo-site) .theme-ink-800 {
 /* ---------------------------------------------------------------------------
    MARQUEE — faixa de valores mais editorial (Fraunces, ponto como acento).
    ------------------------------------------------------------------------- */
-.site-corpo .marquee { border-block: 1px solid var(--line); }
-.site-corpo .marquee__item { font-optical-sizing: auto; font-weight: 440; letter-spacing: -0.01em; }
-.site-corpo .marquee__item.ital { font-weight: 380; }
+.site-corpo .marquee { border-block: 1px solid var(--line); padding-block: 1.15rem; }
+/* Faixa dos pilares MENOR e mais fina (o tamanho grande ficava "grosseiro"). */
+.site-corpo .marquee__item {
+  font-optical-sizing: auto;
+  font-weight: 420;
+  letter-spacing: 0;
+  font-size: clamp(0.9rem, 0.8rem + 0.5vw, 1.25rem);
+  gap: 1.6rem;
+}
+.site-corpo .marquee__item.ital { font-weight: 360; }
 .site-corpo .marquee__item::after { color: var(--fg-faint); }
+.site-corpo .marquee__track { gap: 1.6rem; }
 
 /* ---------------------------------------------------------------------------
    RODAPÉ — pé de publicação: marca-d'água em Fraunces, fios, redes discretas.
