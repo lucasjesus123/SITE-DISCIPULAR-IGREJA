@@ -59,6 +59,7 @@ const NAVEGACAO: GrupoNav[] = [
   {
     titulo: "Administração",
     itens: [
+      { rotulo: "Financeiro", href: "/painel/financeiro", permissao: "financeiro.gerenciar" },
       { rotulo: "Usuários e papéis", href: "/painel/usuarios", permissao: "usuarios.gerenciar" },
       { rotulo: "Configurações", href: "/painel/configuracoes", permissao: "config.gerenciar" },
       { rotulo: "Auditoria", href: "/painel/auditoria", permissao: "auditoria.ler" },
@@ -182,6 +183,7 @@ function Ico({ nome }: { nome: string }) {
     "/painel/whatsapp": <><path d="M12 3a9 9 0 0 0-7.8 13.5L3 21l4.7-1.2A9 9 0 1 0 12 3z" /><path d="M8.5 8.8c.2-.5.4-.5.7-.5h.5c.2 0 .4 0 .6.5l.6 1.4c.1.2 0 .4-.1.6l-.5.6c-.1.1-.2.3 0 .6.3.5.8 1.1 1.5 1.5.3.2.5.1.6 0l.5-.6c.2-.2.4-.2.6-.1l1.3.7c.3.2.4.3.4.5s0 .9-.4 1.3c-.4.4-1 .7-1.6.6-1.4-.2-3-1-4.2-2.4-1-1.2-1.6-2.5-1.6-3.6 0-.6.2-1 .5-1.3z" fill="currentColor" stroke="none" /></>,
     "/painel/agenda": <><rect x="3.5" y="5" width="17" height="15" rx="2" /><path d="M3.5 9h17M8 3v4M16 3v4" /></>,
     "/painel/cursos": <><path d="M4 5.5A2 2 0 0 1 6 4h6v15H6a2 2 0 0 0-2 1.5z" /><path d="M20 5.5A2 2 0 0 0 18 4h-6v15h6a2 2 0 0 1 2 1.5z" /></>,
+    "/painel/financeiro": <><rect x="3" y="5.5" width="18" height="13" rx="2" /><path d="M3 9.5h18" /><circle cx="16.5" cy="14" r="1.4" /></>,
     "/painel/usuarios": <><circle cx="10" cy="8" r="3" /><path d="M4 20c0-3.3 2.7-5 6-5s6 1.7 6 5" /><circle cx="18.5" cy="17.5" r="2.5" /><path d="M18.5 13.5v1M18.5 20.5v1M22 17.5h-1M16 17.5h-1" /></>,
     "/painel/configuracoes": <><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" /></>,
     "/painel/auditoria": <><rect x="5" y="3" width="14" height="18" rx="2" /><path d="M9 8h6M9 12h6M9 16h4" /></>,
