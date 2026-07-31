@@ -49,42 +49,47 @@ model Tenant {
   /// `slug`.discipular.app. Imutável depois de criado.
   slug String @unique @db.VarChar(63)
 
-  nome         String       @db.VarChar(160)
-  razaoSocial  String?      @db.VarChar(200)
-  cnpj         String?      @db.VarChar(18)
-  status       TenantStatus @default(TRIAL)
-  plano        TenantPlan   @default(ESSENCIAL)
+  nome          String       @db.VarChar(160)
+  razaoSocial   String?      @db.VarChar(200)
+  cnpj          String?      @db.VarChar(18)
+  status        TenantStatus @default(TRIAL)
+  plano         TenantPlan   @default(ESSENCIAL)
   trialExpiraEm DateTime?
 
   /// Limites do plano, verificados na escrita. Impedem que um tenant
   /// consuma recurso desproporcional da VPS compartilhada.
-  limiteUsuarios Int @default(5)
-  limitePessoas  Int @default(2000)
+  limiteUsuarios  Int @default(5)
+  limitePessoas   Int @default(2000)
   limiteStorageMb Int @default(512)
 
-  criadoEm     DateTime @default(now())
-  atualizadoEm DateTime @updatedAt
+  criadoEm     DateTime  @default(now())
+  atualizadoEm DateTime  @updatedAt
   excluidoEm   DateTime?
 
-  dominios      TenantDomain[]
-  membros       Membership[]
-  pessoas       Pessoa[]
-  celulas       Celula[]
-  campi         Campus[]
-  agendas       AgendaItem[]
-  cursos        Curso[]
-  matriculas    Matricula[]
-  pedidosOracao PedidoOracao[]
-  batismos      SolicitacaoBatismo[]
-  submissoes    Submissao[]
-  mensagens     Mensagem[]
-  arquivos      Arquivo[]
-  siteConfig    SiteConfig?
-  sitePaginas   SitePagina[]
-  liveConfig    LiveConfig?
-  auditoria     AuditLog[]
-  notificacoes  Notificacao[]
-  whatsapp      WhatsappInstance?
+  dominios        TenantDomain[]
+  membros         Membership[]
+  pessoas         Pessoa[]
+  celulas         Celula[]
+  campi           Campus[]
+  agendas         AgendaItem[]
+  cursos          Curso[]
+  matriculas      Matricula[]
+  pedidosOracao   PedidoOracao[]
+  batismos        SolicitacaoBatismo[]
+  submissoes      Submissao[]
+  mensagens       Mensagem[]
+  arquivos        Arquivo[]
+  siteConfig      SiteConfig?
+  sitePaginas     SitePagina[]
+  liveConfig      LiveConfig?
+  auditoria       AuditLog[]
+  notificacoes    Notificacao[]
+  whatsapp        WhatsappInstance?
+  contasContabeis ContaContabil[]
+  lancamentosFin  LancamentoFinanceiro[]
+  partidasFin     PartidaFinanceira[]
+  fechamentosFin  FechamentoFinanceiro[]
+  acessosFin      AcessoFinanceiro[]
 
   @@index([status])
   @@map("tenants")
@@ -115,9 +120,9 @@ model TenantDomain {
   /// Token que o cliente publica num registro TXT `_discipular.<dominio>`
   /// para provar que controla o domínio. Sem isso, qualquer um poderia
   /// reivindicar o domínio de outra igreja.
-  tokenVerificacao String   @db.VarChar(64)
+  tokenVerificacao String    @db.VarChar(64)
   verificadoEm     DateTime?
-  ultimoErro       String?  @db.VarChar(500)
+  ultimoErro       String?   @db.VarChar(500)
 
   criadoEm DateTime @default(now())
 
@@ -133,13 +138,13 @@ model TenantDomain {
 model User {
   id String @id @default(cuid())
 
-  email      String  @unique @db.VarChar(254)
+  email             String    @unique @db.VarChar(254)
   emailVerificadoEm DateTime?
-  nome       String  @db.VarChar(160)
-  telefone   String? @db.VarChar(20)
+  nome              String    @db.VarChar(160)
+  telefone          String?   @db.VarChar(20)
 
   /// Formato: scrypt$N$r$p$<salt-b64>$<hash-b64>. Ver src/lib/auth/password.ts
-  senhaHash  String  @db.VarChar(255)
+  senhaHash         String   @db.VarChar(255)
   senhaAtualizadaEm DateTime @default(now())
 
   /// Administrador da PLATAFORMA (você). Enxerga todos os tenants.
@@ -224,12 +229,12 @@ model Sessao {
   /// feita nelas fica etiquetada na auditoria.
   impersonadoPor String?
 
-  ipHash        String?  @db.VarChar(64)
-  userAgent     String?  @db.VarChar(255)
-  criadaEm      DateTime @default(now())
-  ultimoUsoEm   DateTime @default(now())
-  expiraEm      DateTime
-  revogadaEm    DateTime?
+  ipHash      String?   @db.VarChar(64)
+  userAgent   String?   @db.VarChar(255)
+  criadaEm    DateTime  @default(now())
+  ultimoUsoEm DateTime  @default(now())
+  expiraEm    DateTime
+  revogadaEm  DateTime?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -240,12 +245,12 @@ model Sessao {
 
 /// Token de recuperação de senha. Também guardado só como hash, uso único.
 model TokenSenha {
-  id        String   @id @default(cuid())
-  tokenHash String   @unique @db.VarChar(64)
+  id        String    @id @default(cuid())
+  tokenHash String    @unique @db.VarChar(64)
   userId    String
   expiraEm  DateTime
   usadoEm   DateTime?
-  criadoEm  DateTime @default(now())
+  criadoEm  DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -357,30 +362,30 @@ model Pessoa {
   id       String @id @default(cuid())
   tenantId String
 
-  nome          String       @db.VarChar(160)
-  email         String?      @db.VarChar(254)
-  telefone      String?      @db.VarChar(20)
+  nome           String      @db.VarChar(160)
+  email          String?     @db.VarChar(254)
+  telefone       String?     @db.VarChar(20)
   dataNascimento DateTime?   @db.Date
-  genero        Genero       @default(NAO_INFORMADO)
-  estadoCivil   EstadoCivil  @default(NAO_INFORMADO)
+  genero         Genero      @default(NAO_INFORMADO)
+  estadoCivil    EstadoCivil @default(NAO_INFORMADO)
 
   status StatusPessoa   @default(VISITANTE)
   origem OrigemCadastro @default(SITE)
 
   // Endereço
-  cep        String? @db.VarChar(9)
-  logradouro String? @db.VarChar(200)
-  numero     String? @db.VarChar(20)
+  cep         String? @db.VarChar(9)
+  logradouro  String? @db.VarChar(200)
+  numero      String? @db.VarChar(20)
   complemento String? @db.VarChar(100)
-  bairro     String? @db.VarChar(100)
-  cidade     String? @db.VarChar(100)
-  uf         String? @db.VarChar(2)
+  bairro      String? @db.VarChar(100)
+  cidade      String? @db.VarChar(100)
+  uf          String? @db.VarChar(2)
 
   // Jornada de fé
-  dataConversao   DateTime? @db.Date
-  batizado        Boolean   @default(false)
-  dataBatismo     DateTime? @db.Date
-  igrejaAnterior  String?   @db.VarChar(160)
+  dataConversao  DateTime? @db.Date
+  batizado       Boolean   @default(false)
+  dataBatismo    DateTime? @db.Date
+  igrejaAnterior String?   @db.VarChar(160)
 
   celulaId String?
   campusId String?
@@ -477,8 +482,8 @@ model Submissao {
   /// (ver src/lib/validation/submissoes.ts). Nunca renderizar como HTML.
   dados Json
 
-  origem      OrigemCadastro @default(SITE)
-  paginaOrigem String?       @db.VarChar(200)
+  origem       OrigemCadastro @default(SITE)
+  paginaOrigem String?        @db.VarChar(200)
 
   /// Só o hash do IP, para não guardar dado pessoal desnecessário (LGPD)
   /// mantendo a capacidade de investigar abuso.
@@ -519,13 +524,13 @@ enum StatusBatismo {
 }
 
 model SolicitacaoBatismo {
-  id       String @id @default(cuid())
+  id       String  @id @default(cuid())
   tenantId String
   pessoaId String?
 
-  nome           String  @db.VarChar(160)
-  email          String? @db.VarChar(254)
-  telefone       String? @db.VarChar(20)
+  nome           String    @db.VarChar(160)
+  email          String?   @db.VarChar(254)
+  telefone       String?   @db.VarChar(20)
   dataNascimento DateTime? @db.Date
 
   status StatusBatismo @default(SOLICITADO)
@@ -536,9 +541,9 @@ model SolicitacaoBatismo {
 
   /// Menor de idade exige autorização do responsável — obrigatório por lei
   /// e checado na aprovação.
-  menorIdade            Boolean @default(false)
-  responsavelNome       String? @db.VarChar(160)
-  responsavelTelefone   String? @db.VarChar(20)
+  menorIdade             Boolean @default(false)
+  responsavelNome        String? @db.VarChar(160)
+  responsavelTelefone    String? @db.VarChar(20)
   autorizacaoResponsavel Boolean @default(false)
 
   turmaPreparatoria String?   @db.VarChar(120)
@@ -579,7 +584,7 @@ enum VisibilidadeOracao {
 /// mais sensível do sistema. Por isso: visibilidade padrão PRIVADO, opção de
 /// anonimato, e leitura restrita por RBAC.
 model PedidoOracao {
-  id       String @id @default(cuid())
+  id       String  @id @default(cuid())
   tenantId String
   pessoaId String?
 
@@ -606,8 +611,8 @@ model PedidoOracao {
   respondidoEm       DateTime?
   responsavelId      String?   @db.VarChar(30)
 
-  origem   OrigemCadastro @default(SITE)
-  ipHash   String?        @db.VarChar(64)
+  origem OrigemCadastro @default(SITE)
+  ipHash String?        @db.VarChar(64)
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
@@ -630,13 +635,13 @@ model Campus {
   nome      String  @db.VarChar(120)
   descricao String? @db.VarChar(255)
 
-  cep        String? @db.VarChar(9)
-  logradouro String? @db.VarChar(200)
-  numero     String? @db.VarChar(20)
+  cep         String? @db.VarChar(9)
+  logradouro  String? @db.VarChar(200)
+  numero      String? @db.VarChar(20)
   complemento String? @db.VarChar(100)
-  bairro     String? @db.VarChar(100)
-  cidade     String? @db.VarChar(100)
-  uf         String? @db.VarChar(2)
+  bairro      String? @db.VarChar(100)
+  cidade      String? @db.VarChar(100)
+  uf          String? @db.VarChar(2)
 
   mapaEmbedUrl String? @db.VarChar(500)
   telefone     String? @db.VarChar(20)
@@ -646,11 +651,15 @@ model Campus {
 
   criadoEm DateTime @default(now())
 
-  tenant   Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  pessoas  Pessoa[]
-  agenda   AgendaItem[]
-  celulas  Celula[]
-  batismos SolicitacaoBatismo[]
+  tenant          Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  pessoas         Pessoa[]
+  agenda          AgendaItem[]
+  celulas         Celula[]
+  batismos        SolicitacaoBatismo[]
+  contasContabeis ContaContabil[]
+  lancamentosFin  LancamentoFinanceiro[]
+  fechamentosFin  FechamentoFinanceiro[]
+  acessosFin      AcessoFinanceiro[]
 
   @@index([tenantId, ativo, ordem])
   @@map("campi")
@@ -658,7 +667,7 @@ model Campus {
 
 /// Célula / pequeno grupo.
 model Celula {
-  id       String @id @default(cuid())
+  id       String  @id @default(cuid())
   tenantId String
   campusId String?
 
@@ -687,11 +696,11 @@ model Celula {
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
-  tenant     Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  campus     Campus?      @relation(fields: [campusId], references: [id], onDelete: SetNull)
-  pessoas    Pessoa[]
-  lideres    Membership[]
-  encontros  EncontroCelula[]
+  tenant    Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  campus    Campus?          @relation(fields: [campusId], references: [id], onDelete: SetNull)
+  pessoas   Pessoa[]
+  lideres   Membership[]
+  encontros EncontroCelula[]
 
   @@index([tenantId, ativa])
   @@index([tenantId, cidade, bairro])
@@ -704,12 +713,12 @@ model EncontroCelula {
   tenantId String
   celulaId String
 
-  data          DateTime @db.Date
-  presentes     Int      @default(0)
-  visitantes    Int      @default(0)
-  decisoes      Int      @default(0)
-  ofertaCentavos Int     @default(0)
-  observacoes   String?  @db.Text
+  data           DateTime @db.Date
+  presentes      Int      @default(0)
+  visitantes     Int      @default(0)
+  decisoes       Int      @default(0)
+  ofertaCentavos Int      @default(0)
+  observacoes    String?  @db.Text
 
   registradoPorId String?  @db.VarChar(30)
   criadoEm        DateTime @default(now())
@@ -732,7 +741,7 @@ enum TipoAgenda {
 
 /// Agenda semanal / eventos. Alimenta o site e o app.
 model AgendaItem {
-  id       String @id @default(cuid())
+  id       String  @id @default(cuid())
   tenantId String
   campusId String?
 
@@ -780,10 +789,10 @@ model Curso {
   precoCentavos Int?
   periodicidade String? @db.VarChar(20) // MENSAL | UNICO
 
-  vagas          Int?
+  vagas             Int?
   inscricoesAbertas Boolean @default(true)
-  ativo          Boolean @default(true)
-  ordem          Int     @default(0)
+  ativo             Boolean @default(true)
+  ordem             Int     @default(0)
 
   criadoEm DateTime @default(now())
 
@@ -804,7 +813,7 @@ enum StatusMatricula {
 }
 
 model Matricula {
-  id       String @id @default(cuid())
+  id       String  @id @default(cuid())
   tenantId String
   cursoId  String
   pessoaId String?
@@ -841,9 +850,9 @@ model Mensagem {
 
   /// SOMENTE o ID do vídeo (11 caracteres), nunca a URL crua vinda do
   /// usuário — assim o `src` do iframe é sempre montado por nós.
-  youtubeVideoId String? @db.VarChar(20)
+  youtubeVideoId  String?   @db.VarChar(20)
   duracaoSegundos Int?
-  data           DateTime? @db.Date
+  data            DateTime? @db.Date
 
   capaArquivoId String?
   publicado     Boolean @default(false)
@@ -907,9 +916,9 @@ model SiteConfig {
   heroCtaLink   String? @db.VarChar(200)
 
   // --- Contato
-  emailContato   String? @db.VarChar(254)
+  emailContato    String? @db.VarChar(254)
   telefoneContato String? @db.VarChar(20)
-  whatsapp       String? @db.VarChar(20)
+  whatsapp        String? @db.VarChar(20)
 
   instagram String? @db.VarChar(200)
   facebook  String? @db.VarChar(200)
@@ -917,9 +926,9 @@ model SiteConfig {
   spotify   String? @db.VarChar(200)
 
   // --- Contribuição
-  pixChave     String? @db.VarChar(200)
-  pixTitular   String? @db.VarChar(160)
-  pixDescricao String? @db.Text
+  pixChave                     String? @db.VarChar(200)
+  pixTitular                   String? @db.VarChar(160)
+  pixDescricao                 String? @db.Text
   /// Dados bancários. Criptografados em repouso (AES-256-GCM) porque são
   /// alvo óbvio para fraude de boleto/transferência.
   dadosBancariosCriptografados String? @db.Text
@@ -928,7 +937,7 @@ model SiteConfig {
   pwaNome      String? @db.VarChar(60)
   pwaNomeCurto String? @db.VarChar(20)
   pwaIconeId   String?
-  pwaCorTema   String @default("#0B0D11") @db.VarChar(9)
+  pwaCorTema   String  @default("#0B0D11") @db.VarChar(9)
 
   /// Liga/desliga módulos no site e no app por igreja.
   modulos Json @default("{}")
@@ -948,8 +957,8 @@ model SitePagina {
   id       String @id @default(cuid())
   tenantId String
 
-  slug   String  @db.VarChar(80) // "home", "quem-somos", "pastores"...
-  titulo String  @db.VarChar(160)
+  slug   String @db.VarChar(80) // "home", "quem-somos", "pastores"...
+  titulo String @db.VarChar(160)
 
   seoTitulo    String? @db.VarChar(200)
   seoDescricao String? @db.VarChar(300)
@@ -959,10 +968,10 @@ model SitePagina {
   /// e re-validado na leitura antes de renderizar.
   blocos Json @default("[]")
 
-  publicada  Boolean @default(false)
-  ordemMenu  Int?
+  publicada   Boolean @default(false)
+  ordemMenu   Int?
   mostrarMenu Boolean @default(true)
-  sistema    Boolean @default(false) // páginas que não podem ser excluídas
+  sistema     Boolean @default(false) // páginas que não podem ser excluídas
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
@@ -981,7 +990,7 @@ model LiveConfig {
   tenantId String @unique
 
   /// ID do canal (UC...). Preferido: permite detectar live automaticamente.
-  youtubeChannelId String? @db.VarChar(40)
+  youtubeChannelId     String? @db.VarChar(40)
   /// Fallback: o cliente cola a URL/ID de uma transmissão específica.
   youtubeVideoIdManual String? @db.VarChar(20)
 
@@ -1005,12 +1014,12 @@ model LiveConfig {
   exibirNoApp    Boolean @default(true)
 
   // Cache do último resultado — evita estourar a cota da API do YouTube.
-  ultimoCheckEm     DateTime?
-  ultimoCheckAoVivo Boolean   @default(false)
-  ultimoVideoId     String?   @db.VarChar(20)
-  ultimoTitulo      String?   @db.VarChar(200)
+  ultimoCheckEm      DateTime?
+  ultimoCheckAoVivo  Boolean   @default(false)
+  ultimoVideoId      String?   @db.VarChar(20)
+  ultimoTitulo       String?   @db.VarChar(200)
   /// Backoff quando a API falha ou a cota estoura.
-  falhasConsecutivas Int      @default(0)
+  falhasConsecutivas Int       @default(0)
 
   atualizadoEm DateTime @updatedAt
 
@@ -1025,19 +1034,19 @@ model Arquivo {
   id       String @id @default(cuid())
   tenantId String
 
-  nomeOriginal String @db.VarChar(255)
+  nomeOriginal   String @db.VarChar(255)
   /// Nome no disco: aleatório, sem relação com o nome enviado. Impede
   /// path traversal e colisão.
   nomeArmazenado String @db.VarChar(80)
   /// Caminho relativo a STORAGE_DIR, sempre iniciando por "<tenantId>/".
-  caminho String @db.VarChar(400)
+  caminho        String @db.VarChar(400)
 
   /// MIME detectado pelos MAGIC BYTES do conteúdo — não pelo Content-Type
   /// enviado pelo cliente, que é trivialmente forjável.
-  mimeType String @db.VarChar(100)
+  mimeType     String @db.VarChar(100)
   tamanhoBytes Int
   /// SHA-256 do conteúdo: deduplicação e verificação de integridade.
-  sha256 String @db.VarChar(64)
+  sha256       String @db.VarChar(64)
 
   largura Int?
   altura  Int?
@@ -1062,9 +1071,9 @@ model AuditLog {
   id       String @id @default(cuid())
   tenantId String
 
-  atorUserId String? @db.VarChar(30)
-  atorNome   String? @db.VarChar(160)
-  atorPapel  String? @db.VarChar(20)
+  atorUserId     String? @db.VarChar(30)
+  atorNome       String? @db.VarChar(160)
+  atorPapel      String? @db.VarChar(20)
   /// Preenchido quando a ação veio de uma sessão de impersonação.
   impersonadoPor String? @db.VarChar(254)
 
@@ -1094,16 +1103,16 @@ model Notificacao {
   id       String @id @default(cuid())
   tenantId String
 
-  titulo    String  @db.VarChar(160)
-  corpo     String  @db.Text
-  link      String? @db.VarChar(300)
+  titulo String  @db.VarChar(160)
+  corpo  String  @db.Text
+  link   String? @db.VarChar(300)
 
   /// Null = broadcast para todos os membros do tenant.
   destinatarioUserId String? @db.VarChar(30)
 
-  lidaEm      DateTime?
+  lidaEm       DateTime?
   agendadaPara DateTime?
-  enviadaEm   DateTime?
+  enviadaEm    DateTime?
 
   criadoEm DateTime @default(now())
 
@@ -1112,4 +1121,167 @@ model Notificacao {
   @@index([tenantId, destinatarioUserId, lidaEm])
   @@index([tenantId, criadoEm])
   @@map("notificacoes")
+}
+
+// =============================================================================
+// FINANCEIRO — partidas dobradas, valores SEMPRE em centavos (BigInt)
+//
+// Regras inegociáveis (ver PROMPT do módulo):
+//  - Dinheiro nunca é float: é BIGINT em centavos.
+//  - Ledger append-only: lançamento não se edita nem apaga; correção = estorno
+//    referenciado (estornoDeId).
+//  - Partidas dobradas: por lançamento, Σ débitos = Σ créditos (invariante testada).
+//  - Congregação = Campus (matriz = tenant). Consolidado = soma das congregações.
+// =============================================================================
+
+enum NaturezaConta {
+  ATIVO
+  PASSIVO
+  PATRIMONIO
+  RECEITA
+  DESPESA
+}
+
+enum TipoContaFisica {
+  DINHEIRO
+  BANCO
+  PIX
+}
+
+enum PapelFinanceiro {
+  ADMIN_MATRIZ
+  TESOUREIRO
+  LANCADOR
+  VISUALIZADOR
+}
+
+enum EscopoFinanceiro {
+  MATRIZ
+  CONGREGACAO
+}
+
+/// Plano de contas. Unifica contas físicas (Caixa/Banco/PIX — natureza ATIVO,
+/// ligadas a uma congregação) e contas de resultado (Dízimo/Oferta = RECEITA;
+/// Aluguel/Missões = DESPESA — em geral da matriz, campusId nulo).
+model ContaContabil {
+  id       String @id @default(cuid())
+  tenantId String
+
+  campusId String?
+
+  codigo               String           @db.VarChar(20)
+  nome                 String           @db.VarChar(120)
+  natureza             NaturezaConta
+  tipoFisico           TipoContaFisica?
+  saldoInicialCentavos BigInt           @default(0)
+  ativo                Boolean          @default(true)
+  ordem                Int              @default(0)
+
+  criadoEm DateTime @default(now())
+
+  tenant   Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  campus   Campus?             @relation(fields: [campusId], references: [id], onDelete: SetNull)
+  partidas PartidaFinanceira[]
+
+  @@unique([tenantId, codigo])
+  @@index([tenantId, natureza, ativo])
+  @@index([tenantId, campusId])
+  @@map("contas_contabeis")
+}
+
+/// Cabeçalho do lançamento (partida de diário). IMUTÁVEL após criado.
+model LancamentoFinanceiro {
+  id       String @id @default(cuid())
+  tenantId String
+  campusId String
+
+  dataCompetencia DateTime @db.Date
+  dataCaixa       DateTime @db.Date
+  historico       String   @db.VarChar(300)
+  valorCentavos   BigInt
+
+  membroId            String?
+  anexoId             String?
+  contribuicaoAnonima Boolean @default(false)
+
+  chaveIdempotencia String @db.VarChar(80)
+
+  estornado   Boolean @default(false)
+  estornoDeId String?
+
+  criadoPorId String
+  ip          String?  @db.VarChar(64)
+  criadoEm    DateTime @default(now())
+
+  tenant    Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  campus    Campus                 @relation(fields: [campusId], references: [id], onDelete: Cascade)
+  partidas  PartidaFinanceira[]
+  estornoDe LancamentoFinanceiro?  @relation("EstornoRef", fields: [estornoDeId], references: [id])
+  estornos  LancamentoFinanceiro[] @relation("EstornoRef")
+
+  @@unique([tenantId, chaveIdempotencia])
+  @@index([tenantId, campusId, dataCompetencia])
+  @@index([tenantId, campusId, dataCaixa])
+  @@map("lancamentos_financeiros")
+}
+
+/// Linha de débito/crédito. Σ débitos = Σ créditos por lançamento.
+model PartidaFinanceira {
+  id       String @id @default(cuid())
+  tenantId String
+
+  lancamentoId String
+  contaId      String
+
+  debitoCentavos  BigInt @default(0)
+  creditoCentavos BigInt @default(0)
+
+  tenant     Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  lancamento LancamentoFinanceiro @relation(fields: [lancamentoId], references: [id], onDelete: Cascade)
+  conta      ContaContabil        @relation(fields: [contaId], references: [id])
+
+  @@index([tenantId, contaId])
+  @@index([tenantId, lancamentoId])
+  @@map("partidas_financeiras")
+}
+
+/// Fechamento de período: trava a competência de uma congregação.
+model FechamentoFinanceiro {
+  id       String @id @default(cuid())
+  tenantId String
+  campusId String
+
+  competencia        String  @db.VarChar(7)
+  saldoFinalCentavos BigInt
+  travado            Boolean @default(true)
+  fechadoPorId       String
+
+  fechadoEm DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  campus Campus @relation(fields: [campusId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, campusId, competencia])
+  @@map("fechamentos_financeiros")
+}
+
+/// Acesso financeiro por pessoa e por congregação (papel financeiro), separado
+/// do RBAC geral. Uma pessoa pode ser tesoureira da A e visualizadora da B.
+model AcessoFinanceiro {
+  id       String @id @default(cuid())
+  tenantId String
+
+  userId   String
+  escopo   EscopoFinanceiro
+  campusId String?
+  papel    PapelFinanceiro
+
+  criadoEm DateTime @default(now())
+
+  tenant Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  campus Campus? @relation(fields: [campusId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, userId, campusId])
+  @@index([tenantId, userId])
+  @@map("acessos_financeiros")
 }
