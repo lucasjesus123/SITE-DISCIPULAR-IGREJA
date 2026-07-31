@@ -1265,6 +1265,20 @@ input, textarea, select { font: inherit; color: inherit; }
 }
 .paginacao [aria-current="page"] { border-color: var(--pnl-accent); background: rgb(var(--pnl-accent-rgb) / 0.12); color: var(--pnl-accent); font-weight: 600; }
 
+/* Aniversariantes */
+.aniv-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+.aniv-col { border: 1px solid var(--pnl-line); border-radius: var(--radius-lg); padding: 1.1rem 1.2rem; background: var(--pnl-surface); }
+.aniv-col--hoje { border-color: rgb(var(--pnl-accent-rgb) / 0.45); background: rgb(var(--pnl-accent-rgb) / 0.06); }
+.aniv-col__titulo { font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; color: var(--pnl-text-faint); display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.9rem; }
+.aniv-col__contagem { background: var(--pnl-surface-2); color: var(--pnl-text-dim); border-radius: 100px; padding: 0.05rem 0.5rem; font-size: 0.72rem; }
+.aniv-col--hoje .aniv-col__contagem { background: var(--pnl-accent); color: var(--pnl-accent-contrast); }
+.aniv-lista { display: grid; gap: 0.55rem; }
+.aniv-item { display: flex; align-items: center; gap: 0.6rem; font-size: 0.9rem; }
+.aniv-item__ico { flex: none; }
+.aniv-item__nome { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.aniv-item__dia { color: var(--pnl-text-dim); font-size: 0.82rem; font-variant-numeric: tabular-nums; }
+.aniv-vazio { color: var(--pnl-text-faint); }
+
 /* WhatsApp — conexão */
 .wa-qr { display: flex; gap: 1.6rem; flex-wrap: wrap; align-items: flex-start; }
 .wa-qr img { border-radius: 12px; border: 1px solid var(--pnl-line); background: #fff; padding: 8px; }

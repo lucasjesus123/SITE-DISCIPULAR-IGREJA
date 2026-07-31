@@ -36,6 +36,7 @@ export default async function PainelInicio() {
     celulasAtivas,
     proximosBatismos,
     ultimasSubmissoes,
+    pessoasAniversario,
     live,
   ] = await Promise.all([
     contadoresTriagem(ctx.tenant.id),
@@ -64,8 +65,24 @@ export default async function PainelInicio() {
           take: 8,
         })
       : Promise.resolve([]),
+    // Aniversariantes (vida e batismo). Buscamos quem tem alguma data e
+    // classificamos por mês/dia em memória — Prisma não extrai mês/dia na query,
+    // e para o porte de uma igreja isto é barato.
+    ctx.pode("pessoas.ler")
+      ? ctx.db.pessoa.findMany({
+          where: {
+            excluidoEm: null,
+            ...escopo,
+            OR: [{ dataNascimento: { not: null } }, { dataBatismo: { not: null } }],
+          },
+          select: { id: true, nome: true, telefone: true, dataNascimento: true, dataBatismo: true },
+          take: 3000,
+        })
+      : Promise.resolve([]),
     estadoAoVivo(ctx.tenant.id),
   ]);
+
+  const aniversarios = calcularAniversariantes(pessoasAniversario);
 
   const crescimento30d = await ctx.db.pessoa.count({
     where: { criadoEm: { gte: trintaDias }, excluidoEm: null, ...escopo },
@@ -185,6 +202,26 @@ export default async function PainelInicio() {
         </section>
       )}
 
+      {/* ------------------------------------------------- ANIVERSARIANTES */}
+      {ctx.pode("pessoas.ler") && (
+        <section className="secao-painel">
+          <h2 className="secao-painel__titulo">Aniversariantes</h2>
+          <p className="secao-painel__desc">
+            De vida 🎂 e de batismo 💧 — para a igreja celebrar junto.
+          </p>
+
+          {aniversarios.hoje.length + aniversarios.semana.length + aniversarios.mes.length === 0 ? (
+            <div className="vazio">Nenhum aniversário cadastrado para este mês.</div>
+          ) : (
+            <div className="aniv-grid">
+              <BlocoAniv titulo="Hoje" itens={aniversarios.hoje} destaque />
+              <BlocoAniv titulo="Próximos 7 dias" itens={aniversarios.semana} />
+              <BlocoAniv titulo="Ainda neste mês" itens={aniversarios.mes} />
+            </div>
+          )}
+        </section>
+      )}
+
       {/* ------------------------------------------------ PRÓXIMOS BATISMOS */}
       {ctx.pode("batismos.ler") && proximosBatismos.length > 0 && (
         <section className="secao-painel">
@@ -262,6 +299,117 @@ function CartaoLink({
 
 function primeiroNome(nome: string): string {
   return nome.split(" ")[0] ?? nome;
+}
+
+// -----------------------------------------------------------------------------
+// Aniversariantes
+// -----------------------------------------------------------------------------
+
+type ItemAniv = {
+  id: string;
+  nome: string;
+  telefone: string | null;
+  tipo: "vida" | "batismo";
+  dia: number;
+  mes: number;
+};
+
+type PessoaAniv = {
+  id: string;
+  nome: string;
+  telefone: string | null;
+  dataNascimento: Date | null;
+  dataBatismo: Date | null;
+};
+
+/**
+ * Classifica aniversários por mês/dia (ignorando o ano) em três baldes SEM
+ * repetição: hoje, próximos 7 dias e o resto do mês corrente. As datas `@db.Date`
+ * chegam como meia-noite UTC, então lemos mês/dia em UTC — assim o dia não
+ * "escorrega" por fuso.
+ */
+function calcularAniversariantes(pessoas: PessoaAniv[]): {
+  hoje: ItemAniv[];
+  semana: ItemAniv[];
+  mes: ItemAniv[];
+} {
+  // Hoje em São Paulo (YYYY-MM-DD), sem depender do fuso do servidor.
+  const hojeSp = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+  const [anoH, mesH, diaH] = hojeSp.split("-").map(Number) as [number, number, number];
+
+  // Chave "mm-dd" dos próximos 7 dias (hoje = índice 0).
+  const proximos: string[] = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(Date.UTC(anoH, mesH - 1, diaH + i, 12));
+    proximos.push(`${d.getUTCMonth() + 1}-${d.getUTCDate()}`);
+  }
+  const chaveHoje = `${mesH}-${diaH}`;
+
+  const entradas: ItemAniv[] = [];
+  for (const p of pessoas) {
+    if (p.dataNascimento) {
+      entradas.push({
+        id: `${p.id}-v`,
+        nome: p.nome,
+        telefone: p.telefone,
+        tipo: "vida",
+        mes: p.dataNascimento.getUTCMonth() + 1,
+        dia: p.dataNascimento.getUTCDate(),
+      });
+    }
+    if (p.dataBatismo) {
+      entradas.push({
+        id: `${p.id}-b`,
+        nome: p.nome,
+        telefone: p.telefone,
+        tipo: "batismo",
+        mes: p.dataBatismo.getUTCMonth() + 1,
+        dia: p.dataBatismo.getUTCDate(),
+      });
+    }
+  }
+
+  const hoje: ItemAniv[] = [];
+  const semana: ItemAniv[] = [];
+  const mes: ItemAniv[] = [];
+
+  for (const e of entradas) {
+    const chave = `${e.mes}-${e.dia}`;
+    if (chave === chaveHoje) hoje.push(e);
+    else if (proximos.includes(chave)) semana.push(e);
+    else if (e.mes === mesH) mes.push(e);
+  }
+
+  const porDia = (a: ItemAniv, b: ItemAniv) => a.dia - b.dia || a.nome.localeCompare(b.nome);
+  return { hoje: hoje.sort(porDia), semana: semana.sort(porDia), mes: mes.sort(porDia) };
+}
+
+function BlocoAniv({ titulo, itens, destaque }: { titulo: string; itens: ItemAniv[]; destaque?: boolean }) {
+  return (
+    <div className={`aniv-col${destaque ? " aniv-col--hoje" : ""}`}>
+      <p className="aniv-col__titulo">
+        {titulo} <span className="aniv-col__contagem">{itens.length}</span>
+      </p>
+      {itens.length === 0 ? (
+        <p className="aniv-vazio">—</p>
+      ) : (
+        <ul className="aniv-lista">
+          {itens.map((i) => (
+            <li key={i.id} className="aniv-item">
+              <span className="aniv-item__ico" aria-hidden="true">{i.tipo === "vida" ? "🎂" : "💧"}</span>
+              <span className="aniv-item__nome">{i.nome}</span>
+              <span className="aniv-item__dia">{String(i.dia).padStart(2, "0")}/{String(i.mes).padStart(2, "0")}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }
 
 export function rotuloTipo(tipo: string): string {
