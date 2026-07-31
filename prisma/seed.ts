@@ -1340,6 +1340,94 @@ async function main(): Promise<void> {
     ),
   );
 
+  // --- Financeiro (dados fictícios de demonstração) ---------------------------
+  //
+  // Plano de contas (partidas dobradas) + alguns lançamentos equilibrados. Tudo
+  // em centavos. Serve para as telas do módulo financeiro nascerem com números
+  // reais de demonstração. Idempotente pela `chaveIdempotencia`.
+  {
+    const { reaisParaCentavos } = await import("@/lib/financeiro/dinheiro");
+    const contas = new Map<string, string>();
+
+    const conta = async (
+      codigo: string,
+      nome: string,
+      natureza: "ATIVO" | "RECEITA" | "DESPESA",
+      extra: { campus?: string; tipoFisico?: "DINHEIRO" | "BANCO" | "PIX"; ordem?: number } = {},
+    ) => {
+      contas.set(
+        codigo,
+        await garantir(
+          db.contaContabil,
+          { codigo },
+          {
+            nome,
+            natureza,
+            tipoFisico: extra.tipoFisico ?? null,
+            campusId: extra.campus ? campi.get(extra.campus) : null,
+            ordem: extra.ordem ?? 0,
+            ativo: true,
+          },
+        ),
+      );
+    };
+
+    // Contas físicas (ATIVO) por congregação
+    await conta("1.1.1", "Caixa Dinheiro — Sede", "ATIVO", { campus: SEDE, tipoFisico: "DINHEIRO", ordem: 1 });
+    await conta("1.1.2", "Banco — Sede", "ATIVO", { campus: SEDE, tipoFisico: "BANCO", ordem: 2 });
+    await conta("1.1.3", "PIX — Sede", "ATIVO", { campus: SEDE, tipoFisico: "PIX", ordem: 3 });
+    await conta("1.2.1", "Caixa Dinheiro — Vera Cruz", "ATIVO", { campus: VERA_CRUZ, tipoFisico: "DINHEIRO", ordem: 4 });
+    // Receitas e despesas (matriz)
+    await conta("3.1", "Dízimos", "RECEITA", { ordem: 10 });
+    await conta("3.2", "Ofertas", "RECEITA", { ordem: 11 });
+    await conta("3.3", "Doações", "RECEITA", { ordem: 12 });
+    await conta("4.1", "Aluguel", "DESPESA", { ordem: 20 });
+    await conta("4.2", "Energia", "DESPESA", { ordem: 21 });
+    await conta("4.3", "Missões", "DESPESA", { ordem: 22 });
+    await conta("4.4", "Salários", "DESPESA", { ordem: 23 });
+
+    const hoje = new Date();
+    const lancar = async (
+      chave: string,
+      historico: string,
+      campus: string,
+      valor: string,
+      contaDebito: string,
+      contaCredito: string,
+    ) => {
+      const existente = await db.lancamentoFinanceiro.findFirst({ where: { chaveIdempotencia: chave } });
+      if (existente) return;
+      const centavos = reaisParaCentavos(valor);
+      const lanc = await db.lancamentoFinanceiro.create({
+        data: {
+          tenantId: discipular.id,
+          campusId: campi.get(campus)!,
+          dataCompetencia: hoje,
+          dataCaixa: hoje,
+          historico,
+          valorCentavos: centavos,
+          chaveIdempotencia: chave,
+          criadoPorId: "seed",
+        },
+      });
+      await db.partidaFinanceira.createMany({
+        data: [
+          { tenantId: discipular.id, lancamentoId: lanc.id, contaId: contas.get(contaDebito)!, debitoCentavos: centavos, creditoCentavos: 0n },
+          { tenantId: discipular.id, lancamentoId: lanc.id, contaId: contas.get(contaCredito)!, debitoCentavos: 0n, creditoCentavos: centavos },
+        ],
+      });
+    };
+
+    // Entradas: débito na conta física (ativo sobe) / crédito na receita
+    await lancar("seed:dizimo:1", "Dízimos do culto de domingo", SEDE, "1.500,00", "1.1.1", "3.1");
+    await lancar("seed:oferta:1", "Oferta via PIX", SEDE, "820,50", "1.1.3", "3.2");
+    await lancar("seed:doacao:1", "Doação para missões", SEDE, "300,00", "1.1.2", "3.3");
+    await lancar("seed:dizimo:vc", "Dízimos — Vera Cruz", VERA_CRUZ, "640,00", "1.2.1", "3.1");
+    // Saídas: débito na despesa / crédito na conta física (ativo cai)
+    await lancar("seed:aluguel:1", "Aluguel do salão — Sede", SEDE, "1.200,00", "4.1", "1.1.2");
+    await lancar("seed:missoes:1", "Envio missionário mensal", SEDE, "400,00", "4.3", "1.1.2");
+  }
+
   // --- Agenda -----------------------------------------------------------------
 
   const agenda: {

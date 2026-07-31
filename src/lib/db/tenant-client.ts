@@ -61,6 +61,12 @@ const MODELOS_TENANT = new Set<string>([
   "Arquivo",
   "AuditLog",
   "Notificacao",
+  "WhatsappInstance",
+  "ContaContabil",
+  "LancamentoFinanceiro",
+  "PartidaFinanceira",
+  "FechamentoFinanceiro",
+  "AcessoFinanceiro",
 ]);
 
 /**
