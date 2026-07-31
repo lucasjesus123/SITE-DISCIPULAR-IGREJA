@@ -3,6 +3,7 @@ import { z } from "zod";
 import { exigirPermissao } from "@/lib/auth/rbac";
 import { auditar } from "@/lib/audit";
 import { rotuloTipo, tempoRelativo } from "@/app/painel/page";
+import { LinhaClicavel } from "@/components/painel/LinhaClicavel";
 import type { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -112,7 +113,7 @@ export default async function CaixaEntrada({
         <Chip href="/painel/caixa-entrada?status=TODOS" ativo={filtros.status === "TODOS"}>
           Todos
         </Chip>
-        <span style={{ width: 1, height: 24, background: "var(--line-on-light)" }} aria-hidden="true" />
+        <span style={{ width: 1, height: 24, background: "var(--pnl-line)" }} aria-hidden="true" />
         <Chip href="/painel/caixa-entrada?status=SPAM" ativo={filtros.status === "SPAM"}>
           Spam {porStatus.SPAM ? `(${porStatus.SPAM})` : ""}
         </Chip>
@@ -159,15 +160,14 @@ export default async function CaixaEntrada({
                   <th>Contato</th>
                   <th>Recebido</th>
                   <th>Situação</th>
+                  <th aria-label="Ação"></th>
                 </tr>
               </thead>
               <tbody>
                 {itens.map((item) => (
-                  <tr key={item.id}>
-                    <td>
-                      <Link href={`/painel/caixa-entrada/${item.id}`} style={{ fontWeight: 600 }}>
-                        {item.nome}
-                      </Link>
+                  <LinhaClicavel key={item.id} href={`/painel/caixa-entrada/${item.id}`}>
+                    <td style={{ fontWeight: 600 }}>
+                      {item.nome}
                       {item.pessoaGeradaId && (
                         <span className="etiqueta etiqueta--concluido" style={{ marginLeft: ".5rem" }}>
                           Cadastrado
@@ -175,14 +175,17 @@ export default async function CaixaEntrada({
                       )}
                     </td>
                     <td>{rotuloTipo(item.tipo)}</td>
-                    <td style={{ color: "var(--graphite-dim)", fontSize: ".85rem" }}>
+                    <td style={{ color: "var(--pnl-text-dim)", fontSize: ".85rem" }}>
                       {item.telefone ?? item.email ?? "—"}
                     </td>
-                    <td style={{ color: "var(--graphite-dim)" }}>{tempoRelativo(item.criadoEm)}</td>
+                    <td style={{ color: "var(--pnl-text-dim)" }}>{tempoRelativo(item.criadoEm)}</td>
                     <td>
                       <EtiquetaStatus status={item.status} scoreSpam={item.scoreSpam} />
                     </td>
-                  </tr>
+                    <td style={{ textAlign: "right" }}>
+                      <span className="linha-clicavel__acao">Abrir e editar →</span>
+                    </td>
+                  </LinhaClicavel>
                 ))}
               </tbody>
             </table>

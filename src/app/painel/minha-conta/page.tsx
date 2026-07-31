@@ -1,4 +1,5 @@
 import type { Papel } from "@prisma/client";
+import { z } from "zod";
 
 import { auditar } from "@/lib/audit";
 import { exigirAcessoTenant } from "@/lib/auth/rbac";
@@ -10,6 +11,10 @@ import { prisma } from "@/lib/db/prisma";
 import { logger } from "@/lib/logger";
 import { REGRAS, verificarLimite } from "@/lib/security/rate-limit";
 import { FormularioTrocarSenha } from "@/components/auth/FormularioTrocarSenha";
+import {
+  FormularioMeuCadastro,
+  type ResultadoCadastro,
+} from "@/components/painel/FormularioMeuCadastro";
 import {
   BotaoSairDeTudo,
   type ResultadoRevogacao,
@@ -107,6 +112,70 @@ async function sairDeTodosOsDispositivos(): Promise<ResultadoRevogacao> {
   }
 }
 
+/**
+ * Salva o PRÓPRIO nome e telefone.
+ *
+ * Só toca em campos que a pessoa pode gerir sozinha. E-mail (identidade de
+ * login) e papel (nível de acesso) continuam fora daqui, sob os admins.
+ */
+const schemaMeuCadastro = z.object({
+  nome: z.string().trim().min(2, "Informe seu nome.").max(120),
+  telefone: z
+    .string()
+    .trim()
+    .max(20)
+    .transform((v) => v.replace(/[^\d]/g, ""))
+    .refine((v) => v === "" || (v.length >= 10 && v.length <= 13), "Telefone inválido.")
+    .optional(),
+});
+
+async function salvarMeuCadastro(
+  _estado: ResultadoCadastro,
+  formData: FormData,
+): Promise<ResultadoCadastro> {
+  "use server";
+
+  try {
+    const ctx = await exigirAcessoTenant();
+
+    const limite = await verificarLimite(REGRAS.escritaPainel, ctx.sessao.userId, ctx.tenant.id);
+    if (!limite.permitido) {
+      return { ok: false, mensagem: "Muitas operações seguidas. Aguarde um instante." };
+    }
+
+    const analise = schemaMeuCadastro.safeParse({
+      nome: formData.get("nome"),
+      telefone: formData.get("telefone") ?? "",
+    });
+    if (!analise.success) {
+      return { ok: false, mensagem: analise.error.issues[0]?.message ?? "Dados inválidos." };
+    }
+
+    const telefone = analise.data.telefone ? analise.data.telefone : null;
+
+    await prisma.user.update({
+      where: { id: ctx.sessao.userId },
+      data: { nome: analise.data.nome, telefone },
+    });
+
+    await auditar(ctx, {
+      acao: "usuario.atualizarProprioCadastro",
+      alvoTipo: "User",
+      alvoId: ctx.sessao.userId,
+      detalhes: { camposAlterados: ["nome", "telefone"] },
+    });
+
+    return { ok: true, mensagem: "Seus dados foram atualizados." };
+  } catch (erro) {
+    const nome = erro instanceof Error ? erro.name : "";
+    if (nome === "NaoAutenticadoError" || nome === "NaoAutorizadoError") {
+      return { ok: false, mensagem: "Sessão expirada. Entre novamente." };
+    }
+    const ref = logger.erro("Falha ao atualizar próprio cadastro", erro, { acao: "salvarMeuCadastro" });
+    return { ok: false, mensagem: `Não foi possível salvar. Referência: ${ref}` };
+  }
+}
+
 // -----------------------------------------------------------------------------
 // Página
 // -----------------------------------------------------------------------------
@@ -158,17 +227,27 @@ export default async function PaginaMinhaConta() {
         </div>
       </div>
 
-      {/* ---- Dados da conta ---- */}
+      {/* ---- Editar meu cadastro ---- */}
       <section className="secao-painel">
-        <h2 className="secao-painel__titulo">Dados da conta</h2>
+        <h2 className="secao-painel__titulo">Meu cadastro</h2>
         <p className="secao-painel__desc">
-          Nome e e-mail são alterados pelo responsável da igreja, em Usuários.
+          Atualize seu nome e telefone. O e-mail (seu login) e o papel na igreja
+          são geridos pelo responsável, em Usuários.
         </p>
 
+        <FormularioMeuCadastro
+          acao={salvarMeuCadastro}
+          nomeInicial={usuario?.nome ?? ctx.sessao.nome}
+          telefoneInicial={usuario?.telefone ?? ""}
+        />
+      </section>
+
+      {/* ---- Dados da conta (somente leitura) ---- */}
+      <section className="secao-painel">
+        <h2 className="secao-painel__titulo">Dados da conta</h2>
+
         <dl style={{ display: "grid", gap: "1rem", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
-          <Dado rotulo="Nome" valor={usuario?.nome ?? ctx.sessao.nome} />
           <Dado rotulo="E-mail" valor={usuario?.email ?? ctx.sessao.email} />
-          <Dado rotulo="Telefone" valor={usuario?.telefone ?? "—"} />
           <Dado rotulo="Papel nesta igreja" valor={ROTULO_PAPEL[ctx.papel]} />
           <Dado rotulo="Igreja ativa" valor={ctx.tenant.nome} />
           <Dado
