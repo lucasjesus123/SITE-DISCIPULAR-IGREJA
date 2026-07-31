@@ -129,7 +129,10 @@ export function LateralPainel({
                     className="painel__link"
                     aria-current={ativo ? "page" : undefined}
                   >
-                    <span>{item.rotulo}</span>
+                    <span className="painel__link-in">
+                      <Ico nome={item.href} />
+                      <span>{item.rotulo}</span>
+                    </span>
                     {valor > 0 && (
                       <span className={`painel__badge${item.alerta ? " painel__badge--alerta" : ""}`}>
                         {valor > 99 ? "99+" : valor}
@@ -143,30 +146,51 @@ export function LateralPainel({
         })}
       </nav>
 
-      <div style={{ marginTop: "auto", paddingTop: "1.4rem", borderTop: "1px solid var(--line-on-dark)" }}>
-        <p style={{ fontSize: ".85rem", fontWeight: 600 }}>{nomeUsuario}</p>
-        <p style={{ fontSize: ".7rem", color: "var(--bone-faint)", letterSpacing: ".1em", textTransform: "uppercase", marginTop: ".15rem" }}>
-          {rotulosPapel[papel]}
-        </p>
+      <div className="painel__rodape">
+        <p className="painel__rodape-nome">{nomeUsuario}</p>
+        <p className="painel__rodape-papel">{rotulosPapel[papel]}</p>
 
-        <div style={{ display: "grid", gap: ".4rem", marginTop: "1rem" }}>
-          <Link href="/" className="painel__link" style={{ padding: ".45rem .8rem" }}>
-            Ver o site
+        <div style={{ display: "grid", gap: ".2rem", marginTop: "0.9rem" }}>
+          <Link href="/" className="painel__link">
+            <span className="painel__link-in"><Ico nome="ver-site" /><span>Ver o site</span></span>
           </Link>
-          <Link href="/painel/minha-conta" className="painel__link" style={{ padding: ".45rem .8rem" }}>
-            Minha conta
+          <Link href="/painel/minha-conta" className="painel__link">
+            <span className="painel__link-in"><Ico nome="/painel/minha-conta" /><span>Minha conta</span></span>
           </Link>
-          <button
-            type="button"
-            onClick={sair}
-            className="painel__link"
-            style={{ padding: ".45rem .8rem", width: "100%", textAlign: "left" }}
-          >
-            Sair
+          <button type="button" onClick={sair} className="painel__link" style={{ width: "100%", textAlign: "left" }}>
+            <span className="painel__link-in"><Ico nome="sair" /><span>Sair</span></span>
           </button>
         </div>
       </div>
     </aside>
+  );
+}
+
+/** Ícone do item do menu (traço fino, herda a cor por currentColor). */
+function Ico({ nome }: { nome: string }) {
+  const d: Record<string, React.ReactNode> = {
+    "/painel": <path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" />,
+    "/painel/caixa-entrada": <><path d="M3 12h5l2 3h4l2-3h5" /><path d="M4 6h16v12H4z" /></>,
+    "/painel/pessoas": <><circle cx="9" cy="8" r="3" /><path d="M3 20c0-3.3 2.7-5 6-5s6 1.7 6 5" /><path d="M16 15c2.5 0 5 1.5 5 5" /><circle cx="17" cy="8" r="2.3" /></>,
+    "/painel/oracao": <path d="M12 21s-7-4.5-9.2-9C1.3 8.6 3.3 5.5 6.6 5.5c1.9 0 3.5 1.1 4.4 2.6l1 1.6 1-1.6c.9-1.5 2.5-2.6 4.4-2.6 3.3 0 5.3 3.1 3.8 6.5C19 16.5 12 21 12 21z" />,
+    "/painel/batismos": <path d="M12 3c3 4 6 7 6 10.5A6 6 0 1 1 6 13.5C6 10 9 7 12 3z" />,
+    "/painel/celulas": <><circle cx="6" cy="6" r="2.4" /><circle cx="18" cy="6" r="2.4" /><circle cx="12" cy="18" r="2.4" /><path d="M7.5 7.7 11 15.8M16.5 7.7 13 15.8M8.4 6h7.2" /></>,
+    "/painel/site": <><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c2.6 2.4 2.6 15.6 0 18M12 3c-2.6 2.4-2.6 15.6 0 18" /></>,
+    "/painel/ao-vivo": <><rect x="3" y="6" width="13" height="12" rx="2" /><path d="m16 10 5-3v10l-5-3" /></>,
+    "/painel/mensagens": <path d="M4 5h16v11H8l-4 3z" />,
+    "/painel/agenda": <><rect x="3.5" y="5" width="17" height="15" rx="2" /><path d="M3.5 9h17M8 3v4M16 3v4" /></>,
+    "/painel/cursos": <><path d="M4 5.5A2 2 0 0 1 6 4h6v15H6a2 2 0 0 0-2 1.5z" /><path d="M20 5.5A2 2 0 0 0 18 4h-6v15h6a2 2 0 0 1 2 1.5z" /></>,
+    "/painel/usuarios": <><circle cx="10" cy="8" r="3" /><path d="M4 20c0-3.3 2.7-5 6-5s6 1.7 6 5" /><circle cx="18.5" cy="17.5" r="2.5" /><path d="M18.5 13.5v1M18.5 20.5v1M22 17.5h-1M16 17.5h-1" /></>,
+    "/painel/configuracoes": <><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" /></>,
+    "/painel/auditoria": <><rect x="5" y="3" width="14" height="18" rx="2" /><path d="M9 8h6M9 12h6M9 16h4" /></>,
+    "/painel/minha-conta": <><circle cx="12" cy="8" r="3.2" /><path d="M5 20c0-3.5 3-5.5 7-5.5s7 2 7 5.5" /></>,
+    "ver-site": <><path d="M15 3h6v6" /><path d="M10 14 21 3" /><path d="M20 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5" /></>,
+    "sair": <><path d="M9 21H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h4" /><path d="M16 17l5-5-5-5M21 12H9" /></>,
+  };
+  return (
+    <svg className="painel__ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {d[nome] ?? <circle cx="12" cy="12" r="3" />}
+    </svg>
   );
 }
 

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { sessaoAtual } from "@/lib/auth/session";
 import { exigirAcessoTenant, NaoAutenticadoError, NaoAutorizadoError } from "@/lib/auth/rbac";
@@ -8,6 +9,7 @@ import { contadoresTriagem } from "@/lib/services/submissoes";
 import { cssDoTema } from "@/lib/site/theme";
 import { obterTokenCsrf } from "@/lib/security/csrf";
 import { LateralPainel } from "@/components/painel/Lateral";
+import { TopoPainel } from "@/components/painel/TopoPainel";
 import "../globals.css";
 
 /**
@@ -59,11 +61,16 @@ export default async function LayoutPainel({ children }: { children: React.React
   // Membro comum não usa o painel de gestão — o lugar dele é o app.
   if (ctx.papel === "MEMBRO") redirect("/app");
 
-  const [dados, contadores] = await Promise.all([
+  const [dados, contadores, , cookieStore] = await Promise.all([
     carregarDadosSite(ctx.tenant.id),
     contadoresTriagem(ctx.tenant.id),
     obterTokenCsrf(),
+    cookies(),
   ]);
+
+  // Tema do painel escolhido pelo usuário (persistido em cookie). Ler no
+  // servidor evita o "flash" de tema errado no primeiro carregamento.
+  const tema = cookieStore.get("tema-painel")?.value === "escuro" ? "escuro" : "claro";
 
   return (
     <>
@@ -84,7 +91,7 @@ export default async function LayoutPainel({ children }: { children: React.React
         </div>
       )}
 
-      <div className="painel">
+      <div className="painel" data-tema={tema}>
         <LateralPainel
           nomeIgreja={dados.config.nomeExibicao}
           nomeUsuario={ctx.sessao.nome}
@@ -96,7 +103,14 @@ export default async function LayoutPainel({ children }: { children: React.React
           }}
         />
 
-        <main className="painel__conteudo">{children}</main>
+        <main className="painel__conteudo">
+          <TopoPainel
+            nomeUsuario={ctx.sessao.nome}
+            temaInicial={tema}
+            novasMensagens={contadores.total}
+          />
+          {children}
+        </main>
       </div>
     </>
   );
