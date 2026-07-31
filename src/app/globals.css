@@ -1265,6 +1265,12 @@ input, textarea, select { font: inherit; color: inherit; }
 }
 .paginacao [aria-current="page"] { border-color: var(--pnl-accent); background: rgb(var(--pnl-accent-rgb) / 0.12); color: var(--pnl-accent); font-weight: 600; }
 
+/* WhatsApp — conexão */
+.wa-qr { display: flex; gap: 1.6rem; flex-wrap: wrap; align-items: flex-start; }
+.wa-qr img { border-radius: 12px; border: 1px solid var(--pnl-line); background: #fff; padding: 8px; }
+.wa-conectado { display: flex; align-items: center; gap: 0.9rem; padding: 1rem 1.2rem; border: 1px solid rgb(46 160 67 / 0.4); background: rgb(46 160 67 / 0.08); border-radius: var(--radius-lg); }
+.wa-dot { width: 0.85rem; height: 0.85rem; border-radius: 50%; background: #2ea043; box-shadow: 0 0 0 4px rgb(46 160 67 / 0.18); flex: none; }
+
 /* =============================================================================
    COMPONENTES DA REFERÊNCIA (site público — home + páginas internas)
    Espelham o discipularcompleto.html. Usam os mesmos tokens do tema, então

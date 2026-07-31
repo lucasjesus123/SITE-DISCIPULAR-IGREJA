@@ -46,6 +46,12 @@ const schema = z.object({
   YOUTUBE_API_KEY: z.string().optional().default(""),
   YOUTUBE_LIVE_CACHE_SECONDS: z.coerce.number().int().min(15).default(60),
 
+  // WhatsApp (uazapi). O Admin token é a chave-mestra da conta uazapi — fica
+  // SÓ aqui, no servidor, nunca no navegador. Sem ele, a aba de WhatsApp
+  // aparece mas informa que ainda não foi configurada.
+  UAZAPI_BASE_URL: z.string().url().default("https://free.uazapi.com"),
+  UAZAPI_ADMIN_TOKEN: z.string().optional().default(""),
+
   SMTP_HOST: z.string().optional().default(""),
   SMTP_PORT: z.coerce.number().int().optional().default(587),
   SMTP_USER: z.string().optional().default(""),

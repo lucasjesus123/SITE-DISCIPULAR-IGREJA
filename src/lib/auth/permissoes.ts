@@ -54,7 +54,9 @@ export type Permissao =
   | "usuarios.gerenciar"
   | "config.gerenciar"
   | "auditoria.ler"
-  | "arquivos.enviar";
+  | "arquivos.enviar"
+  // WhatsApp (conectar número, enviar, automações)
+  | "whatsapp.gerenciar";
 
 /**
  * Matriz de permissões.
@@ -121,6 +123,7 @@ const PERMISSOES_POR_PAPEL: Record<Papel, ReadonlySet<Permissao>> = {
     "site.publicar",
     "usuarios.ler",
     "arquivos.enviar",
+    "whatsapp.gerenciar",
   ]),
 
   /** Admin do tenant: tudo dentro da própria igreja. */
@@ -135,6 +138,7 @@ const PERMISSOES_POR_PAPEL: Record<Papel, ReadonlySet<Permissao>> = {
     "site.ler", "site.editar", "site.publicar",
     "usuarios.ler", "usuarios.gerenciar",
     "config.gerenciar", "auditoria.ler", "arquivos.enviar",
+    "whatsapp.gerenciar",
   ]),
 };
 

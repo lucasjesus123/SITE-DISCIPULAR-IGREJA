@@ -84,6 +84,7 @@ model Tenant {
   liveConfig    LiveConfig?
   auditoria     AuditLog[]
   notificacoes  Notificacao[]
+  whatsapp      WhatsappInstance?
 
   @@index([status])
   @@map("tenants")
@@ -289,6 +290,32 @@ model PlatformAuditLog {
 }
 
 // =============================================================================
+// -----------------------------------------------------------------------------
+// WhatsApp (uazapi) — 1 instância/número por igreja.
+//
+// tenantId é a PK: cada igreja tem no máximo uma conexão. O `uazToken` é a
+// chave da instância na uazapi — SEGREDO, só o backend lê (nunca vai ao
+// navegador). O Admin token da uazapi NÃO fica aqui: é global da plataforma,
+// em variável de ambiente (UAZAPI_ADMIN_TOKEN).
+// -----------------------------------------------------------------------------
+model WhatsappInstance {
+  tenantId String @id
+
+  uazInstanceId String
+  uazToken      String
+  status        String    @default("desconectado") // desconectado | conectando | conectado
+  numero        String?   @db.VarChar(20)
+  perfilNome    String?   @db.VarChar(120)
+  conectadoEm   DateTime?
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("whatsapp_instances")
+}
+
 // DADOS DA IGREJA (tenant-scoped — todos com tenantId)
 // =============================================================================
 
