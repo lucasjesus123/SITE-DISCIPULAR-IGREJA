@@ -63,7 +63,7 @@ export default async function CriancasKids() {
                     {criancas.map((c) => (
                       <tr key={c.id}>
                         <td style={{ fontWeight: 600 }}>
-                          {c.nome}
+                          <Link href={`/painel/kids/crianca/${c.id}`}>{c.nome}</Link>
                           {c.alergias && <span className="etiqueta etiqueta--urgente" style={{ marginLeft: ".5rem" }}>Alergia</span>}
                         </td>
                         <td style={{ color: "var(--pnl-text-dim)" }}>{c.salaPadrao?.nome ?? "—"}</td>

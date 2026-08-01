@@ -1489,6 +1489,22 @@ async function main(): Promise<void> {
         },
       });
     }
+    // Passaporte de demonstração: medalhas + linha do tempo.
+    const temConquista = await db.conquistaKids.count({ where: { criancaId } });
+    if (temConquista === 0) {
+      await db.conquistaKids.createMany({
+        data: [
+          { tenantId: discipular.id, criancaId, nome: "Primeira visita", icone: "estrela" },
+          { tenantId: discipular.id, criancaId, nome: "Decorou o versículo", icone: "ouro" },
+        ],
+      });
+      await db.evolucaoKids.createMany({
+        data: [
+          { tenantId: discipular.id, criancaId, tipo: "MARCO", titulo: "Primeira vez na salinha", data: new Date("2026-06-01T00:00:00.000Z") },
+          { tenantId: discipular.id, criancaId, tipo: "LICAO", titulo: "Aprendeu a história de Davi e Golias", data: new Date("2026-07-06T00:00:00.000Z") },
+        ],
+      });
+    }
   }
 
   // --- Agenda -----------------------------------------------------------------

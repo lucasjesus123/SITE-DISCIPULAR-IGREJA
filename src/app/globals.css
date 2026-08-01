@@ -1275,6 +1275,13 @@ input, textarea, select { font: inherit; color: inherit; }
 .kids-codigo__rot { display: block; font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--pnl-text-dim); font-weight: 700; }
 .kids-codigo__val { display: block; font-family: var(--font-display); font-size: 2.6rem; letter-spacing: 0.28em; margin: 0.4rem 0; color: var(--pnl-accent); }
 .kids-codigo__nota { display: block; font-size: 0.8rem; color: var(--pnl-text-dim); }
+.kids-timeline { display: grid; gap: 0.9rem; }
+.kids-timeline__item { position: relative; padding-left: 1.1rem; border-left: 2px solid rgb(var(--pnl-accent-rgb) / 0.35); }
+.kids-timeline__item::before { content: ""; position: absolute; left: -6px; top: 0.15rem; width: 10px; height: 10px; border-radius: 50%; background: var(--pnl-accent); }
+.kids-timeline__tipo { font-size: 0.66rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: var(--pnl-accent); }
+.kids-timeline__titulo { font-weight: 600; margin-top: 0.1rem; }
+.kids-timeline__desc { color: var(--pnl-text-dim); font-size: 0.86rem; }
+.kids-timeline__data { color: var(--pnl-text-faint); font-size: 0.76rem; margin-top: 0.15rem; }
 
 /* Kanban de acompanhamento */
 .kanban { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(230px, 1fr); gap: 1rem; overflow-x: auto; padding-bottom: 0.5rem; }

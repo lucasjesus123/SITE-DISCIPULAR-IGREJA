@@ -130,6 +130,48 @@ export async function checkinCrianca(
   }
 }
 
+// ---- Passaporte Kids: evolução & conquistas ---------------------------------
+const schemaEvolucao = z.object({
+  criancaId: z.string().min(1),
+  tipo: z.enum(["PRESENCA", "LICAO", "MARCO", "CONQUISTA"]),
+  titulo: z.string().trim().min(2).max(160),
+  descricao: z.string().trim().max(1000).optional(),
+  data: z.string().min(1),
+});
+export async function registrarEvolucao(_e: ResultadoKids, formData: FormData): Promise<ResultadoKids> {
+  try {
+    const ctx = await guard();
+    const d = schemaEvolucao.parse(Object.fromEntries(formData));
+    const data = new Date(`${d.data}T00:00:00.000Z`);
+    if (Number.isNaN(data.getTime())) return { ok: false, mensagem: "Data inválida." };
+    await ctx.db.evolucaoKids.create({
+      data: { tenantId: ctx.tenant.id, criancaId: d.criancaId, tipo: d.tipo, titulo: d.titulo, descricao: d.descricao || null, data },
+    });
+    await auditar(ctx, { acao: "kids.evolucao", alvoTipo: "Crianca", alvoId: d.criancaId });
+    revalidatePath(`/painel/kids/crianca/${d.criancaId}`);
+    return { ok: true, mensagem: "Registro adicionado à linha do tempo." };
+  } catch (erro) {
+    return tratar(erro, "registrarEvolucao");
+  }
+}
+
+/** Concede uma medalha (conquista) e a registra também na linha do tempo. */
+export async function darConquista(criancaId: string, nome: string, icone: string): Promise<{ ok: boolean; mensagem?: string }> {
+  try {
+    const ctx = await guard();
+    await ctx.db.conquistaKids.create({ data: { tenantId: ctx.tenant.id, criancaId, nome, icone } });
+    await ctx.db.evolucaoKids.create({
+      data: { tenantId: ctx.tenant.id, criancaId, tipo: "CONQUISTA", titulo: `Conquista: ${nome}`, data: new Date() },
+    });
+    await auditar(ctx, { acao: "kids.conquista", alvoTipo: "Crianca", alvoId: criancaId, detalhes: { nome } });
+    revalidatePath(`/painel/kids/crianca/${criancaId}`);
+    return { ok: true };
+  } catch (erro) {
+    const m = erro instanceof ErroKids ? erro.message : "Não foi possível conceder a medalha.";
+    return { ok: false, mensagem: m };
+  }
+}
+
 // ---- Check-out --------------------------------------------------------------
 export async function checkoutCrianca(
   sessaoId: string,
