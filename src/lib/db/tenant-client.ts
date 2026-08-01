@@ -76,6 +76,7 @@ const MODELOS_TENANT = new Set<string>([
   "QrTokenKids",
   "EvolucaoKids",
   "ConquistaKids",
+  "MensagemTemplate",
 ]);
 
 /**

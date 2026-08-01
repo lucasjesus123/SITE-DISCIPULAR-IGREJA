@@ -1507,6 +1507,14 @@ async function main(): Promise<void> {
     }
   }
 
+  // --- Templates de mensagem (automações) -------------------------------------
+  {
+    const { TEMPLATES_PADRAO } = await import("@/lib/mensagens/template");
+    for (const t of TEMPLATES_PADRAO) {
+      await garantir(db.mensagemTemplate, { chave: t.chave }, { chave: t.chave, titulo: t.titulo, corpo: t.corpo, ativo: true });
+    }
+  }
+
   // --- Agenda -----------------------------------------------------------------
 
   const agenda: {

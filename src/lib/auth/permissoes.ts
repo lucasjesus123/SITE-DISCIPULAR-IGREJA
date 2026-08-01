@@ -62,7 +62,9 @@ export type Permissao =
   // Inscrições (criar eventos/cursos, ver inscritos)
   | "inscricoes.gerenciar"
   // Kids (ministério infantil: cadastro, check-in/out)
-  | "kids.gerenciar";
+  | "kids.gerenciar"
+  // Automações (editar templates de mensagem)
+  | "automacoes.gerenciar";
 
 /**
  * Matriz de permissões.
@@ -102,6 +104,7 @@ const PERMISSOES_POR_PAPEL: Record<Papel, ReadonlySet<Permissao>> = {
     "cursos.gerenciar",
     "inscricoes.gerenciar",
     "kids.gerenciar",
+    "automacoes.gerenciar",
     "arquivos.enviar",
     "site.ler",
   ]),
@@ -135,6 +138,7 @@ const PERMISSOES_POR_PAPEL: Record<Papel, ReadonlySet<Permissao>> = {
     "financeiro.gerenciar",
     "inscricoes.gerenciar",
     "kids.gerenciar",
+    "automacoes.gerenciar",
   ]),
 
   /** Admin do tenant: tudo dentro da própria igreja. */
@@ -150,6 +154,7 @@ const PERMISSOES_POR_PAPEL: Record<Papel, ReadonlySet<Permissao>> = {
     "usuarios.ler", "usuarios.gerenciar",
     "config.gerenciar", "auditoria.ler", "arquivos.enviar",
     "whatsapp.gerenciar", "financeiro.gerenciar", "inscricoes.gerenciar", "kids.gerenciar",
+    "automacoes.gerenciar",
   ]),
 };
 

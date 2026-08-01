@@ -99,6 +99,7 @@ model Tenant {
   qrTokensKids        QrTokenKids[]
   evolucoesKids       EvolucaoKids[]
   conquistasKids      ConquistaKids[]
+  templatesMensagem   MensagemTemplate[]
 
   @@index([status])
   @@map("tenants")
@@ -1524,4 +1525,29 @@ model ConquistaKids {
 
   @@index([tenantId, criancaId])
   @@map("conquistas_kids")
+}
+
+// =============================================================================
+// TEMPLATES DE MENSAGEM — automações editáveis pela secretaria.
+// O corpo aceita variáveis {nome}, {igreja}, {data}, {assinatura}, etc., que o
+// renderizador (src/lib/mensagens/template.ts) substitui na hora do envio.
+// =============================================================================
+model MensagemTemplate {
+  id       String @id @default(cuid())
+  tenantId String
+
+  /// Identificador da automação: 'boas_vindas_visitante', 'aniversario_vida',
+  /// 'aniversario_batismo', 'convite_retorno', etc.
+  chave  String  @db.VarChar(60)
+  titulo String  @db.VarChar(120)
+  corpo  String  @db.Text
+  ativo  Boolean @default(true)
+
+  atualizadoEm DateTime @updatedAt
+  criadoEm     DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, chave])
+  @@map("mensagens_templates")
 }
