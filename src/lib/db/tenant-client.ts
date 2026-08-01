@@ -67,6 +67,8 @@ const MODELOS_TENANT = new Set<string>([
   "PartidaFinanceira",
   "FechamentoFinanceiro",
   "AcessoFinanceiro",
+  "Inscricao",
+  "InscricaoResposta",
 ]);
 
 /**

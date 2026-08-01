@@ -1428,6 +1428,33 @@ async function main(): Promise<void> {
     await lancar("seed:missoes:1", "Envio missionário mensal", SEDE, "400,00", "4.3", "1.1.2");
   }
 
+  // --- Inscrições (demonstração) ----------------------------------------------
+  {
+    const inscId = await garantir(
+      db.inscricao,
+      { slug: "retiro-de-casais-2026" },
+      {
+        titulo: "Retiro de Casais 2026",
+        descricao:
+          "Um fim de semana para fortalecer o casamento à luz da Palavra, com preleções, descanso e comunhão. Vagas limitadas — garanta a sua!",
+        slug: "retiro-de-casais-2026",
+        ativa: true,
+        pedirTelefone: true,
+        pedirEmail: false,
+        criadoPorId: "seed",
+      },
+    );
+    const jaTem = await db.inscricaoResposta.count({ where: { inscricaoId: inscId } });
+    if (jaTem === 0) {
+      await db.inscricaoResposta.createMany({
+        data: [
+          { tenantId: discipular.id, inscricaoId: inscId, nome: "Alice e Bruno Kunzler", telefone: "51999000201" },
+          { tenantId: discipular.id, inscricaoId: inscId, nome: "Queila e Fábio Radaelli", telefone: "51999000202" },
+        ],
+      });
+    }
+  }
+
   // --- Agenda -----------------------------------------------------------------
 
   const agenda: {

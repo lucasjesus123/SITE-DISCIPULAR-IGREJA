@@ -66,30 +66,32 @@ model Tenant {
   atualizadoEm DateTime  @updatedAt
   excluidoEm   DateTime?
 
-  dominios        TenantDomain[]
-  membros         Membership[]
-  pessoas         Pessoa[]
-  celulas         Celula[]
-  campi           Campus[]
-  agendas         AgendaItem[]
-  cursos          Curso[]
-  matriculas      Matricula[]
-  pedidosOracao   PedidoOracao[]
-  batismos        SolicitacaoBatismo[]
-  submissoes      Submissao[]
-  mensagens       Mensagem[]
-  arquivos        Arquivo[]
-  siteConfig      SiteConfig?
-  sitePaginas     SitePagina[]
-  liveConfig      LiveConfig?
-  auditoria       AuditLog[]
-  notificacoes    Notificacao[]
-  whatsapp        WhatsappInstance?
-  contasContabeis ContaContabil[]
-  lancamentosFin  LancamentoFinanceiro[]
-  partidasFin     PartidaFinanceira[]
-  fechamentosFin  FechamentoFinanceiro[]
-  acessosFin      AcessoFinanceiro[]
+  dominios           TenantDomain[]
+  membros            Membership[]
+  pessoas            Pessoa[]
+  celulas            Celula[]
+  campi              Campus[]
+  agendas            AgendaItem[]
+  cursos             Curso[]
+  matriculas         Matricula[]
+  pedidosOracao      PedidoOracao[]
+  batismos           SolicitacaoBatismo[]
+  submissoes         Submissao[]
+  mensagens          Mensagem[]
+  arquivos           Arquivo[]
+  siteConfig         SiteConfig?
+  sitePaginas        SitePagina[]
+  liveConfig         LiveConfig?
+  auditoria          AuditLog[]
+  notificacoes       Notificacao[]
+  whatsapp           WhatsappInstance?
+  contasContabeis    ContaContabil[]
+  lancamentosFin     LancamentoFinanceiro[]
+  partidasFin        PartidaFinanceira[]
+  fechamentosFin     FechamentoFinanceiro[]
+  acessosFin         AcessoFinanceiro[]
+  inscricoes         Inscricao[]
+  inscricaoRespostas InscricaoResposta[]
 
   @@index([status])
   @@map("tenants")
@@ -1284,4 +1286,54 @@ model AcessoFinanceiro {
   @@unique([tenantId, userId, campusId])
   @@index([tenantId, userId])
   @@map("acessos_financeiros")
+}
+
+// =============================================================================
+// INSCRIÇÕES — a secretaria cria um "evento/curso" com link compartilhável;
+// as pessoas se inscrevem em 1 toque (site/app) e a secretaria vê a lista.
+// =============================================================================
+model Inscricao {
+  id       String @id @default(cuid())
+  tenantId String
+
+  titulo    String  @db.VarChar(160)
+  descricao String? @db.VarChar(2000)
+  /// Usado no link público /i/<slug>. Único por igreja.
+  slug      String  @db.VarChar(80)
+
+  ativa         Boolean   @default(true)
+  encerraEm     DateTime?
+  pedirTelefone Boolean   @default(true)
+  pedirEmail    Boolean   @default(false)
+
+  criadoPorId String
+  criadoEm    DateTime @default(now())
+
+  tenant    Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  respostas InscricaoResposta[]
+
+  @@unique([tenantId, slug])
+  @@index([tenantId, ativa, criadoEm])
+  @@map("inscricoes")
+}
+
+model InscricaoResposta {
+  id       String @id @default(cuid())
+  tenantId String
+
+  inscricaoId String
+
+  nome       String  @db.VarChar(160)
+  telefone   String? @db.VarChar(20)
+  email      String? @db.VarChar(254)
+  observacao String? @db.VarChar(500)
+  ip         String? @db.VarChar(64)
+
+  criadoEm DateTime @default(now())
+
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  inscricao Inscricao @relation(fields: [inscricaoId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, inscricaoId, criadoEm])
+  @@map("inscricao_respostas")
 }
