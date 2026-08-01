@@ -1265,6 +1265,17 @@ input, textarea, select { font: inherit; color: inherit; }
 }
 .paginacao [aria-current="page"] { border-color: var(--pnl-accent); background: rgb(var(--pnl-accent-rgb) / 0.12); color: var(--pnl-accent); font-weight: 600; }
 
+/* KIDS — check-in/out (sub-tema lúdico) */
+.kids-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.9rem; }
+.kids-card { background: var(--pnl-surface); border: 1px solid var(--pnl-line); border-radius: 16px; padding: 1rem; }
+.kids-card__nome { font-weight: 700; font-size: 1rem; }
+.kids-card__sala { color: var(--pnl-text-dim); font-size: 0.82rem; }
+.kids-alerta { margin-top: 0.5rem; font-size: 0.82rem; font-weight: 600; color: #b42318; background: #fff4f2; border: 1px solid rgb(180 35 24 / 0.25); border-radius: 8px; padding: 0.35rem 0.55rem; }
+.kids-codigo { text-align: center; border: 2px dashed var(--pnl-accent); border-radius: 16px; padding: 1.2rem; background: rgb(var(--pnl-accent-rgb) / 0.06); }
+.kids-codigo__rot { display: block; font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--pnl-text-dim); font-weight: 700; }
+.kids-codigo__val { display: block; font-family: var(--font-display); font-size: 2.6rem; letter-spacing: 0.28em; margin: 0.4rem 0; color: var(--pnl-accent); }
+.kids-codigo__nota { display: block; font-size: 0.8rem; color: var(--pnl-text-dim); }
+
 /* Kanban de acompanhamento */
 .kanban { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(230px, 1fr); gap: 1rem; overflow-x: auto; padding-bottom: 0.5rem; }
 @media (max-width: 760px) { .kanban { grid-auto-flow: row; grid-auto-columns: auto; } }

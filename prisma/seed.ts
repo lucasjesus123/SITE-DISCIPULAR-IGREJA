@@ -1455,6 +1455,42 @@ async function main(): Promise<void> {
     }
   }
 
+  // --- KIDS (demonstração) ----------------------------------------------------
+  {
+    const salaId = await garantir(
+      db.salaKids,
+      { nome: "Discípulos Kids (4-6)" },
+      { nome: "Discípulos Kids (4-6)", faixaEtaria: "4 a 6 anos", capacidade: 25, ativa: true, ordem: 0 },
+    );
+    const criancaId = await garantir(
+      db.crianca,
+      { nome: "Lorenzo (demonstração)" },
+      {
+        nome: "Lorenzo (demonstração)",
+        apelido: "Lolo",
+        dataNascimento: new Date("2019-05-10T00:00:00.000Z"),
+        salaPadraoId: salaId,
+        alergias: "Amendoim",
+        consentimentoLgpd: true,
+        consentimentoFoto: false,
+      },
+    );
+    const temResp = await db.criancaResponsavel.count({ where: { criancaId } });
+    if (temResp === 0) {
+      await db.criancaResponsavel.create({
+        data: {
+          tenantId: discipular.id,
+          criancaId,
+          responsavelUserId: idSuperAdmin,
+          nome: "Responsável (demonstração)",
+          parentesco: "Pai",
+          autorizadoRetirar: true,
+          principal: true,
+        },
+      });
+    }
+  }
+
   // --- Agenda -----------------------------------------------------------------
 
   const agenda: {
