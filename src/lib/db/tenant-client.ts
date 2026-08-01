@@ -69,6 +69,13 @@ const MODELOS_TENANT = new Set<string>([
   "AcessoFinanceiro",
   "Inscricao",
   "InscricaoResposta",
+  "Crianca",
+  "CriancaResponsavel",
+  "SalaKids",
+  "SessaoSalaKids",
+  "QrTokenKids",
+  "EvolucaoKids",
+  "ConquistaKids",
 ]);
 
 /**

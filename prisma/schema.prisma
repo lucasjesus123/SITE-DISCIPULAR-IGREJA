@@ -66,32 +66,39 @@ model Tenant {
   atualizadoEm DateTime  @updatedAt
   excluidoEm   DateTime?
 
-  dominios           TenantDomain[]
-  membros            Membership[]
-  pessoas            Pessoa[]
-  celulas            Celula[]
-  campi              Campus[]
-  agendas            AgendaItem[]
-  cursos             Curso[]
-  matriculas         Matricula[]
-  pedidosOracao      PedidoOracao[]
-  batismos           SolicitacaoBatismo[]
-  submissoes         Submissao[]
-  mensagens          Mensagem[]
-  arquivos           Arquivo[]
-  siteConfig         SiteConfig?
-  sitePaginas        SitePagina[]
-  liveConfig         LiveConfig?
-  auditoria          AuditLog[]
-  notificacoes       Notificacao[]
-  whatsapp           WhatsappInstance?
-  contasContabeis    ContaContabil[]
-  lancamentosFin     LancamentoFinanceiro[]
-  partidasFin        PartidaFinanceira[]
-  fechamentosFin     FechamentoFinanceiro[]
-  acessosFin         AcessoFinanceiro[]
-  inscricoes         Inscricao[]
-  inscricaoRespostas InscricaoResposta[]
+  dominios            TenantDomain[]
+  membros             Membership[]
+  pessoas             Pessoa[]
+  celulas             Celula[]
+  campi               Campus[]
+  agendas             AgendaItem[]
+  cursos              Curso[]
+  matriculas          Matricula[]
+  pedidosOracao       PedidoOracao[]
+  batismos            SolicitacaoBatismo[]
+  submissoes          Submissao[]
+  mensagens           Mensagem[]
+  arquivos            Arquivo[]
+  siteConfig          SiteConfig?
+  sitePaginas         SitePagina[]
+  liveConfig          LiveConfig?
+  auditoria           AuditLog[]
+  notificacoes        Notificacao[]
+  whatsapp            WhatsappInstance?
+  contasContabeis     ContaContabil[]
+  lancamentosFin      LancamentoFinanceiro[]
+  partidasFin         PartidaFinanceira[]
+  fechamentosFin      FechamentoFinanceiro[]
+  acessosFin          AcessoFinanceiro[]
+  inscricoes          Inscricao[]
+  inscricaoRespostas  InscricaoResposta[]
+  criancas            Crianca[]
+  criancaResponsaveis CriancaResponsavel[]
+  salasKids           SalaKids[]
+  sessoesKids         SessaoSalaKids[]
+  qrTokensKids        QrTokenKids[]
+  evolucoesKids       EvolucaoKids[]
+  conquistasKids      ConquistaKids[]
 
   @@index([status])
   @@map("tenants")
@@ -1336,4 +1343,185 @@ model InscricaoResposta {
 
   @@index([tenantId, inscricaoId, criadoEm])
   @@map("inscricao_respostas")
+}
+
+// =============================================================================
+// KIDS — Ministério Infantil. DADOS DE MENORES: o núcleo mais sensível.
+// Regras: entrega só com código de segurança; QR opaco/assinado/efêmero;
+// vínculo verificado criança↔responsável; auditoria total; consentimento LGPD.
+// =============================================================================
+
+enum StatusSessaoKids {
+  EM_SALA
+  RETIRADA
+}
+
+enum TipoEvolucao {
+  PRESENCA
+  LICAO
+  MARCO
+  CONQUISTA
+}
+
+model Crianca {
+  id       String @id @default(cuid())
+  tenantId String
+
+  nome           String   @db.VarChar(160)
+  apelido        String?  @db.VarChar(60)
+  dataNascimento DateTime @db.Date
+  fotoId         String? // Arquivo (só com consentimento de foto)
+
+  alergias              String? @db.VarChar(500)
+  restricoes            String? @db.VarChar(500)
+  necessidadesEspeciais String? @db.VarChar(500)
+  observacoes           String? @db.VarChar(1000)
+
+  salaPadraoId String?
+
+  /// Consentimentos LGPD (art. 14). Sem o consentimento de dados, a criança
+  /// não opera no sistema. Consentimento de foto é separado e revogável.
+  consentimentoLgpd Boolean @default(false)
+  consentimentoFoto Boolean @default(false)
+
+  criadoEm     DateTime  @default(now())
+  atualizadoEm DateTime  @updatedAt
+  excluidoEm   DateTime?
+
+  tenant       Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  salaPadrao   SalaKids?            @relation(fields: [salaPadraoId], references: [id], onDelete: SetNull)
+  responsaveis CriancaResponsavel[]
+  sessoes      SessaoSalaKids[]
+  evolucoes    EvolucaoKids[]
+  conquistas   ConquistaKids[]
+
+  @@index([tenantId, excluidoEm, nome])
+  @@map("criancas")
+}
+
+model CriancaResponsavel {
+  id       String @id @default(cuid())
+  tenantId String
+
+  criancaId         String
+  /// Conta do responsável (User global). O acompanhamento ao vivo só é liberado
+  /// para contas comprovadamente vinculadas — é aqui que o anti-IDOR começa.
+  responsavelUserId String
+  nome              String  @db.VarChar(160)
+  parentesco        String? @db.VarChar(40)
+  whatsapp          String? @db.VarChar(20)
+
+  autorizadoRetirar Boolean @default(true)
+  principal         Boolean @default(false)
+
+  criadoEm DateTime @default(now())
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  crianca Crianca @relation(fields: [criancaId], references: [id], onDelete: Cascade)
+
+  @@unique([criancaId, responsavelUserId])
+  @@index([tenantId, responsavelUserId])
+  @@map("crianca_responsaveis")
+}
+
+model SalaKids {
+  id       String @id @default(cuid())
+  tenantId String
+
+  nome        String  @db.VarChar(80)
+  faixaEtaria String? @db.VarChar(40)
+  capacidade  Int?
+  ativa       Boolean @default(true)
+  ordem       Int     @default(0)
+
+  criadoEm DateTime @default(now())
+
+  tenant   Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  criancas Crianca[]
+  sessoes  SessaoSalaKids[]
+
+  @@index([tenantId, ativa, ordem])
+  @@map("salas_kids")
+}
+
+model SessaoSalaKids {
+  id       String @id @default(cuid())
+  tenantId String
+
+  criancaId String
+  salaId    String
+
+  cultoData           DateTime         @db.Date
+  status              StatusSessaoKids @default(EM_SALA)
+  /// HASH do código de segurança (nunca o código em claro).
+  codigoSegurancaHash String           @db.VarChar(64)
+
+  checkinEm         DateTime  @default(now())
+  checkinPor        String
+  checkoutEm        DateTime?
+  checkoutPor       String?
+  /// Qual responsável autorizado retirou (auditoria da entrega).
+  retiradoPorUserId String?
+
+  tenant  Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  crianca Crianca       @relation(fields: [criancaId], references: [id], onDelete: Cascade)
+  sala    SalaKids      @relation(fields: [salaId], references: [id], onDelete: Cascade)
+  tokens  QrTokenKids[]
+
+  @@index([tenantId, status, cultoData])
+  @@index([tenantId, criancaId, cultoData])
+  @@map("sessoes_sala_kids")
+}
+
+model QrTokenKids {
+  id       String @id @default(cuid())
+  tenantId String
+
+  sessaoId String
+  expiraEm DateTime
+  usado    Boolean  @default(false)
+
+  criadoEm DateTime @default(now())
+
+  tenant Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  sessao SessaoSalaKids @relation(fields: [sessaoId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, sessaoId])
+  @@map("qr_tokens_kids")
+}
+
+model EvolucaoKids {
+  id       String @id @default(cuid())
+  tenantId String
+
+  criancaId String
+  tipo      TipoEvolucao
+  titulo    String       @db.VarChar(160)
+  descricao String?      @db.VarChar(1000)
+  data      DateTime     @db.Date
+  midiaId   String?
+
+  criadoEm DateTime @default(now())
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  crianca Crianca @relation(fields: [criancaId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, criancaId, data])
+  @@map("evolucoes_kids")
+}
+
+model ConquistaKids {
+  id       String @id @default(cuid())
+  tenantId String
+
+  criancaId     String
+  nome          String   @db.VarChar(80)
+  icone         String   @db.VarChar(40)
+  conquistadaEm DateTime @default(now())
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  crianca Crianca @relation(fields: [criancaId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, criancaId])
+  @@map("conquistas_kids")
 }

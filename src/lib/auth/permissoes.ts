@@ -60,7 +60,9 @@ export type Permissao =
   // Financeiro (lançar, estornar, transferir, ver saldos)
   | "financeiro.gerenciar"
   // Inscrições (criar eventos/cursos, ver inscritos)
-  | "inscricoes.gerenciar";
+  | "inscricoes.gerenciar"
+  // Kids (ministério infantil: cadastro, check-in/out)
+  | "kids.gerenciar";
 
 /**
  * Matriz de permissões.
@@ -99,6 +101,7 @@ const PERMISSOES_POR_PAPEL: Record<Papel, ReadonlySet<Permissao>> = {
     "agenda.gerenciar",
     "cursos.gerenciar",
     "inscricoes.gerenciar",
+    "kids.gerenciar",
     "arquivos.enviar",
     "site.ler",
   ]),
@@ -131,6 +134,7 @@ const PERMISSOES_POR_PAPEL: Record<Papel, ReadonlySet<Permissao>> = {
     "whatsapp.gerenciar",
     "financeiro.gerenciar",
     "inscricoes.gerenciar",
+    "kids.gerenciar",
   ]),
 
   /** Admin do tenant: tudo dentro da própria igreja. */
@@ -145,7 +149,7 @@ const PERMISSOES_POR_PAPEL: Record<Papel, ReadonlySet<Permissao>> = {
     "site.ler", "site.editar", "site.publicar",
     "usuarios.ler", "usuarios.gerenciar",
     "config.gerenciar", "auditoria.ler", "arquivos.enviar",
-    "whatsapp.gerenciar", "financeiro.gerenciar", "inscricoes.gerenciar",
+    "whatsapp.gerenciar", "financeiro.gerenciar", "inscricoes.gerenciar", "kids.gerenciar",
   ]),
 };
 
