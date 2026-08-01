@@ -73,11 +73,13 @@ const NAVEGACAO: GrupoNav[] = [
 
 export function LateralPainel({
   nomeIgreja,
+  logoUrl,
   nomeUsuario,
   papel,
   contadores,
 }: {
   nomeIgreja: string;
+  logoUrl?: string | null;
   nomeUsuario: string;
   papel: Papel;
   contadores: { caixaEntrada: number; oracoes: number; batismos: number };
@@ -107,8 +109,15 @@ export function LateralPainel({
   return (
     <aside className="painel__lateral">
       <div className="painel__marca">
-        <small>Painel</small>
-        {nomeIgreja}
+        {logoUrl ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img src={logoUrl} alt={nomeIgreja} className="painel__logo" />
+        ) : (
+          <>
+            <small>Painel</small>
+            {nomeIgreja}
+          </>
+        )}
       </div>
 
       <nav className="painel__nav" aria-label="Menu do painel">

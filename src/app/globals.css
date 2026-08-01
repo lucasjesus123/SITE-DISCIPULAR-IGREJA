@@ -936,32 +936,63 @@ input, textarea, select { font: inherit; color: inherit; }
    (a área restrita tem identidade diferente do site público).
    -------------------------------------------------------------------------- */
 .painel {
-  /* padrão = CLARO */
+  /* Fonte de UI estilo SaaS — Inter. Sobrepõe a fonte do tema do tenant
+     DENTRO do painel (o site público continua com a marca Archivo). */
+  --pnl-font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: var(--pnl-font);
+  --font-sans: var(--pnl-font);
+
+  /* padrão = CLARO (conteúdo claro + SIDEBAR SEMPRE ESCURA, cara de dashboard) */
   --pnl-pad: clamp(1.2rem, 3vw, 2.6rem);
-  --pnl-bg: #f3f5f9;
+  --pnl-bg: #f4f6fa;
   --pnl-surface: #ffffff;
   --pnl-surface-2: #eef1f6;
   --pnl-text: #10131a;
   --pnl-text-dim: rgb(16 19 26 / 0.62);
   --pnl-text-faint: rgb(16 19 26 / 0.45);
   --pnl-line: rgb(16 19 26 / 0.10);
-  --pnl-side-bg: #ffffff;
-  --pnl-side-text: #3a3f52;
-  --pnl-side-dim: rgb(16 19 26 / 0.55);
-  --pnl-side-label: rgb(16 19 26 / 0.45);
-  --pnl-side-line: rgb(16 19 26 / 0.08);
-  --pnl-side-hover: rgb(16 19 26 / 0.05);
+  --pnl-side-bg: #0d1017;
+  --pnl-side-text: #e7e9ef;
+  --pnl-side-dim: rgb(231 233 239 / 0.62);
+  --pnl-side-label: rgb(231 233 239 / 0.45);
+  --pnl-side-line: rgb(255 255 255 / 0.09);
+  --pnl-side-hover: rgb(255 255 255 / 0.07);
   --pnl-accent: #3b6cf6;
   --pnl-accent-2: #7aa2ff;
   --pnl-accent-rgb: 59 108 246;
   --pnl-accent-contrast: #ffffff;
 
+  font-family: var(--pnl-font);
   display: grid;
   grid-template-columns: 264px 1fr;
   min-height: 100vh;
   background: var(--pnl-bg);
   color: var(--pnl-text);
 }
+
+/* Botões do painel: SEMPRE legíveis. Primário = acento (azul) com texto branco
+   — corrige a "tarja preta" (a base usava --gold/--ink, preto no preto). */
+.painel .btn {
+  --btn-bg: var(--pnl-accent);
+  --btn-fg: #ffffff;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  font-size: 0.85rem;
+  border-radius: 10px;
+}
+.painel .btn--sm { font-size: 0.78rem; }
+.painel .btn--ghost {
+  --btn-bg: transparent;
+  --btn-fg: var(--pnl-text);
+  border-color: var(--pnl-line);
+}
+.painel .btn--ghost:hover:not(:disabled) { border-color: var(--pnl-accent); color: var(--pnl-accent); box-shadow: none; }
+.painel .btn--outline-gold {
+  --btn-bg: transparent;
+  --btn-fg: var(--pnl-text);
+  border-color: var(--pnl-line);
+}
+.painel .btn--outline-gold:hover:not(:disabled) { --btn-fg: #fff; background: var(--pnl-accent); border-color: var(--pnl-accent); }
 .painel[data-tema="escuro"] {
   --pnl-bg: #0a0c11;
   --pnl-surface: #14171f;
@@ -1017,6 +1048,7 @@ input, textarea, select { font: inherit; color: inherit; }
   margin-bottom: 0.35rem;
   font-weight: 700;
 }
+.painel__logo { display: block; max-height: 42px; width: auto; max-width: 100%; }
 
 .painel__nav { display: grid; gap: 0.1rem; }
 .painel__grupo {

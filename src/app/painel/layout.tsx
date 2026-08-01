@@ -10,6 +10,7 @@ import { cssDoTema } from "@/lib/site/theme";
 import { obterTokenCsrf } from "@/lib/security/csrf";
 import { LateralPainel } from "@/components/painel/Lateral";
 import { TopoPainel } from "@/components/painel/TopoPainel";
+import { urlArquivoPublico } from "@/lib/storage/urls";
 import "../globals.css";
 
 /**
@@ -72,9 +73,24 @@ export default async function LayoutPainel({ children }: { children: React.React
   // servidor evita o "flash" de tema errado no primeiro carregamento.
   const tema = cookieStore.get("tema-painel")?.value === "escuro" ? "escuro" : "claro";
 
+  // Logo para a sidebar (que é escura) — usa a marca clara. Fallback para a
+  // marca oficial da Discipular quando é o tenant-âncora.
+  const logoPainel = dados.config.logoClaroId
+    ? urlArquivoPublico(dados.config.logoClaroId)
+    : ctx.tenant.slug === "discipular"
+      ? "/marca/logo-white.png"
+      : null;
+
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: cssDoTema(dados.tema) }} />
+      {/* Fonte de UI do painel (Inter) — cara de SaaS. */}
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      />
 
       {/*
         Faixa de impersonação.
@@ -94,6 +110,7 @@ export default async function LayoutPainel({ children }: { children: React.React
       <div className="painel" data-tema={tema}>
         <LateralPainel
           nomeIgreja={dados.config.nomeExibicao}
+          logoUrl={logoPainel}
           nomeUsuario={ctx.sessao.nome}
           papel={ctx.papel}
           contadores={{
