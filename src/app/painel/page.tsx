@@ -2,6 +2,8 @@ import Link from "next/link";
 import { exigirAcessoTenant, filtroDeEscopo } from "@/lib/auth/rbac";
 import { contadoresTriagem } from "@/lib/services/submissoes";
 import { estadoAoVivo } from "@/lib/youtube/live";
+import { primeiroNome, rotuloTipo, tempoRelativo } from "@/lib/painel/formato";
+import { calcularAniversariantes, type ItemAniv } from "@/lib/painel/aniversariantes";
 
 export const dynamic = "force-dynamic";
 
@@ -82,7 +84,8 @@ export default async function PainelInicio() {
     estadoAoVivo(ctx.tenant.id),
   ]);
 
-  const aniversarios = calcularAniversariantes(pessoasAniversario);
+  const hojeIso = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(new Date());
+  const aniversarios = calcularAniversariantes(pessoasAniversario, hojeIso);
 
   const crescimento30d = await ctx.db.pessoa.count({
     where: { criadoEm: { gte: trintaDias }, excluidoEm: null, ...escopo },
@@ -297,98 +300,6 @@ function CartaoLink({
   );
 }
 
-function primeiroNome(nome: string): string {
-  return nome.split(" ")[0] ?? nome;
-}
-
-// -----------------------------------------------------------------------------
-// Aniversariantes
-// -----------------------------------------------------------------------------
-
-type ItemAniv = {
-  id: string;
-  nome: string;
-  telefone: string | null;
-  tipo: "vida" | "batismo";
-  dia: number;
-  mes: number;
-};
-
-type PessoaAniv = {
-  id: string;
-  nome: string;
-  telefone: string | null;
-  dataNascimento: Date | null;
-  dataBatismo: Date | null;
-};
-
-/**
- * Classifica aniversários por mês/dia (ignorando o ano) em três baldes SEM
- * repetição: hoje, próximos 7 dias e o resto do mês corrente. As datas `@db.Date`
- * chegam como meia-noite UTC, então lemos mês/dia em UTC — assim o dia não
- * "escorrega" por fuso.
- */
-function calcularAniversariantes(pessoas: PessoaAniv[]): {
-  hoje: ItemAniv[];
-  semana: ItemAniv[];
-  mes: ItemAniv[];
-} {
-  // Hoje em São Paulo (YYYY-MM-DD), sem depender do fuso do servidor.
-  const hojeSp = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/Sao_Paulo",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
-  const [anoH, mesH, diaH] = hojeSp.split("-").map(Number) as [number, number, number];
-
-  // Chave "mm-dd" dos próximos 7 dias (hoje = índice 0).
-  const proximos: string[] = [];
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(Date.UTC(anoH, mesH - 1, diaH + i, 12));
-    proximos.push(`${d.getUTCMonth() + 1}-${d.getUTCDate()}`);
-  }
-  const chaveHoje = `${mesH}-${diaH}`;
-
-  const entradas: ItemAniv[] = [];
-  for (const p of pessoas) {
-    if (p.dataNascimento) {
-      entradas.push({
-        id: `${p.id}-v`,
-        nome: p.nome,
-        telefone: p.telefone,
-        tipo: "vida",
-        mes: p.dataNascimento.getUTCMonth() + 1,
-        dia: p.dataNascimento.getUTCDate(),
-      });
-    }
-    if (p.dataBatismo) {
-      entradas.push({
-        id: `${p.id}-b`,
-        nome: p.nome,
-        telefone: p.telefone,
-        tipo: "batismo",
-        mes: p.dataBatismo.getUTCMonth() + 1,
-        dia: p.dataBatismo.getUTCDate(),
-      });
-    }
-  }
-
-  const hoje: ItemAniv[] = [];
-  const semana: ItemAniv[] = [];
-  const mes: ItemAniv[] = [];
-
-  for (const e of entradas) {
-    const chave = `${e.mes}-${e.dia}`;
-    if (chave === chaveHoje) hoje.push(e);
-    else if (proximos.includes(chave)) semana.push(e);
-    else if (e.mes === mesH) mes.push(e);
-  }
-
-  const porDia = (a: ItemAniv, b: ItemAniv) => a.dia - b.dia || a.nome.localeCompare(b.nome);
-  return { hoje: hoje.sort(porDia), semana: semana.sort(porDia), mes: mes.sort(porDia) };
-}
-
 function BlocoAniv({ titulo, itens, destaque }: { titulo: string; itens: ItemAniv[]; destaque?: boolean }) {
   return (
     <div className={`aniv-col${destaque ? " aniv-col--hoje" : ""}`}>
@@ -412,26 +323,3 @@ function BlocoAniv({ titulo, itens, destaque }: { titulo: string; itens: ItemAni
   );
 }
 
-export function rotuloTipo(tipo: string): string {
-  const mapa: Record<string, string> = {
-    VISITANTE: "Visitante",
-    NOVO_MEMBRO: "Novo membro",
-    BATISMO: "Batismo",
-    PEDIDO_ORACAO: "Oração",
-    CONTATO: "Contato",
-    INSCRICAO_CURSO: "Inscrição",
-    QUERO_CELULA: "Célula",
-    ACONSELHAMENTO: "Aconselhamento",
-  };
-  return mapa[tipo] ?? tipo;
-}
-
-export function tempoRelativo(data: Date): string {
-  const segundos = Math.floor((Date.now() - data.getTime()) / 1000);
-  if (segundos < 60) return "agora";
-  if (segundos < 3600) return `${Math.floor(segundos / 60)} min`;
-  if (segundos < 86400) return `${Math.floor(segundos / 3600)} h`;
-  const dias = Math.floor(segundos / 86400);
-  if (dias < 30) return `${dias} d`;
-  return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit" }).format(data);
-}

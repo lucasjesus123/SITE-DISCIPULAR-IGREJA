@@ -2,7 +2,7 @@ import Link from "next/link";
 import { z } from "zod";
 import { exigirPermissao } from "@/lib/auth/rbac";
 import { auditar } from "@/lib/audit";
-import { rotuloTipo, tempoRelativo } from "@/app/painel/page";
+import { rotuloTipo, tempoRelativo } from "@/lib/painel/formato";
 import { LinhaClicavel } from "@/components/painel/LinhaClicavel";
 import type { Prisma } from "@prisma/client";
 

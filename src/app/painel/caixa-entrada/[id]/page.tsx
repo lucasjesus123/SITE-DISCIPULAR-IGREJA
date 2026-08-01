@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { exigirPermissao } from "@/lib/auth/rbac";
 import { auditar } from "@/lib/audit";
 import { id as idSchema } from "@/lib/validation/comum";
-import { rotuloTipo } from "@/app/painel/page";
+import { rotuloTipo } from "@/lib/painel/formato";
 import { FormularioTriagem } from "@/components/painel/FormularioTriagem";
 
 export const dynamic = "force-dynamic";

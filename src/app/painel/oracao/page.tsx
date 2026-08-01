@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { exigirPermissao } from "@/lib/auth/rbac";
 import { auditar } from "@/lib/audit";
-import { tempoRelativo } from "@/app/painel/page";
+import { tempoRelativo } from "@/lib/painel/formato";
 import { AcoesOracao } from "@/components/painel/AcoesOracao";
 import type { Prisma } from "@prisma/client";
 

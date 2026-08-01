@@ -7,6 +7,7 @@ import { PlayerAoVivo } from "@/components/site/AoVivo";
 import { CopiarChave } from "@/components/site/CopiarChave";
 import { MolduraFoto } from "@/components/site/MolduraFoto";
 import { urlArquivoPublico } from "@/lib/storage/urls";
+import { formatarCnpj } from "@/lib/painel/formato";
 
 /**
  * Home do site da igreja.
@@ -21,13 +22,6 @@ import { urlArquivoPublico } from "@/lib/storage/urls";
  */
 
 const MARQUEE = ["Adoração", "Palavra", "Comunhão", "Discipulado", "Missão", "Avivamento"];
-
-function formatarCnpj(valor: string | null): string | null {
-  if (!valor) return null;
-  const d = valor.replace(/\D/g, "");
-  if (d.length !== 14) return valor;
-  return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}-${d.slice(12)}`;
-}
 
 export default async function Home() {
   const tenant = await tenantDaRequisicao();

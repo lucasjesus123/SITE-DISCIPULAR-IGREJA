@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { feixe, LARGURA_ONDA } from "@/lib/site/ondas";
 
 /**
  * Fundo animado da área restrita (login / recuperar senha).
@@ -8,37 +9,15 @@ import { useEffect, useRef } from "react";
  * É um campo de "ondas de seda": dezenas de linhas senoidais finas, com um
  * degradê verde→ciano→azul, deslizando em velocidades diferentes. Puro
  * SVG + CSS — nada de biblioteca externa (a CSP do sistema bloquearia) e
- * nada que dependa de rede.
+ * nada que dependa de rede. A geometria (pura e testada) vem de
+ * `src/lib/site/ondas.ts`; aqui só renderizamos e animamos.
  *
- * INTERATIVIDADE: as camadas fazem um leve parallax seguindo o cursor (e o
- * giroscópio no celular, quando disponível). Tudo isso é DESLIGADO para quem
- * pediu menos movimento no sistema (prefers-reduced-motion).
+ * INTERATIVIDADE: as camadas fazem um leve parallax seguindo o cursor. Tudo
+ * DESLIGADO para quem pediu menos movimento (prefers-reduced-motion).
  */
 
-const W = 1200; // largura lógica de UMA volta (o traço é desenhado até 2·W p/ loop perfeito)
+const W = LARGURA_ONDA;
 const H = 600;
-
-/** Gera o "d" de uma senoide desenhada de x=0 até 2·W, para deslizar sem emenda. */
-function linha(baseY: number, amp: number, wl: number, fase: number): string {
-  let d = "";
-  for (let x = 0; x <= 2 * W; x += 10) {
-    const y = baseY + amp * Math.sin((2 * Math.PI * x) / wl + fase);
-    d += `${x === 0 ? "M" : "L"}${x} ${y.toFixed(1)} `;
-  }
-  return d.trim();
-}
-
-/** Uma camada = um feixe de linhas paralelas com leve torção de fase. */
-function feixe(qtd: number, centro: number, espalhamento: number, amp: number, wl: number, torcao: number) {
-  const linhas: { d: string; o: number }[] = [];
-  for (let i = 0; i < qtd; i++) {
-    const t = i / (qtd - 1); // 0..1
-    const baseY = centro + (t - 0.5) * espalhamento;
-    const o = 0.22 + 0.5 * Math.sin(Math.PI * t); // mais opaco no meio do feixe
-    linhas.push({ d: linha(baseY, amp, wl, i * torcao), o });
-  }
-  return linhas;
-}
 
 const CAMADAS = [
   { classe: "onda--a", linhas: feixe(26, 300, 210, 42, 400, 0.26) },

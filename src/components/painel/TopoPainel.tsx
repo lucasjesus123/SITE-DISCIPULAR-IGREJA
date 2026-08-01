@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useState } from "react";
+import { iniciais, primeiroNome } from "@/lib/painel/formato";
 
 /**
  * Topo do painel: saudação de boas-vindas + ações (sino de avisos, tema
@@ -13,16 +14,6 @@ import { useCallback, useState } from "react";
  */
 
 type Tema = "claro" | "escuro";
-
-function primeiroNome(nome: string): string {
-  return nome.trim().split(/\s+/)[0] ?? nome;
-}
-function iniciais(nome: string): string {
-  const partes = nome.trim().split(/\s+/).filter(Boolean);
-  const a = partes[0]?.[0] ?? "";
-  const b = partes.length > 1 ? partes[partes.length - 1]![0] : "";
-  return (a + b).toUpperCase() || "?";
-}
 
 export function TopoPainel({
   nomeUsuario,
