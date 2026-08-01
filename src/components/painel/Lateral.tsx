@@ -40,6 +40,7 @@ const NAVEGACAO: GrupoNav[] = [
     itens: [
       { rotulo: "Caixa de entrada", href: "/painel/caixa-entrada", permissao: "submissoes.ler", contador: "caixaEntrada", alerta: true },
       { rotulo: "Pessoas", href: "/painel/pessoas", permissao: "pessoas.ler" },
+      { rotulo: "Acompanhamento", href: "/painel/acompanhamento", permissao: "pessoas.ler" },
       { rotulo: "Pedidos de oração", href: "/painel/oracao", permissao: "oracao.ler", contador: "oracoes" },
       { rotulo: "Batismos", href: "/painel/batismos", permissao: "batismos.ler", contador: "batismos" },
       { rotulo: "Células", href: "/painel/celulas", permissao: "celulas.ler" },
@@ -174,6 +175,7 @@ function Ico({ nome }: { nome: string }) {
     "/painel": <path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" />,
     "/painel/caixa-entrada": <><path d="M3 12h5l2 3h4l2-3h5" /><path d="M4 6h16v12H4z" /></>,
     "/painel/pessoas": <><circle cx="9" cy="8" r="3" /><path d="M3 20c0-3.3 2.7-5 6-5s6 1.7 6 5" /><path d="M16 15c2.5 0 5 1.5 5 5" /><circle cx="17" cy="8" r="2.3" /></>,
+    "/painel/acompanhamento": <><rect x="3" y="4" width="5" height="16" rx="1" /><rect x="10" y="4" width="5" height="11" rx="1" /><rect x="17" y="4" width="4" height="7" rx="1" /></>,
     "/painel/oracao": <path d="M12 21s-7-4.5-9.2-9C1.3 8.6 3.3 5.5 6.6 5.5c1.9 0 3.5 1.1 4.4 2.6l1 1.6 1-1.6c.9-1.5 2.5-2.6 4.4-2.6 3.3 0 5.3 3.1 3.8 6.5C19 16.5 12 21 12 21z" />,
     "/painel/batismos": <path d="M12 3c3 4 6 7 6 10.5A6 6 0 1 1 6 13.5C6 10 9 7 12 3z" />,
     "/painel/celulas": <><circle cx="6" cy="6" r="2.4" /><circle cx="18" cy="6" r="2.4" /><circle cx="12" cy="18" r="2.4" /><path d="M7.5 7.7 11 15.8M16.5 7.7 13 15.8M8.4 6h7.2" /></>,

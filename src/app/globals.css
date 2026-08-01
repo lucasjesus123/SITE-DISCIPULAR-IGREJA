@@ -1265,6 +1265,24 @@ input, textarea, select { font: inherit; color: inherit; }
 }
 .paginacao [aria-current="page"] { border-color: var(--pnl-accent); background: rgb(var(--pnl-accent-rgb) / 0.12); color: var(--pnl-accent); font-weight: 600; }
 
+/* Kanban de acompanhamento */
+.kanban { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(230px, 1fr); gap: 1rem; overflow-x: auto; padding-bottom: 0.5rem; }
+@media (max-width: 760px) { .kanban { grid-auto-flow: row; grid-auto-columns: auto; } }
+.kb-coluna { background: var(--pnl-surface-2); border: 1px solid var(--pnl-line); border-radius: var(--radius-lg); padding: 0.8rem; display: flex; flex-direction: column; min-height: 120px; }
+.kb-coluna__topo { display: flex; align-items: center; justify-content: space-between; font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; color: var(--pnl-text-dim); padding: 0.2rem 0.3rem 0.8rem; }
+.kb-coluna__contagem { background: var(--pnl-surface); border: 1px solid var(--pnl-line); border-radius: 100px; padding: 0.05rem 0.5rem; font-size: 0.72rem; color: var(--pnl-text); }
+.kb-coluna__lista { display: grid; gap: 0.6rem; }
+.kb-vazio { color: var(--pnl-text-faint); font-size: 0.82rem; padding: 0.4rem 0.3rem; }
+.kb-card { background: var(--pnl-surface); border: 1px solid var(--pnl-line); border-radius: 12px; padding: 0.75rem 0.85rem; transition: box-shadow 0.2s, transform 0.2s; }
+.kb-card--pendente { opacity: 0.6; }
+.kb-card__nome { font-weight: 600; font-size: 0.9rem; }
+.kb-card__contato { color: var(--pnl-text-dim); font-size: 0.8rem; margin-top: 0.15rem; }
+.kb-card__erro { color: #e5484d; font-size: 0.76rem; margin-top: 0.3rem; }
+.kb-card__acoes { display: flex; gap: 0.4rem; margin-top: 0.6rem; }
+.kb-btn { width: 2rem; height: 1.9rem; border-radius: 8px; border: 1px solid var(--pnl-line); background: var(--pnl-surface-2); color: var(--pnl-text); font-size: 1rem; line-height: 1; transition: border-color 0.15s, color 0.15s; }
+.kb-btn:hover:not(:disabled) { border-color: var(--pnl-accent); color: var(--pnl-accent); }
+.kb-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
 /* Aniversariantes */
 .aniv-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
 .aniv-col { border: 1px solid var(--pnl-line); border-radius: var(--radius-lg); padding: 1.1rem 1.2rem; background: var(--pnl-surface); }
