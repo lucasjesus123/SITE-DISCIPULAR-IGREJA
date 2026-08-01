@@ -13,6 +13,7 @@ test("SECRETARIA opera cadastros e inscrições/kids, mas NÃO usuários nem sit
   assert.equal(papelTem("SECRETARIA", "inscricoes.gerenciar"), true);
   assert.equal(papelTem("SECRETARIA", "kids.gerenciar"), true);
   assert.equal(papelTem("SECRETARIA", "automacoes.gerenciar"), true);
+  assert.equal(papelTem("SECRETARIA", "louvor.gerenciar"), true);
   assert.equal(papelTem("SECRETARIA", "usuarios.gerenciar"), false);
   assert.equal(papelTem("SECRETARIA", "site.editar"), false);
   assert.equal(papelTem("SECRETARIA", "pessoas.lerSensivel"), false);

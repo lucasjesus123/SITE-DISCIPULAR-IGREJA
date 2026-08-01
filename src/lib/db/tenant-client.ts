@@ -77,6 +77,17 @@ const MODELOS_TENANT = new Set<string>([
   "EvolucaoKids",
   "ConquistaKids",
   "MensagemTemplate",
+  "Ministerio",
+  "MembroMinisterio",
+  "FuncaoMinisterio",
+  "MembroFuncao",
+  "IndisponibilidadeMinisterio",
+  "EscalaMinisterio",
+  "EventoEscala",
+  "EscaladoEvento",
+  "MusicaMinisterio",
+  "EventoMusica",
+  "ChatMinisterio",
 ]);
 
 /**

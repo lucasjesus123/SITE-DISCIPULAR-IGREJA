@@ -100,6 +100,17 @@ model Tenant {
   evolucoesKids       EvolucaoKids[]
   conquistasKids      ConquistaKids[]
   templatesMensagem   MensagemTemplate[]
+  ministerios         Ministerio[]
+  membrosMinisterio   MembroMinisterio[]
+  funcoesMinisterio   FuncaoMinisterio[]
+  membroFuncoes       MembroFuncao[]
+  indisponibilidades  IndisponibilidadeMinisterio[]
+  escalasMinisterio   EscalaMinisterio[]
+  eventosEscala       EventoEscala[]
+  escaladosEvento     EscaladoEvento[]
+  musicasMinisterio   MusicaMinisterio[]
+  eventoMusicas       EventoMusica[]
+  chatMinisterio      ChatMinisterio[]
 
   @@index([status])
   @@map("tenants")
@@ -1550,4 +1561,281 @@ model MensagemTemplate {
 
   @@unique([tenantId, chave])
   @@map("mensagens_templates")
+}
+
+// =============================================================================
+// MINISTÉRIO DE LOUVOR — equipe, escala do mês, repertório/cifras e chat.
+// Genérico o bastante para outros ministérios (multimídia, recepção…), mas o
+// foco é louvor. Tudo tenant-scoped + RLS. As automações de WhatsApp
+// (convocação/confirmação) reaproveitam o módulo whatsapp; o webhook de
+// resposta atualiza EscaladoEvento.status.
+// =============================================================================
+
+enum TipoMinisterio {
+  LOUVOR
+  MULTIMIDIA
+  RECEPCAO
+  INTERCESSAO
+  DANCA
+  OUTRO
+}
+
+enum StatusEscala {
+  RASCUNHO
+  PUBLICADA
+}
+
+enum TipoEventoEscala {
+  CULTO
+  ENSAIO
+  EVENTO
+}
+
+enum PapelEscalado {
+  MINISTRANTE
+  INSTRUMENTISTA
+  VOCAL
+  MULTIMIDIA
+}
+
+enum StatusEscalado {
+  PENDENTE
+  CONFIRMADO
+  RECUSADO
+  TROCA_SOLICITADA
+}
+
+model Ministerio {
+  id       String @id @default(cuid())
+  tenantId String
+
+  nome String         @db.VarChar(80)
+  tipo TipoMinisterio @default(LOUVOR)
+  ativo Boolean       @default(true)
+
+  criadoEm DateTime @default(now())
+
+  tenant    Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  membros   MembroMinisterio[]
+  funcoes   FuncaoMinisterio[]
+  escalas   EscalaMinisterio[]
+  musicas   MusicaMinisterio[]
+  mensagens ChatMinisterio[]
+
+  @@index([tenantId, ativo])
+  @@map("ministerios")
+}
+
+model MembroMinisterio {
+  id           String @id @default(cuid())
+  tenantId     String
+  ministerioId String
+
+  /// Vínculo com a conta (para o roteador de acesso e o app do membro). Pode
+  /// ficar nulo enquanto o convite não é aceito.
+  userId   String?
+  /// Vínculo com a pessoa cadastrada na igreja (fonte do WhatsApp, foto…).
+  pessoaId String?
+
+  nome     String  @db.VarChar(160)
+  whatsapp String? @db.VarChar(20)
+  fotoId   String?
+  ehLider  Boolean @default(false)
+  ativo    Boolean @default(true)
+
+  criadoEm DateTime @default(now())
+
+  tenant             Tenant                        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  ministerio         Ministerio                    @relation(fields: [ministerioId], references: [id], onDelete: Cascade)
+  funcoes            MembroFuncao[]
+  escalados          EscaladoEvento[]
+  indisponibilidades IndisponibilidadeMinisterio[]
+
+  @@index([tenantId, ministerioId, ativo])
+  @@index([tenantId, userId])
+  @@map("membros_ministerio")
+}
+
+model FuncaoMinisterio {
+  id           String @id @default(cuid())
+  tenantId     String
+  ministerioId String
+
+  nome  String @db.VarChar(60)
+  ordem Int    @default(0)
+
+  tenant     Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  ministerio Ministerio       @relation(fields: [ministerioId], references: [id], onDelete: Cascade)
+  membros    MembroFuncao[]
+  escalados  EscaladoEvento[]
+
+  @@index([tenantId, ministerioId, ordem])
+  @@map("funcoes_ministerio")
+}
+
+model MembroFuncao {
+  id       String @id @default(cuid())
+  tenantId String
+
+  membroId String
+  funcaoId String
+
+  tenant Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  membro MembroMinisterio @relation(fields: [membroId], references: [id], onDelete: Cascade)
+  funcao FuncaoMinisterio @relation(fields: [funcaoId], references: [id], onDelete: Cascade)
+
+  @@unique([membroId, funcaoId])
+  @@index([tenantId])
+  @@map("membro_funcoes")
+}
+
+model IndisponibilidadeMinisterio {
+  id       String @id @default(cuid())
+  tenantId String
+
+  membroId String
+  inicio   DateTime @db.Date
+  fim      DateTime @db.Date
+  motivo   String?  @db.VarChar(200)
+
+  criadoEm DateTime @default(now())
+
+  tenant Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  membro MembroMinisterio @relation(fields: [membroId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, membroId])
+  @@map("indisponibilidades_ministerio")
+}
+
+model EscalaMinisterio {
+  id           String @id @default(cuid())
+  tenantId     String
+  ministerioId String
+
+  mes    Int
+  ano    Int
+  status StatusEscala @default(RASCUNHO)
+
+  publicadaEm DateTime?
+  criadoEm    DateTime  @default(now())
+
+  tenant     Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  ministerio Ministerio     @relation(fields: [ministerioId], references: [id], onDelete: Cascade)
+  eventos    EventoEscala[]
+
+  @@unique([ministerioId, ano, mes])
+  @@index([tenantId, ministerioId])
+  @@map("escalas_ministerio")
+}
+
+model EventoEscala {
+  id       String @id @default(cuid())
+  tenantId String
+  escalaId String
+
+  data              DateTime         @db.Date
+  hora              String           @db.VarChar(5)
+  tipo              TipoEventoEscala @default(CULTO)
+  titulo            String           @db.VarChar(120)
+  dressCodeTexto    String?          @db.VarChar(200)
+  dressCodeImagemId String?
+  observacoes       String?          @db.VarChar(1000)
+
+  criadoEm DateTime @default(now())
+
+  tenant    Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  escala    EscalaMinisterio @relation(fields: [escalaId], references: [id], onDelete: Cascade)
+  escalados EscaladoEvento[]
+  musicas   EventoMusica[]
+
+  @@index([tenantId, escalaId, data])
+  @@map("eventos_escala")
+}
+
+model EscaladoEvento {
+  id       String @id @default(cuid())
+  tenantId String
+
+  eventoId String
+  membroId String
+  funcaoId String?
+
+  papel  PapelEscalado  @default(INSTRUMENTISTA)
+  status StatusEscalado @default(PENDENTE)
+
+  respondidoEm DateTime?
+  criadoEm     DateTime  @default(now())
+
+  tenant Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  evento EventoEscala      @relation(fields: [eventoId], references: [id], onDelete: Cascade)
+  membro MembroMinisterio  @relation(fields: [membroId], references: [id], onDelete: Cascade)
+  funcao FuncaoMinisterio? @relation(fields: [funcaoId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, eventoId])
+  @@index([tenantId, membroId])
+  @@map("escalados_evento")
+}
+
+model MusicaMinisterio {
+  id           String @id @default(cuid())
+  tenantId     String
+  ministerioId String
+
+  titulo    String  @db.VarChar(160)
+  artista   String? @db.VarChar(120)
+  tomPadrao String? @db.VarChar(8)
+  linkCifra String? @db.VarChar(500)
+  linkLetra String? @db.VarChar(500)
+  linkVideo String? @db.VarChar(500)
+  linkAudio String? @db.VarChar(500)
+  /// Cifra colada direto (opcional) — permite transpor no app sem sair pra fora.
+  cifra     String? @db.Text
+  tags      String? @db.VarChar(200)
+
+  criadoEm DateTime @default(now())
+
+  tenant     Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  ministerio Ministerio     @relation(fields: [ministerioId], references: [id], onDelete: Cascade)
+  eventos    EventoMusica[]
+
+  @@index([tenantId, ministerioId, titulo])
+  @@map("musicas_ministerio")
+}
+
+model EventoMusica {
+  id       String @id @default(cuid())
+  tenantId String
+
+  eventoId String
+  musicaId String
+  tomDoDia String? @db.VarChar(8)
+  ordem    Int     @default(0)
+
+  tenant Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  evento EventoEscala     @relation(fields: [eventoId], references: [id], onDelete: Cascade)
+  musica MusicaMinisterio @relation(fields: [musicaId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, eventoId, ordem])
+  @@map("evento_musicas")
+}
+
+model ChatMinisterio {
+  id           String @id @default(cuid())
+  tenantId     String
+  ministerioId String
+
+  /// Tópico opcional por evento; nulo = canal geral do ministério.
+  eventoId  String?
+  autorUserId String
+  autorNome String  @db.VarChar(160)
+  texto     String  @db.VarChar(2000)
+  fixada    Boolean @default(false)
+
+  criadoEm DateTime @default(now())
+
+  tenant     Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  ministerio Ministerio @relation(fields: [ministerioId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, ministerioId, criadoEm])
+  @@map("chat_ministerio")
 }

@@ -1507,6 +1507,127 @@ async function main(): Promise<void> {
     }
   }
 
+  // --- LOUVOR (demonstração: equipe, escala publicada, repertório, chat) ------
+  {
+    const ministerioId = await garantir(
+      db.ministerio,
+      { nome: "Ministério de Louvor" },
+      { tipo: "LOUVOR", ativo: true },
+    );
+
+    // Funções padrão do ministério.
+    const FUNCOES = ["Ministração", "Vocal", "Violão", "Guitarra", "Baixo", "Bateria", "Teclado", "Multimídia"];
+    const funcaoId: Record<string, string> = {};
+    for (let i = 0; i < FUNCOES.length; i++) {
+      const nome = FUNCOES[i]!;
+      funcaoId[nome] = await garantir(db.funcaoMinisterio, { ministerioId, nome }, { ordem: i });
+    }
+
+    // Equipe fake.
+    const EQUIPE: { nome: string; lider?: boolean; funcoes: string[] }[] = [
+      { nome: "Tiago Facchi (demonstração)", lider: true, funcoes: ["Ministração", "Violão"] },
+      { nome: "Ana Beatriz (demonstração)", funcoes: ["Vocal"] },
+      { nome: "Rafael Nunes (demonstração)", funcoes: ["Guitarra"] },
+      { nome: "Marcos Vinícius (demonstração)", funcoes: ["Baixo"] },
+      { nome: "Débora Lima (demonstração)", funcoes: ["Teclado", "Vocal"] },
+      { nome: "Pedro Henrique (demonstração)", funcoes: ["Bateria"] },
+    ];
+    const membroId: Record<string, string> = {};
+    for (const m of EQUIPE) {
+      const id = await garantir(
+        db.membroMinisterio,
+        { ministerioId, nome: m.nome },
+        { ehLider: Boolean(m.lider), ativo: true },
+      );
+      membroId[m.nome] = id;
+      const jaTemFuncao = await db.membroFuncao.count({ where: { membroId: id } });
+      if (jaTemFuncao === 0) {
+        await db.membroFuncao.createMany({
+          data: m.funcoes.map((f) => ({ tenantId: discipular.id, membroId: id, funcaoId: funcaoId[f]! })),
+        });
+      }
+    }
+
+    // Repertório fake (uma música com cifra para demonstrar a transposição).
+    const CIFRA_EXEMPLO = [
+      "G              D/F#",
+      "Eu navegarei nesse oceano",
+      "Em7            C",
+      "A tua graça me sustenta",
+      "G              D/F#",
+      "E onde os meus pés não podem mais tocar",
+      "Em7        C     G",
+      "Eu encontro a tua paz",
+    ].join("\n");
+    const musicaId: Record<string, string> = {};
+    const REPERTORIO: { titulo: string; artista: string; tom: string; cifra?: string }[] = [
+      { titulo: "Oceanos", artista: "Hillsong (Ana Nóbrega)", tom: "G", cifra: CIFRA_EXEMPLO },
+      { titulo: "Bondade de Deus", artista: "Isaías Saad", tom: "D" },
+      { titulo: "Teu Santo Nome", artista: "Gabriela Rocha", tom: "E" },
+    ];
+    for (const mus of REPERTORIO) {
+      musicaId[mus.titulo] = await garantir(
+        db.musicaMinisterio,
+        { ministerioId, titulo: mus.titulo },
+        { artista: mus.artista, tomPadrao: mus.tom, cifra: mus.cifra ?? null },
+      );
+    }
+
+    // Escala publicada do mês corrente, com um culto de domingo montado.
+    const agora = new Date("2026-08-01T00:00:00.000Z");
+    const escalaId = await garantir(
+      db.escalaMinisterio,
+      { ministerioId, ano: agora.getUTCFullYear(), mes: agora.getUTCMonth() + 1 },
+      { status: "PUBLICADA", publicadaEm: agora },
+    );
+
+    const eventoId = await garantir(
+      db.eventoEscala,
+      { escalaId, titulo: "Culto da Família" },
+      {
+        data: new Date("2026-08-02T00:00:00.000Z"),
+        hora: "18:00",
+        tipo: "CULTO",
+        dressCodeTexto: "Preto e branco",
+        observacoes: "Chegar 1h antes para a passagem de som.",
+      },
+    );
+
+    const jaEscalado = await db.escaladoEvento.count({ where: { eventoId } });
+    if (jaEscalado === 0) {
+      await db.escaladoEvento.createMany({
+        data: [
+          { tenantId: discipular.id, eventoId, membroId: membroId["Tiago Facchi (demonstração)"]!, funcaoId: funcaoId["Ministração"]!, papel: "MINISTRANTE", status: "CONFIRMADO", respondidoEm: agora },
+          { tenantId: discipular.id, eventoId, membroId: membroId["Ana Beatriz (demonstração)"]!, funcaoId: funcaoId["Vocal"]!, papel: "VOCAL", status: "CONFIRMADO", respondidoEm: agora },
+          { tenantId: discipular.id, eventoId, membroId: membroId["Rafael Nunes (demonstração)"]!, funcaoId: funcaoId["Guitarra"]!, papel: "INSTRUMENTISTA", status: "PENDENTE" },
+          { tenantId: discipular.id, eventoId, membroId: membroId["Marcos Vinícius (demonstração)"]!, funcaoId: funcaoId["Baixo"]!, papel: "INSTRUMENTISTA", status: "CONFIRMADO", respondidoEm: agora },
+          { tenantId: discipular.id, eventoId, membroId: membroId["Pedro Henrique (demonstração)"]!, funcaoId: funcaoId["Bateria"]!, papel: "INSTRUMENTISTA", status: "TROCA_SOLICITADA", respondidoEm: agora },
+        ],
+      });
+    }
+
+    const jaTemMusicaEvento = await db.eventoMusica.count({ where: { eventoId } });
+    if (jaTemMusicaEvento === 0) {
+      await db.eventoMusica.createMany({
+        data: [
+          { tenantId: discipular.id, eventoId, musicaId: musicaId["Bondade de Deus"]!, tomDoDia: "D", ordem: 0 },
+          { tenantId: discipular.id, eventoId, musicaId: musicaId["Oceanos"]!, tomDoDia: "A", ordem: 1 },
+          { tenantId: discipular.id, eventoId, musicaId: musicaId["Teu Santo Nome"]!, tomDoDia: "E", ordem: 2 },
+        ],
+      });
+    }
+
+    const jaTemChat = await db.chatMinisterio.count({ where: { ministerioId } });
+    if (jaTemChat === 0) {
+      await db.chatMinisterio.createMany({
+        data: [
+          { tenantId: discipular.id, ministerioId, autorUserId: idSuperAdmin, autorNome: "Tiago Facchi", texto: "Equipe, escala do mês publicada! Confirmem presença por favor. 🙌", fixada: true },
+          { tenantId: discipular.id, ministerioId, autorUserId: idSuperAdmin, autorNome: "Ana Beatriz", texto: "Confirmadíssima! Já separei o repertório." },
+        ],
+      });
+    }
+  }
+
   // --- Templates de mensagem (automações) -------------------------------------
   {
     const { TEMPLATES_PADRAO } = await import("@/lib/mensagens/template");
