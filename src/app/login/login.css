@@ -1,116 +1,173 @@
 /* =============================================================================
-   Área restrita — tela de login "tecnológica": fundo preto com ondas neon
-   fluindo + cartão de vidro (glassmorphism). Identidade própria, separada do
-   site público. Todo movimento respeita prefers-reduced-motion.
+   DESIGN SYSTEM — Direção 3 "INSTITUCIONAL" (tokens centrais)
+   Grafite quase-preto + verde (profundo/vivo), Archivo nos títulos, Inter no
+   texto, bordas firmes de 1.5px (sem sombras difusas), uppercase nos títulos.
+   Estes tokens são a base que vai propagar para o sistema todo.
    ========================================================================== */
+.tela-login,
+.inst {
+  --inst-grafite: #14161a;
+  --inst-verde: #0e7c5a;
+  --inst-verde-vivo: #5ee6a8;
+  --inst-fundo: #ffffff;
+  --inst-superficie: #ffffff;
+  --inst-texto: #14161a;
+  --inst-texto-dim: #55585f;
+  --inst-linha: #14161a;
+  --inst-raio: 10px;
+  --inst-fonte-titulo: "Archivo", system-ui, sans-serif;
+  --inst-fonte-texto: "Inter", system-ui, sans-serif;
+}
 
+/* -----------------------------------------------------------------------------
+   LOGIN — split-screen (marca à esquerda, formulário à direita)
+   -------------------------------------------------------------------------- */
 .tela-login {
-  position: relative;
   min-height: 100vh;
   min-height: 100svh;
   display: grid;
-  place-items: center;
-  padding: 2rem 1.25rem;
-  background: #06070a;
-  color: #eef1f6;
-  overflow: hidden;
-  isolation: isolate;
+  grid-template-columns: 1.05fr 1fr;
+  background: var(--inst-fundo);
+  color: var(--inst-texto);
+  font-family: var(--inst-fonte-texto);
+}
+@media (max-width: 860px) {
+  .tela-login { grid-template-columns: 1fr; }
 }
 
-/* --- Fundo de ondas ---------------------------------------------------------- */
-.tela-login__ondas {
-  position: absolute;
-  inset: -4%;
-  z-index: 0;
-  pointer-events: none;
-  transform: translate(calc(var(--px, 0) * 1px), calc(var(--py, 0) * 1px));
-  transition: transform 0.35s ease-out;
-}
-.tela-login__svg { width: 100%; height: 100%; display: block; }
-
-.onda { will-change: transform; }
-@media (prefers-reduced-motion: no-preference) {
-  .onda--a { animation: fluir-ondas 26s linear infinite; }
-  .onda--b { animation: fluir-ondas 40s linear infinite reverse; }
-  .onda--c { animation: fluir-ondas 19s linear infinite; }
-}
-@keyframes fluir-ondas {
-  from { transform: translateX(0); }
-  to { transform: translateX(-1200px); }
-}
-
-/* Halos de cor difusos por trás das linhas */
-.tela-login__halo {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.5;
-  z-index: -1;
-}
-.tela-login__halo--verde { width: 50vw; height: 50vw; left: -10%; top: -12%; background: radial-gradient(circle, rgba(43, 245, 160, 0.5), transparent 68%); }
-.tela-login__halo--azul { width: 46vw; height: 46vw; right: -12%; bottom: -14%; background: radial-gradient(circle, rgba(91, 124, 255, 0.5), transparent 68%); }
-@media (prefers-reduced-motion: no-preference) {
-  .tela-login__halo--verde { animation: flutuar-a 22s ease-in-out infinite; }
-  .tela-login__halo--azul { animation: flutuar-c 26s ease-in-out infinite; }
-}
-
-/* --- Cartão de vidro --------------------------------------------------------- */
-.tela-login__card {
+/* Painel de marca (esquerda) */
+.tela-login__marca {
+  background: var(--inst-grafite);
+  color: #fff;
+  padding: clamp(2rem, 5vw, 4rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 2rem;
   position: relative;
-  z-index: 1;
-  width: 100%;
-  max-width: 420px;
-  padding: clamp(1.8rem, 4vw, 2.8rem);
-  border-radius: 22px;
-  background: rgba(18, 21, 28, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(22px) saturate(140%);
-  -webkit-backdrop-filter: blur(22px) saturate(140%);
-  box-shadow: 0 40px 90px -35px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  animation: entrar-card 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  overflow: hidden;
 }
-@keyframes entrar-card {
-  from { opacity: 0; transform: translateY(18px) scale(0.98); }
-  to { opacity: 1; transform: none; }
+.tela-login__marca::after {
+  /* barra de acento verde, firme (sem brilho difuso) */
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 6px;
+  background: var(--inst-verde-vivo);
 }
-
-.tela-login__marca { text-align: center; margin-bottom: 1.8rem; }
-.tela-login__eyebrow {
-  font-size: 0.66rem; letter-spacing: 0.24em; text-transform: uppercase; font-weight: 700;
-  color: #7be0b4; margin-bottom: 0.7rem;
+@media (max-width: 860px) {
+  .tela-login__marca { padding: 2rem 1.5rem; gap: 1.5rem; }
 }
-.tela-login__titulo { font-family: var(--font-display, sans-serif); font-size: clamp(1.6rem, 1.2rem + 2vw, 2.2rem); line-height: 1.05; letter-spacing: -0.02em; }
-
-/* Campos frostados */
-.tela-login .campo__rotulo { color: rgba(238, 241, 246, 0.66); }
-.tela-login .campo input {
-  background: rgba(255, 255, 255, 0.06) !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
-  color: #fff !important;
-  border-radius: 12px;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-.tela-login .campo input::placeholder { color: rgba(255, 255, 255, 0.35); }
-.tela-login .campo input:focus {
-  border-color: rgba(91, 190, 255, 0.7) !important;
-  box-shadow: 0 0 0 3px rgba(91, 190, 255, 0.18) !important;
-  outline: none;
-}
-
-/* Botão neon */
-.tela-login .btn {
-  --btn-bg: transparent;
-  --btn-fg: #041016;
-  background: linear-gradient(120deg, #2bf5a0, #22d3ee 55%, #5b7cff);
-  color: #041016;
-  border: 0;
+.tela-login__logo { max-height: 52px; width: auto; }
+.tela-login__versiculo {
+  font-family: var(--inst-fonte-titulo);
   font-weight: 700;
-  box-shadow: 0 14px 34px -14px rgba(43, 245, 160, 0.5);
+  font-size: clamp(1.6rem, 1.2rem + 2.2vw, 2.8rem);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  max-width: 20ch;
 }
-.tela-login .btn:hover:not(:disabled) { filter: brightness(1.06); transform: translateY(-1px); }
+.tela-login__versiculo b { color: var(--inst-verde-vivo); }
+.tela-login__ref {
+  font-size: 0.8rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 0.6);
+  font-weight: 600;
+}
 
-.tela-login__links { text-align: center; margin-top: 1.6rem; font-size: 0.85rem; }
-.tela-login__links a { color: #9cc0ff; }
-.tela-login__voltar { text-align: center; margin-top: 1.4rem; font-size: 0.8rem; }
-.tela-login__voltar a { color: rgba(238, 241, 246, 0.55); }
-.tela-login__voltar a:hover { color: rgba(238, 241, 246, 0.85); }
+/* Formulário (direita) */
+.tela-login__form {
+  display: grid;
+  place-items: center;
+  padding: clamp(2rem, 5vw, 4rem);
+  background: var(--inst-superficie);
+}
+.tela-login__caixa { width: 100%; max-width: 400px; }
+
+.tela-login__eyebrow {
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--inst-verde);
+  margin-bottom: 0.6rem;
+}
+.tela-login__titulo {
+  font-family: var(--inst-fonte-titulo);
+  font-weight: 800;
+  font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.1rem);
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  line-height: 1.02;
+  margin-bottom: 1.8rem;
+}
+
+/* Campos: 44px, borda firme 1.5px, foco verde visível */
+.tela-login .campo__rotulo { color: var(--inst-texto-dim); font-weight: 600; }
+.tela-login .campo input {
+  min-height: 46px !important;
+  background: #fff !important;
+  border: 1.5px solid var(--inst-linha) !important;
+  border-radius: var(--inst-raio) !important;
+  color: var(--inst-texto) !important;
+}
+.tela-login .campo input:focus {
+  outline: none;
+  border-color: var(--inst-verde) !important;
+  box-shadow: 0 0 0 3px rgb(94 230 168 / 0.45) !important;
+}
+
+/* Botão primário institucional: grafite sólido, borda firme, uppercase */
+.tela-login .btn {
+  --btn-bg: var(--inst-grafite);
+  --btn-fg: #ffffff;
+  background: var(--inst-grafite);
+  color: #fff;
+  border: 1.5px solid var(--inst-grafite);
+  border-radius: var(--inst-raio);
+  min-height: 46px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: none;
+}
+.tela-login .btn:hover:not(:disabled) { background: var(--inst-verde); border-color: var(--inst-verde); transform: none; }
+
+/* Botão secundário (Entrar com código no WhatsApp) */
+.tela-login__secundario {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 0.9rem;
+  border: 1.5px solid var(--inst-linha);
+  border-radius: var(--inst-raio);
+  background: #fff;
+  color: var(--inst-texto);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.tela-login__secundario:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.tela-login__divisor {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.4rem 0 0.2rem;
+  color: var(--inst-texto-dim);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.tela-login__divisor::before,
+.tela-login__divisor::after { content: ""; flex: 1; height: 1.5px; background: rgb(20 22 26 / 0.12); }
+
+.tela-login__links { margin-top: 1.6rem; font-size: 0.86rem; }
+.tela-login__links a { color: var(--inst-verde); font-weight: 600; }
+.tela-login__voltar { margin-top: 0.6rem; font-size: 0.82rem; }
+.tela-login__voltar a { color: var(--inst-texto-dim); }
