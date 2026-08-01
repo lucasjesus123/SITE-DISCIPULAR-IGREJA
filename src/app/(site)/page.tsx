@@ -8,6 +8,8 @@ import { CopiarChave } from "@/components/site/CopiarChave";
 import { MolduraFoto } from "@/components/site/MolduraFoto";
 import { urlArquivoPublico } from "@/lib/storage/urls";
 import { formatarCnpj } from "@/lib/painel/formato";
+import { HomeInstitucional } from "@/components/site/institucional/HomeInstitucional";
+import "./institucional.css";
 
 /**
  * Home do site da igreja.
@@ -32,6 +34,18 @@ export default async function Home() {
     carregarMensagens(tenant.id, 1),
     estadoAoVivo(tenant.id),
   ]);
+
+  // Discipular usa o design Institucional aprovado (grafite + verde), com nav e
+  // footer próprios. O layout do site suprime o chrome padrão nesta rota.
+  if (tenant.slug === "discipular") {
+    return (
+      <HomeInstitucional
+        dados={dados}
+        live={{ aoVivo: live.aoVivo, videoId: live.videoId, titulo: live.titulo }}
+        ultimaMsgVideoId={mensagens[0]?.youtubeVideoId ?? null}
+      />
+    );
+  }
 
   const { config, campi } = dados;
   const heroImagem = config.heroImagemId ? urlArquivoPublico(config.heroImagemId) : null;

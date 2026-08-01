@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { tenantDaRequisicao } from "@/lib/tenant/resolve";
 import { carregarDadosSite } from "@/lib/services/site";
@@ -81,10 +82,16 @@ export default async function LayoutSite({ children }: { children: React.ReactNo
     );
   }
 
-  const [dados, live] = await Promise.all([
+  const [dados, live, cabecalhos] = await Promise.all([
     carregarDadosSite(tenant.id),
     estadoAoVivo(tenant.id),
+    headers(),
   ]);
+
+  // A home Institucional da Discipular traz o próprio nav+footer (fidelidade ao
+  // design aprovado), então o layout NÃO envolve com o chrome padrão nesse caso.
+  const pathname = cabecalhos.get("x-pathname") ?? "";
+  const homeInstitucional = tenant.slug === "discipular" && (pathname === "/" || pathname === "");
 
   const menu = [
     { rotulo: "Início", href: "/" },
@@ -133,31 +140,36 @@ export default async function LayoutSite({ children }: { children: React.ReactNo
         />
       )}
 
-      <div className={["site-corpo", classeModo].filter(Boolean).join(" ")}>
-        <BannerAoVivo inicial={estadoLive} />
-
-        <Cabecalho
-          nomeIgreja={dados.config.nomeExibicao}
-          logoUrl={logoDoCabecalho(dados.config.logoClaroId, tenant.slug)}
-          menu={menu}
-          estadoLive={estadoLive}
-        />
-
+      {homeInstitucional ? (
+        // Home Institucional: nav + seções + footer próprios (dentro do children).
         <main id="conteudo">{children}</main>
+      ) : (
+        <div className={["site-corpo", classeModo].filter(Boolean).join(" ")}>
+          <BannerAoVivo inicial={estadoLive} />
 
-        <Rodape
-          config={dados.config}
-          campi={dados.campi}
-          menu={menu}
-          marcaUrl={
-            dados.config.logoClaroId
-              ? urlArquivoPublico(dados.config.logoClaroId)
-              : tenant.slug === "discipular"
-                ? "/marca/mark-light.png"
-                : null
-          }
-        />
-      </div>
+          <Cabecalho
+            nomeIgreja={dados.config.nomeExibicao}
+            logoUrl={logoDoCabecalho(dados.config.logoClaroId, tenant.slug)}
+            menu={menu}
+            estadoLive={estadoLive}
+          />
+
+          <main id="conteudo">{children}</main>
+
+          <Rodape
+            config={dados.config}
+            campi={dados.campi}
+            menu={menu}
+            marcaUrl={
+              dados.config.logoClaroId
+                ? urlArquivoPublico(dados.config.logoClaroId)
+                : tenant.slug === "discipular"
+                  ? "/marca/mark-light.png"
+                  : null
+            }
+          />
+        </div>
+      )}
     </>
   );
 }

@@ -183,6 +183,9 @@ export async function middleware(request: NextRequest) {
   headersRequisicao.set(HEADER_HOST_INTERNO, host);
   headersRequisicao.set(HEADER_NONCE, nonce);
   headersRequisicao.set(HEADER_IP_INTERNO, ip);
+  // Caminho da requisição, para o layout do site decidir quando entregar o
+  // próprio chrome (a home Institucional traz nav+footer próprios).
+  headersRequisicao.set("x-pathname", pathname);
 
   // Garante o cookie CSRF ANTES do render (o render de página não pode gravá-lo).
   const nomeCsrf = desenvolvimento ? NOME_CSRF_DEV : NOME_CSRF;
