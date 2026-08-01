@@ -37,7 +37,12 @@
 
 /* Painel de marca (esquerda) */
 .tela-login__marca {
-  background: var(--inst-grafite);
+  /* malha sutil de "blueprint" sobre o grafite — dá profundidade sem brilho */
+  background:
+    linear-gradient(rgb(255 255 255 / 0.035) 1px, transparent 1px) 0 0 / 46px 46px,
+    linear-gradient(90deg, rgb(255 255 255 / 0.035) 1px, transparent 1px) 0 0 / 46px 46px,
+    radial-gradient(120% 90% at 100% 100%, rgb(94 230 168 / 0.14), transparent 55%),
+    var(--inst-grafite);
   color: #fff;
   padding: clamp(2rem, 5vw, 4rem);
   display: flex;
@@ -54,6 +59,18 @@
   left: 0; top: 0; bottom: 0;
   width: 6px;
   background: var(--inst-verde-vivo);
+}
+/* Grande círculo geométrico (contorno firme), meio saindo da tela — institucional */
+.tela-login__marca::before {
+  content: "";
+  position: absolute;
+  right: -12%;
+  top: 42%;
+  width: 46%;
+  aspect-ratio: 1;
+  border: 1.5px solid rgb(94 230 168 / 0.35);
+  border-radius: 50%;
+  pointer-events: none;
 }
 @media (max-width: 860px) {
   .tela-login__marca { padding: 2rem 1.5rem; gap: 1.5rem; }

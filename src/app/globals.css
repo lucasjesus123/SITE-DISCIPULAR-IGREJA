@@ -936,30 +936,30 @@ input, textarea, select { font: inherit; color: inherit; }
    (a área restrita tem identidade diferente do site público).
    -------------------------------------------------------------------------- */
 .painel {
-  /* Fonte de UI estilo SaaS — Inter. Sobrepõe a fonte do tema do tenant
-     DENTRO do painel (o site público continua com a marca Archivo). */
+  /* IDENTIDADE INSTITUCIONAL — Archivo nos títulos, Inter no texto. */
   --pnl-font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-display: var(--pnl-font);
+  --font-display: "Archivo", var(--pnl-font);
   --font-sans: var(--pnl-font);
+  --pnl-ink: #14161a; /* grafite base (botão primário, contornos firmes) */
 
-  /* padrão = CLARO (conteúdo claro + SIDEBAR SEMPRE ESCURA, cara de dashboard) */
+  /* padrão = CLARO (conteúdo claro + SIDEBAR grafite, acento VERDE) */
   --pnl-pad: clamp(1.2rem, 3vw, 2.6rem);
-  --pnl-bg: #f4f6fa;
+  --pnl-bg: #eef0f2;
   --pnl-surface: #ffffff;
-  --pnl-surface-2: #eef1f6;
-  --pnl-text: #10131a;
-  --pnl-text-dim: rgb(16 19 26 / 0.62);
-  --pnl-text-faint: rgb(16 19 26 / 0.45);
-  --pnl-line: rgb(16 19 26 / 0.10);
-  --pnl-side-bg: #0d1017;
-  --pnl-side-text: #e7e9ef;
-  --pnl-side-dim: rgb(231 233 239 / 0.62);
-  --pnl-side-label: rgb(231 233 239 / 0.45);
-  --pnl-side-line: rgb(255 255 255 / 0.09);
+  --pnl-surface-2: #f3f5f7;
+  --pnl-text: #14161a;
+  --pnl-text-dim: rgb(20 22 26 / 0.60);
+  --pnl-text-faint: rgb(20 22 26 / 0.42);
+  --pnl-line: rgb(20 22 26 / 0.14);
+  --pnl-side-bg: #14161a;
+  --pnl-side-text: #eef0f2;
+  --pnl-side-dim: rgb(238 240 242 / 0.60);
+  --pnl-side-label: rgb(238 240 242 / 0.42);
+  --pnl-side-line: rgb(255 255 255 / 0.10);
   --pnl-side-hover: rgb(255 255 255 / 0.07);
-  --pnl-accent: #3b6cf6;
-  --pnl-accent-2: #7aa2ff;
-  --pnl-accent-rgb: 59 108 246;
+  --pnl-accent: #0e7c5a;
+  --pnl-accent-2: #5ee6a8;
+  --pnl-accent-rgb: 14 124 90;
   --pnl-accent-contrast: #ffffff;
 
   font-family: var(--pnl-font);
@@ -970,16 +970,31 @@ input, textarea, select { font: inherit; color: inherit; }
   color: var(--pnl-text);
 }
 
-/* Botões do painel: SEMPRE legíveis. Primário = acento (azul) com texto branco
-   — corrige a "tarja preta" (a base usava --gold/--ink, preto no preto). */
+/* Botões do painel (Institucional): primário GRAFITE com texto branco (vira
+   VERDE no hover), sempre legível. Corrige a antiga "tarja preta". */
 .painel .btn {
-  --btn-bg: var(--pnl-accent);
+  --btn-bg: var(--pnl-ink);
   --btn-fg: #ffffff;
-  letter-spacing: 0.02em;
+  background: var(--pnl-ink);
+  color: #fff;
+  border: 1.5px solid var(--pnl-ink);
+  letter-spacing: 0.04em;
   text-transform: none;
-  font-size: 0.85rem;
+  font-size: 0.84rem;
+  font-weight: 700;
   border-radius: 10px;
+  box-shadow: none;
 }
+.painel .btn:hover:not(:disabled) { background: var(--pnl-accent); border-color: var(--pnl-accent); color: #fff; transform: none; }
+/* No tema escuro o grafite sumiria no fundo: primário vira verde-vivo (menta)
+   com texto grafite. */
+.painel[data-tema="escuro"] .btn {
+  --btn-bg: var(--pnl-accent);
+  background: var(--pnl-accent);
+  color: var(--pnl-accent-contrast);
+  border-color: var(--pnl-accent);
+}
+.painel[data-tema="escuro"] .btn:hover:not(:disabled) { filter: brightness(1.08); background: var(--pnl-accent); color: var(--pnl-accent-contrast); }
 .painel .btn--sm { font-size: 0.78rem; }
 .painel .btn--ghost {
   --btn-bg: transparent;
@@ -994,23 +1009,24 @@ input, textarea, select { font: inherit; color: inherit; }
 }
 .painel .btn--outline-gold:hover:not(:disabled) { --btn-fg: #fff; background: var(--pnl-accent); border-color: var(--pnl-accent); }
 .painel[data-tema="escuro"] {
-  --pnl-bg: #0a0c11;
-  --pnl-surface: #14171f;
-  --pnl-surface-2: #1b1f29;
-  --pnl-text: #eaecef;
-  --pnl-text-dim: rgb(234 236 239 / 0.66);
-  --pnl-text-faint: rgb(234 236 239 / 0.45);
-  --pnl-line: rgb(234 236 239 / 0.11);
-  --pnl-side-bg: #090b10;
-  --pnl-side-text: #c9cdd6;
-  --pnl-side-dim: rgb(233 236 241 / 0.62);
-  --pnl-side-label: rgb(233 236 241 / 0.50);
+  --pnl-ink: #0b0c0f;
+  --pnl-bg: #0b0d10;
+  --pnl-surface: #14171b;
+  --pnl-surface-2: #1b1f24;
+  --pnl-text: #eef0f2;
+  --pnl-text-dim: rgb(238 240 242 / 0.66);
+  --pnl-text-faint: rgb(238 240 242 / 0.45);
+  --pnl-line: rgb(238 240 242 / 0.13);
+  --pnl-side-bg: #080a0c;
+  --pnl-side-text: #d6d9dd;
+  --pnl-side-dim: rgb(238 240 242 / 0.62);
+  --pnl-side-label: rgb(238 240 242 / 0.50);
   --pnl-side-line: rgb(255 255 255 / 0.08);
   --pnl-side-hover: rgb(255 255 255 / 0.06);
-  --pnl-accent: #6b9bff;
-  --pnl-accent-2: #9cc0ff;
-  --pnl-accent-rgb: 107 155 255;
-  --pnl-accent-contrast: #08111f;
+  --pnl-accent: #5ee6a8;
+  --pnl-accent-2: #0e7c5a;
+  --pnl-accent-rgb: 94 230 168;
+  --pnl-accent-contrast: #08130d;
 }
 @media (max-width: 900px) { .painel { grid-template-columns: 1fr; } }
 

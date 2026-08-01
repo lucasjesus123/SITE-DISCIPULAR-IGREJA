@@ -84,12 +84,12 @@ export default async function LayoutPainel({ children }: { children: React.React
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: cssDoTema(dados.tema) }} />
-      {/* Fonte de UI do painel (Inter) — cara de SaaS. */}
+      {/* Identidade Institucional: Archivo (títulos) + Inter (texto). */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
       <link
         rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap"
       />
 
       {/*
