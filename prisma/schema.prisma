@@ -426,6 +426,10 @@ model Pessoa {
   consentimentoEm     DateTime?
   consentimentoOrigem String?   @db.VarChar(60)
 
+  /// Marcadores das automações de relacionamento (nunca dispara duas vezes).
+  boasVindasEm     DateTime?
+  conviteRetornoEm DateTime?
+
   criadoEm     DateTime  @default(now())
   atualizadoEm DateTime  @updatedAt
   excluidoEm   DateTime?
