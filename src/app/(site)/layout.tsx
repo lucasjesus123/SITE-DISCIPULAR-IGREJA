@@ -3,6 +3,8 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { tenantDaRequisicao } from "@/lib/tenant/resolve";
 import { carregarDadosSite } from "@/lib/services/site";
+import { tenantDb } from "@/lib/db/tenant-client";
+import { carregarModulos } from "@/lib/services/modulos";
 import { cssDoTema, urlGoogleFonts, temaMonocromatico } from "@/lib/site/theme";
 import { estadoAoVivo } from "@/lib/youtube/live";
 import { Cabecalho } from "@/components/site/Cabecalho";
@@ -82,16 +84,30 @@ export default async function LayoutSite({ children }: { children: React.ReactNo
     );
   }
 
-  const [dados, live, cabecalhos] = await Promise.all([
+  const [dados, live, cabecalhos, modulos] = await Promise.all([
     carregarDadosSite(tenant.id),
     estadoAoVivo(tenant.id),
     headers(),
+    carregarModulos(tenantDb(tenant.id)),
   ]);
 
-  // A home Institucional da Discipular traz o próprio nav+footer (fidelidade ao
-  // design aprovado), então o layout NÃO envolve com o chrome padrão nesse caso.
+  // Módulo "site" desligado: a igreja não contratou o site público. Página
+  // neutra em vez de expor o conteúdo/estrutura.
+  if (!modulos.site) {
+    return (
+      <main className="theme-dark" style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: "2rem" }}>
+        <div className="centro stack">
+          <h1 className="h3">{dados.config.nomeExibicao}</h1>
+          <p className="dim">Site em breve.</p>
+        </div>
+      </main>
+    );
+  }
+
+  // A home Institucional (whitelabel) traz o próprio nav+footer, então o layout
+  // NÃO envolve com o chrome padrão na raiz de qualquer igreja.
   const pathname = cabecalhos.get("x-pathname") ?? "";
-  const homeInstitucional = tenant.slug === "discipular" && (pathname === "/" || pathname === "");
+  const homeInstitucional = pathname === "/" || pathname === "";
 
   const menu = [
     { rotulo: "Início", href: "/" },

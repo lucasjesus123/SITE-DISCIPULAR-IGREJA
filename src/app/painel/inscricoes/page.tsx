@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { exigirPermissao } from "@/lib/auth/rbac";
+import { exigirModulo } from "@/lib/modulos/guard";
 import { FormularioNovaInscricao } from "@/components/painel/inscricoes/FormularioNovaInscricao";
 
 export const dynamic = "force-dynamic";
@@ -7,6 +8,7 @@ export const metadata = { title: "Inscrições" };
 
 export default async function PaginaInscricoes() {
   const ctx = await exigirPermissao("inscricoes.gerenciar");
+  await exigirModulo(ctx.db, "inscricoes");
 
   const inscricoes = await ctx.db.inscricao.findMany({
     orderBy: { criadoEm: "desc" },

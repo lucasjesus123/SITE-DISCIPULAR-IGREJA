@@ -11,6 +11,7 @@ import { RegistrarServiceWorker } from "@/components/app/RegistrarServiceWorker"
 import { tenantDb } from "@/lib/db/tenant-client";
 import { carregarTogglesApp, carregarContextoMembro } from "@/lib/services/app-membro";
 import { navDoApp } from "@/lib/app-membro/recursos";
+import { carregarModulos } from "@/lib/services/modulos";
 import "../globals.css";
 
 /**
@@ -66,6 +67,17 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
   // Navegação do app conforme os toggles da igreja + vínculos do membro
   // (recurso desligado some da barra; Contribuir exige PIX; Célula exige vínculo).
   const db = tenantDb(tenant.id);
+
+  // Módulo "app" desligado: a igreja não contratou o app de membros.
+  const modulos = await carregarModulos(db);
+  if (!modulos.app) {
+    return (
+      <main className="theme-dark" style={{ minHeight: "100dvh", display: "grid", placeItems: "center", padding: "2rem" }}>
+        <p className="dim">{dados.config.nomeExibicao} — aplicativo em breve.</p>
+      </main>
+    );
+  }
+
   const [toggles, contexto] = await Promise.all([
     carregarTogglesApp(db),
     carregarContextoMembro(db, {

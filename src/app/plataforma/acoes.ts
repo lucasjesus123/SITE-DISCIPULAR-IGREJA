@@ -1260,3 +1260,43 @@ function traduzirErro(erro: unknown, acao: string): ResultadoAcao {
   const ref = logger.erro("Falha em Server Action da plataforma", erro, { acao });
   return { ok: false, mensagem: `Não foi possível concluir. Referência: ${ref}` };
 }
+
+// -----------------------------------------------------------------------------
+// MÓDULOS ("gavetas") por igreja — o Super Admin liga/desliga cada área.
+// -----------------------------------------------------------------------------
+const CHAVES_MODULO = ["site", "app", "louvor", "kids", "financeiro", "inscricoes", "celulas", "escola", "comunicacao"] as const;
+
+export async function definirModulos(tenantIdBruto: string, formData: FormData): Promise<ResultadoAcao> {
+  try {
+    const sessao = await exigirPlataformaAdmin();
+    const limite = await verificarLimite(REGRAS.escritaPainel, sessao.userId);
+    if (!limite.permitido) return { ok: false, mensagem: "Muitas operações seguidas. Aguarde." };
+
+    const tenantId = idSchema.parse(tenantIdBruto);
+    const tenant = await prisma.tenant.findUnique({ where: { id: tenantId }, select: { slug: true } });
+    if (!tenant) return { ok: false, mensagem: "Igreja não encontrada." };
+
+    // `gestao` é a base e não entra no formulário (sempre ligado).
+    const valores = Object.fromEntries(CHAVES_MODULO.map((c) => [c, formData.get(c) === "on"]));
+
+    await prisma.configuracaoModulos.upsert({
+      where: { tenantId },
+      create: { tenantId, gestao: true, ...valores },
+      update: { gestao: true, ...valores },
+    });
+
+    await auditarPlataforma({
+      atorUserId: sessao.userId,
+      atorEmail: sessao.email,
+      acao: "tenant.definirModulos",
+      alvoTipo: "Tenant",
+      alvoId: tenantId,
+      detalhes: { slug: tenant.slug, ...valores },
+    });
+
+    revalidatePath(`/plataforma/igrejas/${tenantId}`);
+    return { ok: true, mensagem: "Módulos atualizados. As áreas ligadas já aparecem para a igreja." };
+  } catch (erro) {
+    return traduzirErro(erro, "definirModulos");
+  }
+}

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { exigirPermissao } from "@/lib/auth/rbac";
+import { exigirModulo } from "@/lib/modulos/guard";
 import { Mascote } from "@/components/kids/Mascote";
 import { FormCheckin } from "@/components/kids/FormCheckin";
 import { CartaoEmSala } from "@/components/kids/CartaoEmSala";
@@ -9,6 +10,7 @@ export const metadata = { title: "Kids" };
 
 export default async function PaginaKids() {
   const ctx = await exigirPermissao("kids.gerenciar");
+  await exigirModulo(ctx.db, "kids");
 
   const hoje = new Date(`${new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(new Date())}T00:00:00.000Z`);
 

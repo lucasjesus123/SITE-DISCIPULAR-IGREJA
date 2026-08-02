@@ -114,6 +114,7 @@ model Tenant {
   configAppMembro     ConfiguracaoAppMembro?
   contribuicoes       Contribuicao[]
   configPagamento     ConfiguracaoPagamento?
+  configModulos       ConfiguracaoModulos?
 
   @@index([status])
   @@map("tenants")
@@ -1945,4 +1946,31 @@ model ConfiguracaoPagamento {
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@map("config_pagamento")
+}
+
+// =============================================================================
+// MÓDULOS ("gavetas") habilitados por igreja. O Super Admin liga/desliga cada
+// área; ao ligar, a área aparece e se conecta ao resto. `gestao` é a base.
+// Lógica pura em src/lib/modulos/modulos.ts. Uma linha por tenant.
+// =============================================================================
+model ConfiguracaoModulos {
+  tenantId String @id
+
+  gestao      Boolean @default(true)
+  site        Boolean @default(true)
+  app         Boolean @default(true)
+  louvor      Boolean @default(true)
+  kids        Boolean @default(true)
+  financeiro  Boolean @default(true)
+  inscricoes  Boolean @default(true)
+  celulas     Boolean @default(true)
+  escola      Boolean @default(true)
+  comunicacao Boolean @default(true)
+
+  atualizadoEm DateTime @updatedAt
+  criadoEm     DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("config_modulos")
 }

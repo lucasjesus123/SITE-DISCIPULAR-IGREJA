@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { Papel } from "@prisma/client";
 import { papelTem, type Permissao } from "@/lib/auth/permissoes";
+import { moduloAtivo, type ConfigModulos, type ModuloChave } from "@/lib/modulos/modulos";
 
 /**
  * Menu lateral do painel.
@@ -21,6 +22,8 @@ interface ItemNav {
   rotulo: string;
   href: string;
   permissao?: Permissao;
+  /** Gaveta a que o item pertence; se desligada, o item some. */
+  modulo?: ModuloChave;
   contador?: "caixaEntrada" | "oracoes" | "batismos";
   alerta?: boolean;
 }
@@ -41,33 +44,33 @@ const NAVEGACAO: GrupoNav[] = [
       { rotulo: "Caixa de entrada", href: "/painel/caixa-entrada", permissao: "submissoes.ler", contador: "caixaEntrada", alerta: true },
       { rotulo: "Pessoas", href: "/painel/pessoas", permissao: "pessoas.ler" },
       { rotulo: "Acompanhamento", href: "/painel/acompanhamento", permissao: "pessoas.ler" },
-      { rotulo: "Kids", href: "/painel/kids", permissao: "kids.gerenciar" },
-      { rotulo: "Louvor", href: "/painel/louvor", permissao: "louvor.gerenciar" },
+      { rotulo: "Kids", href: "/painel/kids", permissao: "kids.gerenciar", modulo: "kids" },
+      { rotulo: "Louvor", href: "/painel/louvor", permissao: "louvor.gerenciar", modulo: "louvor" },
       { rotulo: "Pedidos de oração", href: "/painel/oracao", permissao: "oracao.ler", contador: "oracoes" },
       { rotulo: "Batismos", href: "/painel/batismos", permissao: "batismos.ler", contador: "batismos" },
-      { rotulo: "Células", href: "/painel/celulas", permissao: "celulas.ler" },
+      { rotulo: "Células", href: "/painel/celulas", permissao: "celulas.ler", modulo: "celulas" },
     ],
   },
   {
     titulo: "Conteúdo",
     itens: [
-      { rotulo: "Site da igreja", href: "/painel/site", permissao: "site.editar" },
-      { rotulo: "Transmissão ao vivo", href: "/painel/ao-vivo", permissao: "site.editar" },
-      { rotulo: "Mensagens", href: "/painel/mensagens", permissao: "mensagens.gerenciar" },
-      { rotulo: "WhatsApp", href: "/painel/whatsapp", permissao: "whatsapp.gerenciar" },
-      { rotulo: "Automações", href: "/painel/automacoes", permissao: "automacoes.gerenciar" },
-      { rotulo: "Disparos", href: "/painel/disparos", permissao: "automacoes.gerenciar" },
+      { rotulo: "Site da igreja", href: "/painel/site", permissao: "site.editar", modulo: "site" },
+      { rotulo: "Transmissão ao vivo", href: "/painel/ao-vivo", permissao: "site.editar", modulo: "site" },
+      { rotulo: "Mensagens", href: "/painel/mensagens", permissao: "mensagens.gerenciar", modulo: "site" },
+      { rotulo: "WhatsApp", href: "/painel/whatsapp", permissao: "whatsapp.gerenciar", modulo: "comunicacao" },
+      { rotulo: "Automações", href: "/painel/automacoes", permissao: "automacoes.gerenciar", modulo: "comunicacao" },
+      { rotulo: "Disparos", href: "/painel/disparos", permissao: "automacoes.gerenciar", modulo: "comunicacao" },
       { rotulo: "Agenda", href: "/painel/agenda", permissao: "agenda.gerenciar" },
-      { rotulo: "Escola", href: "/painel/cursos", permissao: "cursos.gerenciar" },
-      { rotulo: "Inscrições", href: "/painel/inscricoes", permissao: "inscricoes.gerenciar" },
+      { rotulo: "Escola", href: "/painel/cursos", permissao: "cursos.gerenciar", modulo: "escola" },
+      { rotulo: "Inscrições", href: "/painel/inscricoes", permissao: "inscricoes.gerenciar", modulo: "inscricoes" },
     ],
   },
   {
     titulo: "Administração",
     itens: [
-      { rotulo: "Financeiro", href: "/painel/financeiro", permissao: "financeiro.gerenciar" },
-      { rotulo: "Pagamentos (PIX)", href: "/painel/pagamentos", permissao: "config.gerenciar" },
-      { rotulo: "App de Membros", href: "/painel/configuracoes-app", permissao: "config.gerenciar" },
+      { rotulo: "Financeiro", href: "/painel/financeiro", permissao: "financeiro.gerenciar", modulo: "financeiro" },
+      { rotulo: "Pagamentos (PIX)", href: "/painel/pagamentos", permissao: "config.gerenciar", modulo: "financeiro" },
+      { rotulo: "App de Membros", href: "/painel/configuracoes-app", permissao: "config.gerenciar", modulo: "app" },
       { rotulo: "Usuários e papéis", href: "/painel/usuarios", permissao: "usuarios.gerenciar" },
       { rotulo: "Configurações", href: "/painel/configuracoes", permissao: "config.gerenciar" },
       { rotulo: "Auditoria", href: "/painel/auditoria", permissao: "auditoria.ler" },
@@ -80,12 +83,14 @@ export function LateralPainel({
   logoUrl,
   nomeUsuario,
   papel,
+  modulos,
   contadores,
 }: {
   nomeIgreja: string;
   logoUrl?: string | null;
   nomeUsuario: string;
   papel: Papel;
+  modulos?: ConfigModulos | null;
   contadores: { caixaEntrada: number; oracoes: number; batismos: number };
 }) {
   const pathname = usePathname();
@@ -127,7 +132,9 @@ export function LateralPainel({
       <nav className="painel__nav" aria-label="Menu do painel">
         {NAVEGACAO.map((grupo) => {
           const visiveis = grupo.itens.filter(
-            (item) => !item.permissao || papelTem(papel, item.permissao),
+            (item) =>
+              (!item.permissao || papelTem(papel, item.permissao)) &&
+              (!item.modulo || moduloAtivo(modulos, item.modulo)),
           );
           if (visiveis.length === 0) return null;
 

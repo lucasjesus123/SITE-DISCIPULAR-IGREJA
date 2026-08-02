@@ -19,14 +19,14 @@ interface Props {
   dados: DadosSite;
   live: { aoVivo: boolean; videoId: string | null; titulo: string | null };
   ultimaMsgVideoId: string | null;
+  /** Logo já resolvido (config da igreja ou fallback do tenant-âncora). */
+  logoUrl: string | null;
 }
 
-export function HomeInstitucional({ dados, live, ultimaMsgVideoId }: Props) {
+export function HomeInstitucional({ dados, live, ultimaMsgVideoId, logoUrl }: Props) {
   const { config, campi } = dados;
-  const nome = config.nomeExibicao || "Discipular";
-  // Logo do topo: o que a igreja enviou no painel, ou a marca oficial da
-  // Discipular (esta home só roda para o tenant-âncora).
-  const logo = config.logoClaroId ? urlArquivoPublico(config.logoClaroId) : "/marca/logo-white.png";
+  const nome = config.nomeExibicao || "Igreja";
+  const logo = logoUrl;
   const heroImagem = config.heroImagemId ? urlArquivoPublico(config.heroImagemId) : null;
   const pixDisplay = formatarCnpj(config.pixChave) ?? config.pixChave;
   const thumb = live.aoVivo && live.videoId ? urlMiniatura(live.videoId) : ultimaMsgVideoId ? urlMiniatura(ultimaMsgVideoId) : null;
@@ -40,7 +40,7 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId }: Props) {
       (campusPrincipal.uf ? `/${campusPrincipal.uf}` : "")
     : "Rua da Igreja, 100 — Centro";
   const telefone = config.telefoneContato ?? campusPrincipal?.telefone ?? "(00) 90000-0000";
-  const email = config.emailContato ?? "contato@discipular.com.br";
+  const email = config.emailContato ?? "";
   const mapaBusca = encodeURIComponent(`${nome} ${endereco}`);
 
   return (
@@ -224,7 +224,7 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId }: Props) {
         </div>
         <div className="pixbox">
           <div className="lbl">Chave PIX{pixDisplay?.includes("/") ? " · CNPJ" : ""}</div>
-          <div className="key">{pixDisplay ?? "contato@discipular.com.br"}</div>
+          <div className="key">{pixDisplay ?? "Configure a chave PIX no painel"}</div>
           <Link href="/contribua" className="btn pri" style={{ width: "100%", justifyContent: "center" }}>Contribuir com PIX</Link>
         </div>
       </div></section>
@@ -256,7 +256,7 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId }: Props) {
           <div className="eyebrow">Fale conosco</div>
           <h2>Venha nos<br />visitar</h2>
           <p className="lead" style={{ marginBottom: 20 }}>Estamos de portas abertas. Envie sua mensagem — ela chega direto no nosso WhatsApp.</p>
-          <p style={{ fontWeight: 600, lineHeight: 1.9 }}>📍 {endereco}<br />📞 {telefone}<br />✉ {email}</p>
+          <p style={{ fontWeight: 600, lineHeight: 1.9 }}>📍 {endereco}<br />📞 {telefone}{email && <><br />✉ {email}</>}</p>
           <a className="map" href={`https://www.google.com/maps/search/?api=1&query=${mapaBusca}`} target="_blank" rel="noopener noreferrer">🗺️ Ver no mapa</a>
         </div>
         <FormWhatsAppInst numero={config.whatsapp} />

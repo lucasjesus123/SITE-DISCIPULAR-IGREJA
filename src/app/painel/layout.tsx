@@ -11,6 +11,7 @@ import { obterTokenCsrf } from "@/lib/security/csrf";
 import { LateralPainel } from "@/components/painel/Lateral";
 import { TopoPainel } from "@/components/painel/TopoPainel";
 import { urlArquivoPublico } from "@/lib/storage/urls";
+import { carregarModulos } from "@/lib/services/modulos";
 import "../globals.css";
 
 /**
@@ -62,11 +63,12 @@ export default async function LayoutPainel({ children }: { children: React.React
   // Membro comum não usa o painel de gestão — o lugar dele é o app.
   if (ctx.papel === "MEMBRO") redirect("/app");
 
-  const [dados, contadores, , cookieStore] = await Promise.all([
+  const [dados, contadores, , cookieStore, modulos] = await Promise.all([
     carregarDadosSite(ctx.tenant.id),
     contadoresTriagem(ctx.tenant.id),
     obterTokenCsrf(),
     cookies(),
+    carregarModulos(ctx.db),
   ]);
 
   // Tema do painel escolhido pelo usuário (persistido em cookie). Ler no
@@ -113,6 +115,7 @@ export default async function LayoutPainel({ children }: { children: React.React
           logoUrl={logoPainel}
           nomeUsuario={ctx.sessao.nome}
           papel={ctx.papel}
+          modulos={modulos}
           contadores={{
             caixaEntrada: contadores.total,
             oracoes: contadores.oracoesPendentes,

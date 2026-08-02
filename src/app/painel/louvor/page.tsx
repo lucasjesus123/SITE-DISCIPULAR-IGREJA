@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { exigirPermissao } from "@/lib/auth/rbac";
+import { exigirModulo } from "@/lib/modulos/guard";
 import { garantirMinisterioLouvor, carregarEquipe } from "@/lib/services/louvor";
 import { nomeDoMes } from "@/lib/louvor/escala";
 import { resumirConfirmacoes, type StatusEscalado } from "@/lib/louvor/confirmacao";
@@ -11,6 +12,7 @@ export const metadata = { title: "Louvor" };
 
 export default async function PaginaLouvor() {
   const ctx = await exigirPermissao("louvor.gerenciar");
+  await exigirModulo(ctx.db, "louvor");
   const ministerioId = await garantirMinisterioLouvor(ctx.db, ctx.tenant.id);
 
   const [escalas, equipe] = await Promise.all([

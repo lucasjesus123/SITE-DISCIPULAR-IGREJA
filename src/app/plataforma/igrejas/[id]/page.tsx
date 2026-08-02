@@ -7,6 +7,8 @@ import { env } from "@/lib/env";
 import { id as idSchema } from "@/lib/validation/comum";
 import { ControlesIgreja } from "@/components/plataforma/ControlesIgreja";
 import { DominiosDaIgreja, type DominioListado } from "@/components/plataforma/DominiosDaIgreja";
+import { ModulosDaIgreja } from "@/components/plataforma/ModulosDaIgreja";
+import { carregarModulosPorTenant } from "@/lib/services/modulos";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Igreja" };
@@ -82,7 +84,7 @@ export default async function DetalheIgreja({ params }: { params: Promise<{ id: 
 
   if (!tenant) notFound();
 
-  const [uso, sessoesSuporteAbertas, sessoesAtivas] = await Promise.all([
+  const [uso, sessoesSuporteAbertas, sessoesAtivas, modulos] = await Promise.all([
     contarUso(tenant.id),
     prisma.sessao.count({
       where: {
@@ -95,6 +97,7 @@ export default async function DetalheIgreja({ params }: { params: Promise<{ id: 
     prisma.sessao.count({
       where: { tenantAtivoId: tenant.id, revogadaEm: null, expiraEm: { gt: new Date() } },
     }),
+    carregarModulosPorTenant(tenant.id),
   ]);
 
   const dominios: DominioListado[] = tenant.dominios.map((dominio) => ({
@@ -231,6 +234,12 @@ export default async function DetalheIgreja({ params }: { params: Promise<{ id: 
             </table>
           </div>
         )}
+      </section>
+
+      <section className="secao-painel">
+        <h2 className="secao-painel__titulo">Módulos (gavetas)</h2>
+        <p className="secao-painel__desc">Ligue só o que esta igreja contratou — site, app, Louvor, Kids, Financeiro… Ao ligar, a área aparece e se conecta ao resto.</p>
+        <ModulosDaIgreja tenantId={tenant.id} modulos={modulos} />
       </section>
 
       <DominiosDaIgreja tenantId={tenant.id} hostSubdominio={hostSubdominio} dominios={dominios} />

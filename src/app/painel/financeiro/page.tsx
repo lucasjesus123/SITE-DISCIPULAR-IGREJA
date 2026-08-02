@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { exigirPermissao } from "@/lib/auth/rbac";
+import { exigirModulo } from "@/lib/modulos/guard";
 import { formatarCentavos } from "@/lib/financeiro/dinheiro";
 import {
   ativoPorCongregacao,
@@ -16,6 +17,7 @@ const FMT_DATA = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone
 
 export default async function PaginaFinanceiro() {
   const ctx = await exigirPermissao("financeiro.gerenciar");
+  await exigirModulo(ctx.db, "financeiro");
 
   const [saldos, campi, lancamentos] = await Promise.all([
     saldosDasContas(ctx.db),

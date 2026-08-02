@@ -1706,3 +1706,13 @@ body:has(.fundo-site) .theme-ink-800 {
 .cfgpg-dot { width: .7rem; height: .7rem; border-radius: 50%; flex: none; }
 .cfgpg-dot--on { background: #34472f; box-shadow: 0 0 0 3px rgb(52 71 47 / .18); }
 .cfgpg-dot--off { background: #b6b9c1; }
+
+/* Módulos (gavetas) — Super Admin */
+.mods-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+@media (max-width: 640px) { .mods-grid { grid-template-columns: 1fr; } }
+.mods-item { display: flex; gap: 0.6rem; align-items: flex-start; padding: 0.7rem 0.85rem; border: 1.5px solid var(--pnl-line, #e4e6e9); border-radius: 12px; cursor: pointer; }
+.mods-item:has(input:checked) { border-color: var(--pnl-accent, #34472f); background: rgb(var(--pnl-accent-rgb, 52 71 47) / 0.05); }
+.mods-item input { margin-top: 0.15rem; width: 1.1rem; height: 1.1rem; accent-color: var(--pnl-accent, #34472f); flex: none; }
+.mods-item span { display: grid; gap: 0.1rem; }
+.mods-item small { color: var(--pnl-text-dim, #6b6f76); font-size: 0.8rem; }
+.mods-nota { font-size: 0.84rem; color: var(--pnl-text-dim, #6b6f76); }
