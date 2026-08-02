@@ -21,7 +21,14 @@
   background: var(--surface);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
+  /* Fica ACIMA de qualquer fundo do tema e cobre a tela toda (nada vaza). */
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
 }
+/* Seções claras são opacas de propósito — nada aparece atrás delas. */
+.inst-site .sec.novo, .inst-site .minis, .inst-site .depo, .inst-site .contato { background: var(--surface); }
+.inst-site .steps { background: var(--bg); }
 .inst-site * { box-sizing: border-box; }
 .inst-site .wrap { max-width: 1180px; margin: 0 auto; padding: 0 26px; }
 .inst-site section { position: relative; }
@@ -38,8 +45,11 @@
 
 /* NAV */
 .inst-site .nav { position: sticky; top: 0; z-index: 50; background: rgb(20 22 26 / 0.93); backdrop-filter: blur(8px); border-bottom: 1px solid #26292f; }
-.inst-site .nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 70px; }
-.inst-site .brand { display: flex; align-items: center; gap: 11px; color: #fff; text-decoration: none; }
+.inst-site .nav .wrap { display: flex; align-items: center; gap: 30px; height: 70px; }
+.inst-site .brand { display: flex; align-items: center; gap: 11px; color: #fff; text-decoration: none; flex: none; }
+.inst-site .brand b { white-space: nowrap; }
+/* Empurra o botão do app/AO VIVO para a direita; o menu fica entre marca e CTA. */
+.inst-site .nav-cta { margin-left: auto; }
 .inst-site .brand .logo { width: 40px; height: 40px; border-radius: 11px; background: var(--mint); color: var(--ink); display: flex; align-items: center; justify-content: center; font-family: "Archivo"; font-weight: 900; font-size: 19px; }
 .inst-site .brand .logo img { width: 100%; height: 100%; object-fit: contain; border-radius: 11px; }
 .inst-site .brand b { font-family: "Archivo"; font-weight: 800; letter-spacing: 0.02em; text-transform: uppercase; font-size: 16px; }

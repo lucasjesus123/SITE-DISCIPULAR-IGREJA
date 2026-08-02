@@ -131,8 +131,10 @@ export default async function LayoutSite({ children }: { children: React.ReactNo
         Pular para o conteúdo
       </a>
 
-      {/* Fundo do site: imagem bem transparente atrás de todo o conteúdo. */}
-      {dados.config.fundoImagemId && (
+      {/* Fundo do site: imagem bem transparente atrás de todo o conteúdo.
+          Na home Institucional NÃO renderizamos — as seções têm fundo próprio
+          e a imagem global vazaria atrás delas. */}
+      {!homeInstitucional && dados.config.fundoImagemId && (
         <div
           className="fundo-site"
           aria-hidden="true"
