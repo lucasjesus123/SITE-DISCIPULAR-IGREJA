@@ -112,6 +112,7 @@ model Tenant {
   eventoMusicas       EventoMusica[]
   chatMinisterio      ChatMinisterio[]
   configAppMembro     ConfiguracaoAppMembro?
+  contribuicoes       Contribuicao[]
 
   @@index([status])
   @@map("tenants")
@@ -680,6 +681,7 @@ model Campus {
   batismos        SolicitacaoBatismo[]
   contasContabeis ContaContabil[]
   lancamentosFin  LancamentoFinanceiro[]
+  contribuicoes   Contribuicao[]
   fechamentosFin  FechamentoFinanceiro[]
   acessosFin      AcessoFinanceiro[]
 
@@ -1864,4 +1866,55 @@ model ConfiguracaoAppMembro {
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@map("config_app_membro")
+}
+
+// =============================================================================
+// CONTRIBUIÇÃO (Contribuir do app) — cobrança PIX via ASAAS que, ao ser
+// confirmada pelo webhook, vira UM lançamento de entrada no Financeiro
+// (partidas dobradas, centavos). Tenant-scoped + RLS.
+// =============================================================================
+enum TipoContribuicao {
+  DIZIMO
+  OFERTA
+  MISSOES
+}
+
+enum StatusContribuicao {
+  PENDENTE
+  CONFIRMADA
+  CANCELADA
+  EXPIRADA
+}
+
+model Contribuicao {
+  id       String @id @default(cuid())
+  tenantId String
+
+  /// Membro que contribuiu (opcional: pode ser anônima/visitante).
+  membroUserId String?
+  campusId     String?
+  nome         String? @db.VarChar(160)
+
+  tipo         TipoContribuicao
+  valorCentavos BigInt
+  status       StatusContribuicao @default(PENDENTE)
+
+  /// Referências do gateway. asaasPaymentId é único por igreja (idempotência
+  /// do webhook: o mesmo pagamento nunca gera dois lançamentos).
+  asaasPaymentId String? @db.VarChar(60)
+  pixCopiaECola  String? @db.Text
+
+  /// Lançamento gerado no Financeiro quando a contribuição é confirmada.
+  lancamentoId String?
+
+  criadoEm     DateTime  @default(now())
+  confirmadaEm DateTime?
+
+  tenant Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  campus Campus? @relation(fields: [campusId], references: [id], onDelete: SetNull)
+
+  @@unique([tenantId, asaasPaymentId])
+  @@index([tenantId, status, criadoEm])
+  @@index([tenantId, membroUserId])
+  @@map("contribuicoes")
 }

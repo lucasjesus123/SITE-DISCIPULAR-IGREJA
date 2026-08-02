@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { tenantDaRequisicao } from "@/lib/tenant/resolve";
 import { carregarDadosSite } from "@/lib/services/site";
 import { CopiarPix } from "@/components/app/CopiarPix";
+import { ContribuirPix } from "@/components/app/ContribuirPix";
+import { asaasConfigurado } from "@/lib/pagamentos/asaas";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Contribuir" };
@@ -32,6 +34,7 @@ export default async function AppContribuir() {
   const { config } = dados;
 
   const chave = config.pixChave?.trim() ?? "";
+  const pixAutomatico = asaasConfigurado();
 
   return (
     <>
@@ -44,7 +47,15 @@ export default async function AppContribuir() {
         </p>
       </header>
 
-      {chave.length === 0 ? (
+      {/* Fluxo automático (ASAAS): escolhe tipo/valor e paga no app, com recibo
+          e lançamento no Financeiro. Quando não configurado, cai na chave PIX. */}
+      {pixAutomatico && (
+        <section style={{ padding: "0 1.25rem 1.75rem" }}>
+          <ContribuirPix />
+        </section>
+      )}
+
+      {pixAutomatico ? null : chave.length === 0 ? (
         <section style={{ padding: "0 1.25rem 2.5rem" }}>
           <div
             style={{

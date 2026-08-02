@@ -58,6 +58,13 @@ const schema = z.object({
   SMTP_PASSWORD: z.string().optional().default(""),
   SMTP_FROM: z.string().optional().default(""),
 
+  // ASAAS — gateway de PIX do "Contribuir". A chave vive SÓ no servidor.
+  // Sem ela, a tela de contribuir informa que o PIX ainda não foi configurado
+  // (não quebra). O webhook confirma o pagamento e gera o lançamento.
+  ASAAS_BASE_URL: z.string().url().default("https://api.asaas.com/v3"),
+  ASAAS_API_KEY: z.string().optional().default(""),
+  ASAAS_WEBHOOK_TOKEN: z.string().optional().default(""),
+
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
 });
 

@@ -144,7 +144,11 @@ export async function middleware(request: NextRequest) {
   // header `Origin` — o navegador o define e o JavaScript não pode alterá-lo.
   // ---------------------------------------------------------------------------
   const metodosMutaveis = new Set(["POST", "PUT", "PATCH", "DELETE"]);
-  if (metodosMutaveis.has(request.method)) {
+  // Webhooks server-to-server (ASAAS, etc.) não têm Origin nem cookie de sessão:
+  // eles se autenticam pelo próprio token na rota. A checagem de origem (que é
+  // uma defesa anti-CSRF de NAVEGADOR) não se aplica e barraria o webhook.
+  const ehWebhook = pathname.startsWith("/api/webhooks/");
+  if (metodosMutaveis.has(request.method) && !ehWebhook) {
     const origin = request.headers.get("origin");
 
     if (origin) {
