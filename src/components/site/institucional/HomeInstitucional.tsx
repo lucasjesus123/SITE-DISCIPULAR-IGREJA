@@ -68,7 +68,8 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId }: Props) {
           <li><a href="#agenda">Agenda</a></li>
         </ul>
         <div className="nav-cta">
-          <Link href="/app" className="app-btn">Acesse o App</Link>
+          {/* "Acesse o App" sai do topo: já existe o item "App" no menu e a seção
+              dedicada. Mantemos só o AO VIVO, que é ação de urgência. */}
           <a href="#mensagem" className="live-btn"><span className="dot" />AO VIVO</a>
         </div>
       </div></nav>
