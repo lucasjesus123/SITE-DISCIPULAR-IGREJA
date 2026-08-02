@@ -3,15 +3,15 @@
    aprovado (Site_Discipular_Institucional). Tudo escopado sob `.inst-site`
    para NÃO vazar nos outros tenants/páginas que usam o tema whitelabel.
 
-   Regra de ouro: grafite (#14161A) + verde (#0E7C5A) + menta (#5EE6A8).
+   Regra de ouro: grafite (#14161A) + verde (#34472f) + menta (#8fbf7a).
    NUNCA azul. Ícones pretos de traço. Archivo nos títulos, Inter no texto.
    Bordas firmes 1.5px, sem sombras difusas.
    ========================================================================== */
 .inst-site {
   --ink: #14161a;
   --ink-2: #1b1e24;
-  --green: #0e7c5a;
-  --mint: #5ee6a8;
+  --green: #34472f;
+  --mint: #8fbf7a;
   --bg: #eef0f2;
   --surface: #fff;
   --line: #e4e6e9;
@@ -68,8 +68,8 @@
 .inst-site .hero { position: relative; background: var(--ink); color: #fff; overflow: hidden; padding: 92px 0 100px; }
 .inst-site .hero-photo { position: absolute; inset: 0; z-index: 0; background-size: cover; background-position: center; }
 .inst-site .hero-overlay { position: absolute; inset: 0; z-index: 1; background: linear-gradient(90deg, rgb(20 22 26 / 0.96), rgb(20 22 26 / 0.74) 46%, rgb(20 22 26 / 0.44)), linear-gradient(0deg, rgb(20 22 26 / 0.88), rgb(20 22 26 / 0.15)); }
-.inst-site .hero::before { content: ""; position: absolute; right: -160px; top: -120px; width: 520px; height: 520px; border-radius: 50%; background: radial-gradient(circle, rgb(94 230 168 / 0.16), transparent 66%); z-index: 2; }
-.inst-site .hero::after { content: ""; position: absolute; left: -140px; bottom: -160px; width: 420px; height: 420px; border-radius: 50%; background: radial-gradient(circle, rgb(14 124 90 / 0.28), transparent 66%); z-index: 2; }
+.inst-site .hero::before { content: ""; position: absolute; right: -160px; top: -120px; width: 520px; height: 520px; border-radius: 50%; background: radial-gradient(circle, rgb(143 191 122 / 0.16), transparent 66%); z-index: 2; }
+.inst-site .hero::after { content: ""; position: absolute; left: -140px; bottom: -160px; width: 420px; height: 420px; border-radius: 50%; background: radial-gradient(circle, rgb(52 71 47 / 0.28), transparent 66%); z-index: 2; }
 /* Hero centralizado e equilibrado. */
 .inst-site .hero .wrap { position: relative; z-index: 3; text-align: center; display: flex; flex-direction: column; align-items: center; }
 .inst-site .chip { display: inline-flex; align-items: center; gap: 8px; background: #22252b; border: 1px solid #31353d; color: #c7c9d0; font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 999px; text-decoration: none; margin-bottom: 22px; }
@@ -109,7 +109,7 @@
 .inst-site .ex .i svg, .inst-site .step .ic svg { width: 30px; height: 30px; stroke: var(--ink); stroke-width: 1.7; fill: none; stroke-linecap: round; stroke-linejoin: round; }
 .inst-site .ex p { font-size: 13px; color: var(--muted); line-height: 1.5; }
 .inst-site .novo-visual { background: linear-gradient(150deg, #14161a, #22252b); border-radius: 20px; min-height: 320px; padding: 34px; color: #fff; display: flex; flex-direction: column; justify-content: flex-end; position: relative; overflow: hidden; }
-.inst-site .novo-visual::after { content: ""; position: absolute; right: -50px; top: -50px; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, rgb(94 230 168 / 0.25), transparent 70%); }
+.inst-site .novo-visual::after { content: ""; position: absolute; right: -50px; top: -50px; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, rgb(143 191 122 / 0.25), transparent 70%); }
 .inst-site .novo-visual .q { font-family: "Archivo"; font-weight: 800; font-size: 24px; line-height: 1.25; text-transform: uppercase; z-index: 2; }
 
 /* MENSAGEM */
@@ -125,7 +125,7 @@
 
 /* APP DA IGREJA */
 .inst-site .app { background: var(--ink); color: #fff; overflow: hidden; }
-.inst-site .app::before { content: ""; position: absolute; left: -120px; bottom: -140px; width: 420px; height: 420px; border-radius: 50%; background: radial-gradient(circle, rgb(14 124 90 / 0.30), transparent 66%); }
+.inst-site .app::before { content: ""; position: absolute; left: -120px; bottom: -140px; width: 420px; height: 420px; border-radius: 50%; background: radial-gradient(circle, rgb(52 71 47 / 0.30), transparent 66%); }
 .inst-site .app .grid { display: grid; grid-template-columns: 1fr 340px; gap: 50px; align-items: center; position: relative; z-index: 2; }
 @media (max-width: 860px) { .inst-site .app .grid { grid-template-columns: 1fr; gap: 36px; } }
 .inst-site .app .lead { color: #b6b9c1; }
@@ -146,7 +146,7 @@
 .inst-site .apbar .hi { font-size: 11px; color: #9aa0a8; }
 .inst-site .apbar .nm { font-family: "Archivo"; font-weight: 800; text-transform: uppercase; font-size: 17px; margin-top: 2px; }
 .inst-site .apbody { padding: 14px; flex: 1; }
-.inst-site .apbanner { height: 96px; border-radius: 12px; background: linear-gradient(140deg, #0e7c5a, #14161a); position: relative; color: #fff; display: flex; flex-direction: column; justify-content: flex-end; padding: 12px; }
+.inst-site .apbanner { height: 96px; border-radius: 12px; background: linear-gradient(140deg, #34472f, #14161a); position: relative; color: #fff; display: flex; flex-direction: column; justify-content: flex-end; padding: 12px; }
 .inst-site .apbanner .lv { position: absolute; top: 9px; left: 9px; background: #c0392b; font-size: 9px; font-weight: 800; padding: 3px 7px; border-radius: 5px; }
 .inst-site .apbanner b { font-family: "Archivo"; font-weight: 800; text-transform: uppercase; font-size: 13px; }
 .inst-site .aptiles { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 11px; }

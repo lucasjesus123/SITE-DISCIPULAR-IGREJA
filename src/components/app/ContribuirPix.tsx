@@ -26,7 +26,7 @@ export function ContribuirPix() {
   if (resultado?.ok) {
     return (
       <div className="pix-pronto">
-        <p className="eyebrow" style={{ color: "var(--mint, #5ee6a8)" }}>PIX gerado</p>
+        <p className="eyebrow" style={{ color: "var(--mint, #8fbf7a)" }}>PIX gerado</p>
         <h2 style={{ fontSize: "1.2rem", margin: ".4rem 0 1rem" }}>Escaneie ou copie para pagar</h2>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img

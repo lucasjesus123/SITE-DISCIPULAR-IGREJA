@@ -1,8 +1,8 @@
 /* Roteador de acesso — identidade Institucional (grafite + verde/menta). */
 .escolher {
   --ink: #14161a;
-  --green: #0e7c5a;
-  --mint: #5ee6a8;
+  --green: #34472f;
+  --mint: #8fbf7a;
   min-height: 100vh;
   min-height: 100svh;
   display: grid;
@@ -11,8 +11,8 @@
   font-family: "Inter", system-ui, sans-serif;
   color: #fff;
   background:
-    radial-gradient(90% 70% at 88% 6%, rgb(94 230 168 / 0.16), transparent 60%),
-    radial-gradient(90% 80% at 6% 100%, rgb(14 124 90 / 0.4), transparent 60%),
+    radial-gradient(90% 70% at 88% 6%, rgb(143 191 122 / 0.16), transparent 60%),
+    radial-gradient(90% 80% at 6% 100%, rgb(52 71 47 / 0.4), transparent 60%),
     linear-gradient(155deg, #191c22 0%, #14161a 45%, #101913 100%);
 }
 .escolher__caixa { width: 100%; max-width: 780px; text-align: center; }
