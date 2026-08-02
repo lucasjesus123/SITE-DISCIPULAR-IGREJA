@@ -1,14 +1,15 @@
 import "server-only";
 
 import { timingSafeEqual } from "node:crypto";
-import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
+import type { CredenciaisAsaas } from "@/lib/pagamentos/config";
 
 /**
  * Cliente do gateway ASAAS — cobrança PIX do "Contribuir".
  *
  * SEGURANÇA
- *  - A API key vive só no servidor (env.ASAAS_API_KEY), nunca no navegador.
+ *  - As credenciais são resolvidas por igreja (painel > env) em
+ *    src/lib/pagamentos/config.ts e passadas aqui; nunca vão ao navegador.
  *  - Toda cobrança carrega `externalReference` = id da Contribuicao, para o
  *    webhook casar o pagamento com o registro certo, sem confiar em valor/nome.
  *  - Fluxo dinâmico (customer + payment PIX + QrCode): reconciliação limpa por
@@ -22,19 +23,12 @@ export class ErroAsaas extends Error {
   }
 }
 
-/** true quando a igreja configurou a chave do ASAAS no servidor. */
-export function asaasConfigurado(): boolean {
-  return env.ASAAS_API_KEY.trim().length > 0;
-}
-
-async function asaasFetch<T>(caminho: string, init: RequestInit): Promise<T> {
-  if (!asaasConfigurado()) throw new ErroAsaas("ASAAS não configurado (falta ASAAS_API_KEY).");
-
-  const resp = await fetch(`${env.ASAAS_BASE_URL}${caminho}`, {
+async function asaasFetch<T>(cred: CredenciaisAsaas, caminho: string, init: RequestInit): Promise<T> {
+  const resp = await fetch(`${cred.baseUrl}${caminho}`, {
     ...init,
     headers: {
       "Content-Type": "application/json",
-      access_token: env.ASAAS_API_KEY,
+      access_token: cred.apiKey,
       "User-Agent": "Discipular",
       ...(init.headers ?? {}),
     },
@@ -67,8 +61,8 @@ interface QrCodeAsaas {
 }
 
 /** Garante um cliente ASAAS para o pagador (CPF/CNPJ é exigido pelo gateway). */
-async function garantirCliente(dados: { nome: string; cpfCnpj: string; email?: string }): Promise<string> {
-  const cliente = await asaasFetch<ClienteAsaas>("/customers", {
+async function garantirCliente(cred: CredenciaisAsaas, dados: { nome: string; cpfCnpj: string; email?: string }): Promise<string> {
+  const cliente = await asaasFetch<ClienteAsaas>(cred, "/customers", {
     method: "POST",
     body: JSON.stringify({
       name: dados.nome,
@@ -91,18 +85,21 @@ export interface CobrancaPix {
  * Cria uma cobrança PIX dinâmica e devolve o "copia e cola" + a imagem do QR.
  * `valorCentavos` é convertido para reais (o ASAAS trabalha em reais decimais).
  */
-export async function criarCobrancaPix(params: {
-  valorCentavos: bigint;
-  descricao: string;
-  externalReference: string;
-  pagador: { nome: string; cpfCnpj: string; email?: string };
-}): Promise<CobrancaPix> {
-  const clienteId = await garantirCliente(params.pagador);
+export async function criarCobrancaPix(
+  cred: CredenciaisAsaas,
+  params: {
+    valorCentavos: bigint;
+    descricao: string;
+    externalReference: string;
+    pagador: { nome: string; cpfCnpj: string; email?: string };
+  },
+): Promise<CobrancaPix> {
+  const clienteId = await garantirCliente(cred, params.pagador);
 
   const valorReais = Number(params.valorCentavos) / 100;
   const hoje = new Date().toISOString().slice(0, 10); // vencimento hoje (PIX imediato)
 
-  const pagamento = await asaasFetch<PagamentoAsaas>("/payments", {
+  const pagamento = await asaasFetch<PagamentoAsaas>(cred, "/payments", {
     method: "POST",
     body: JSON.stringify({
       customer: clienteId,
@@ -114,7 +111,7 @@ export async function criarCobrancaPix(params: {
     }),
   });
 
-  const qr = await asaasFetch<QrCodeAsaas>(`/payments/${pagamento.id}/pixQrCode`, { method: "GET" });
+  const qr = await asaasFetch<QrCodeAsaas>(cred, `/payments/${pagamento.id}/pixQrCode`, { method: "GET" });
 
   return {
     paymentId: pagamento.id,
@@ -124,18 +121,25 @@ export async function criarCobrancaPix(params: {
   };
 }
 
+/** Testa se as credenciais funcionam (usado pelo painel ao salvar). */
+export async function validarCredenciais(cred: CredenciaisAsaas): Promise<boolean> {
+  try {
+    await asaasFetch<{ object?: string }>(cred, "/myAccount", { method: "GET" });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
- * Confere o token do webhook. O ASAAS envia, em todo POST de webhook, o header
- * `asaas-access-token` com o valor que a igreja cadastrou no painel do ASAAS.
+ * Confere o token do webhook contra o esperado (do tenant ou do env).
  * Comparação de tempo constante para não vazar o segredo por timing.
  */
-export function webhookAutentico(tokenRecebido: string | null): boolean {
-  const esperado = env.ASAAS_WEBHOOK_TOKEN;
+export function webhookAutentico(tokenRecebido: string | null, esperado: string): boolean {
   if (!esperado) return false; // sem token configurado, recusa tudo
   const a = Buffer.from(tokenRecebido ?? "");
   const b = Buffer.from(esperado);
   if (a.length !== b.length) return false;
-  // timingSafeEqual exige mesmo tamanho; já garantido acima.
   return timingSafeEqual(a, b);
 }
 

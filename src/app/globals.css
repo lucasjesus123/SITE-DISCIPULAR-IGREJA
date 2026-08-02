@@ -1700,3 +1700,9 @@ body:has(.fundo-site) .theme-ink-800 {
 .pix-campo input { min-height: 46px; border: 1.5px solid var(--line-on-dark, #2f333b); background: rgb(255 255 255 / 0.04); color: #fff; border-radius: 11px; padding: 0 0.9rem; font-size: 0.95rem; }
 .pix-campo input:focus { outline: none; border-color: #5ee6a8; }
 .pix-pronto { text-align: center; }
+
+/* Status do gateway de pagamento (tela Pagamentos) */
+.cfgpg-status { display: flex; align-items: center; gap: .5rem; font-size: .9rem; padding: .7rem .9rem; border: 1.5px solid var(--pnl-line); border-radius: 12px; background: var(--pnl-bg); }
+.cfgpg-dot { width: .7rem; height: .7rem; border-radius: 50%; flex: none; }
+.cfgpg-dot--on { background: #0e7c5a; box-shadow: 0 0 0 3px rgb(14 124 90 / .18); }
+.cfgpg-dot--off { background: #b6b9c1; }

@@ -113,6 +113,7 @@ model Tenant {
   chatMinisterio      ChatMinisterio[]
   configAppMembro     ConfiguracaoAppMembro?
   contribuicoes       Contribuicao[]
+  configPagamento     ConfiguracaoPagamento?
 
   @@index([status])
   @@map("tenants")
@@ -1921,4 +1922,27 @@ model Contribuicao {
   @@index([tenantId, status, criadoEm])
   @@index([tenantId, membroUserId])
   @@map("contribuicoes")
+}
+
+// =============================================================================
+// CONFIGURAÇÃO DE PAGAMENTO — credenciais do gateway (ASAAS) por igreja,
+// editáveis no painel. A chave da API é guardada CIFRADA (criptografar/
+// descriptografar em src/lib/crypto.ts) e NUNCA volta para o cliente.
+// Quando preenchida e ativa, tem prioridade sobre as variáveis de ambiente.
+// =============================================================================
+model ConfiguracaoPagamento {
+  tenantId String @id
+
+  provedor            String  @default("ASAAS")
+  ambiente            String  @default("producao") // producao | sandbox
+  apiKeyCriptografada String? @db.Text
+  webhookToken        String? @db.VarChar(120)
+  ativo               Boolean @default(false)
+
+  atualizadoEm DateTime @updatedAt
+  criadoEm     DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("config_pagamento")
 }

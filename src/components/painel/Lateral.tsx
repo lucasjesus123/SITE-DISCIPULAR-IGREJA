@@ -66,6 +66,7 @@ const NAVEGACAO: GrupoNav[] = [
     titulo: "Administração",
     itens: [
       { rotulo: "Financeiro", href: "/painel/financeiro", permissao: "financeiro.gerenciar" },
+      { rotulo: "Pagamentos (PIX)", href: "/painel/pagamentos", permissao: "config.gerenciar" },
       { rotulo: "App de Membros", href: "/painel/configuracoes-app", permissao: "config.gerenciar" },
       { rotulo: "Usuários e papéis", href: "/painel/usuarios", permissao: "usuarios.gerenciar" },
       { rotulo: "Configurações", href: "/painel/configuracoes", permissao: "config.gerenciar" },
@@ -210,6 +211,7 @@ function Ico({ nome }: { nome: string }) {
     "/painel/inscricoes": <><path d="M9 5h6a2 2 0 0 1 2 2v13l-5-3-5 3V7a2 2 0 0 1 2-2z" /><path d="M9.5 10.5l1.5 1.5 3-3.5" /></>,
     "/painel/financeiro": <><rect x="3" y="5.5" width="18" height="13" rx="2" /><path d="M3 9.5h18" /><circle cx="16.5" cy="14" r="1.4" /></>,
     "/painel/configuracoes-app": <><rect x="7" y="2.5" width="10" height="19" rx="2.5" /><path d="M11 18.5h2" /></>,
+    "/painel/pagamentos": <><rect x="2.5" y="6" width="19" height="12" rx="2" /><path d="M2.5 10h19M6 14h4" /></>,
     "/painel/usuarios": <><circle cx="10" cy="8" r="3" /><path d="M4 20c0-3.3 2.7-5 6-5s6 1.7 6 5" /><circle cx="18.5" cy="17.5" r="2.5" /><path d="M18.5 13.5v1M18.5 20.5v1M22 17.5h-1M16 17.5h-1" /></>,
     "/painel/configuracoes": <><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" /></>,
     "/painel/auditoria": <><rect x="5" y="3" width="14" height="18" rx="2" /><path d="M9 8h6M9 12h6M9 16h4" /></>,

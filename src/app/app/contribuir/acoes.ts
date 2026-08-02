@@ -5,7 +5,7 @@ import { tenantDaRequisicao } from "@/lib/tenant/resolve";
 import { sessaoAtual } from "@/lib/auth/session";
 import { REGRAS, verificarLimite } from "@/lib/security/rate-limit";
 import { ipHashAtual } from "@/lib/http/contexto";
-import { asaasConfigurado } from "@/lib/pagamentos/asaas";
+import { asaasDisponivel } from "@/lib/pagamentos/config";
 import { reaisParaCentavos } from "@/lib/pagamentos/contribuicao";
 import { iniciarContribuicao } from "@/lib/services/contribuicao";
 import { logger } from "@/lib/logger";
@@ -31,7 +31,7 @@ export async function iniciarContribuicaoAction(_estado: ResultadoPix, formData:
   try {
     const tenant = await tenantDaRequisicao();
     if (!tenant) return { ok: false, mensagem: "Igreja não encontrada." };
-    if (!asaasConfigurado()) return { ok: false, mensagem: "O PIX ainda não está configurado nesta igreja." };
+    if (!(await asaasDisponivel(tenant.id))) return { ok: false, mensagem: "O PIX ainda não está configurado nesta igreja." };
 
     // Rate limit por IP: evita alguém enfileirar cobranças em massa.
     const ipHash = await ipHashAtual();

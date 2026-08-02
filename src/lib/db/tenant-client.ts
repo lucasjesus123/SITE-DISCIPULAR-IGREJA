@@ -90,6 +90,7 @@ const MODELOS_TENANT = new Set<string>([
   "ChatMinisterio",
   "ConfiguracaoAppMembro",
   "Contribuicao",
+  "ConfiguracaoPagamento",
 ]);
 
 /**

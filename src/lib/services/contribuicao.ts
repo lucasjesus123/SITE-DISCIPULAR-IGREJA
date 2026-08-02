@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db/prisma";
 import { tenantDb } from "@/lib/db/tenant-client";
 import { criarLancamento } from "@/lib/financeiro/ledger";
 import { criarCobrancaPix } from "@/lib/pagamentos/asaas";
+import { credenciaisAsaasDoTenant } from "@/lib/pagamentos/config";
 import {
   contaReceitaCodigo,
   historicoContribuicao,
@@ -39,6 +40,9 @@ export interface DadosIniciar {
 
 /** Cria a cobrança e devolve o PIX (copia-e-cola + imagem) para a tela. */
 export async function iniciarContribuicao(tenantId: string, dados: DadosIniciar) {
+  const cred = await credenciaisAsaasDoTenant(tenantId);
+  if (!cred) throw new ErroContribuicao("Gateway de pagamento não configurado para esta igreja.");
+
   const db = tenantDb(tenantId);
 
   const contribuicao = await db.contribuicao.create({
@@ -54,7 +58,7 @@ export async function iniciarContribuicao(tenantId: string, dados: DadosIniciar)
     select: { id: true },
   });
 
-  const cobranca = await criarCobrancaPix({
+  const cobranca = await criarCobrancaPix(cred, {
     valorCentavos: dados.valorCentavos,
     descricao: historicoContribuicao(dados.tipo, dados.pagador.nome),
     externalReference: contribuicao.id,

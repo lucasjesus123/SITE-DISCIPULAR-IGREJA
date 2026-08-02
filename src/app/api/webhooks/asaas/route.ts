@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { webhookAutentico, pagamentoConfirmado } from "@/lib/pagamentos/asaas";
+import { webhookTokenDaContribuicao } from "@/lib/pagamentos/config";
 import { confirmarContribuicao } from "@/lib/services/contribuicao";
 import { logger } from "@/lib/logger";
 
@@ -24,11 +25,7 @@ interface EventoAsaas {
 }
 
 export async function POST(request: Request) {
-  // 1) Autenticação do webhook (token compartilhado, tempo constante).
   const token = request.headers.get("asaas-access-token");
-  if (!webhookAutentico(token)) {
-    return NextResponse.json({ erro: "não autorizado" }, { status: 401 });
-  }
 
   let corpo: EventoAsaas;
   try {
@@ -42,9 +39,17 @@ export async function POST(request: Request) {
   const externalReference = pagamento?.externalReference ?? "";
   const paymentId = pagamento?.id ?? "";
 
-  // 2) Só nos interessam eventos de pagamento efetivado com referência nossa.
+  // 1) Só nos interessam eventos de pagamento efetivado com referência nossa.
+  //    (Sem referência não dá para saber de qual igreja é — ignoramos com 200.)
   if (!externalReference || !paymentId || !pagamentoConfirmado(status)) {
     return NextResponse.json({ ok: true, ignorado: true });
+  }
+
+  // 2) Autenticação POR IGREJA: o token esperado é o da igreja dona da
+  //    contribuição (config do painel) ou o do env, resolvido pela referência.
+  const esperado = await webhookTokenDaContribuicao(externalReference);
+  if (!esperado || !webhookAutentico(token, esperado)) {
+    return NextResponse.json({ erro: "não autorizado" }, { status: 401 });
   }
 
   try {

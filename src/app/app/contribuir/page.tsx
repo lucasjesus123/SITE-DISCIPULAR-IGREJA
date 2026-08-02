@@ -4,7 +4,7 @@ import { tenantDaRequisicao } from "@/lib/tenant/resolve";
 import { carregarDadosSite } from "@/lib/services/site";
 import { CopiarPix } from "@/components/app/CopiarPix";
 import { ContribuirPix } from "@/components/app/ContribuirPix";
-import { asaasConfigurado } from "@/lib/pagamentos/asaas";
+import { asaasDisponivel } from "@/lib/pagamentos/config";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Contribuir" };
@@ -34,7 +34,7 @@ export default async function AppContribuir() {
   const { config } = dados;
 
   const chave = config.pixChave?.trim() ?? "";
-  const pixAutomatico = asaasConfigurado();
+  const pixAutomatico = await asaasDisponivel(tenant.id);
 
   return (
     <>
