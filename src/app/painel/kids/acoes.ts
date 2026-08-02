@@ -189,3 +189,47 @@ export async function checkoutCrianca(
     return { ok: false, mensagem: m };
   }
 }
+
+// ---- Chamar os pais ---------------------------------------------------------
+/**
+ * Envia um WhatsApp para os responsáveis da criança pedindo que venham à sala.
+ * Usa o número conectado da igreja; se não houver, avisa sem quebrar.
+ */
+export async function chamarPais(sessaoId: string): Promise<{ ok: boolean; mensagem: string }> {
+  const { tokenSeConectado, enviarLote } = await import("@/lib/whatsapp/disparo");
+  const { telefoneWhatsApp } = await import("@/lib/mensagens/aniversario-disparo");
+  const { carregarDadosSite } = await import("@/lib/services/site");
+  try {
+    const ctx = await guard();
+
+    const sessao = await ctx.db.sessaoSalaKids.findFirst({
+      where: { id: sessaoId, status: "EM_SALA" },
+      select: {
+        crianca: { select: { nome: true, apelido: true, responsaveis: { select: { nome: true, whatsapp: true } } } },
+        sala: { select: { nome: true } },
+      },
+    });
+    if (!sessao) return { ok: false, mensagem: "Sessão não encontrada ou criança já retirada." };
+
+    const token = await tokenSeConectado(ctx.tenant.id);
+    if (!token) return { ok: false, mensagem: "O WhatsApp da igreja não está conectado. Conecte o número na aba WhatsApp." };
+
+    const site = await carregarDadosSite(ctx.tenant.id);
+    const nomeCrianca = sessao.crianca.apelido || sessao.crianca.nome;
+    const texto =
+      `Olá! 👋 Estamos chamando você na sala *${sessao.sala.nome}* do Kids por causa de ${nomeCrianca}. ` +
+      `Pode vir até a recepção do Kids, por favor? — ${site.config.nomeExibicao}`;
+
+    const alvos = sessao.crianca.responsaveis
+      .map((r) => ({ telefoneWhatsApp: telefoneWhatsApp(r.whatsapp), texto }))
+      .filter((a): a is { telefoneWhatsApp: string; texto: string } => a.telefoneWhatsApp !== null);
+
+    if (alvos.length === 0) return { ok: false, mensagem: "Nenhum responsável com WhatsApp cadastrado." };
+
+    const r = await enviarLote(token, alvos, { tenantId: ctx.tenant.id });
+    await auditar(ctx, { acao: "kids.chamar_pais", alvoTipo: "SessaoSalaKids", alvoId: sessaoId, detalhes: { enviados: r.enviados } });
+    return { ok: r.enviados > 0, mensagem: r.enviados > 0 ? `Chamado enviado para ${r.enviados} responsável(is).` : "Não foi possível enviar o chamado." };
+  } catch {
+    return { ok: false, mensagem: "Não foi possível chamar os pais agora." };
+  }
+}
