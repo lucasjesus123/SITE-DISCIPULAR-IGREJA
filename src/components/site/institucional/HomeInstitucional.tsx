@@ -24,7 +24,9 @@ interface Props {
 export function HomeInstitucional({ dados, live, ultimaMsgVideoId }: Props) {
   const { config, campi } = dados;
   const nome = config.nomeExibicao || "Discipular";
-  const logo = config.logoClaroId ? urlArquivoPublico(config.logoClaroId) : null;
+  // Logo do topo: o que a igreja enviou no painel, ou a marca oficial da
+  // Discipular (esta home só roda para o tenant-âncora).
+  const logo = config.logoClaroId ? urlArquivoPublico(config.logoClaroId) : "/marca/logo-white.png";
   const heroImagem = config.heroImagemId ? urlArquivoPublico(config.heroImagemId) : null;
   const pixDisplay = formatarCnpj(config.pixChave) ?? config.pixChave;
   const thumb = live.aoVivo && live.videoId ? urlMiniatura(live.videoId) : ultimaMsgVideoId ? urlMiniatura(ultimaMsgVideoId) : null;
@@ -46,13 +48,15 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId }: Props) {
       {/* NAV */}
       <nav className="nav"><div className="wrap">
         <Link href="/" className="brand">
-          <div className="logo">
-            {logo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={logo} alt={nome} />
-            ) : "D"}
-          </div>
-          <b>{nome}</b>
+          {logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logo} alt={nome} className="brand__logo" />
+          ) : (
+            <>
+              <div className="logo">D</div>
+              <b>{nome}</b>
+            </>
+          )}
         </Link>
         <ul className="menu">
           <li><a href="#novo">Novo por aqui</a></li>
@@ -268,10 +272,10 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId }: Props) {
       {/* FOOTER */}
       <footer><div className="wrap">
         <div className="grid">
-          <Link href="/" className="brand"><div className="logo">{logo ? (
+          <Link href="/" className="brand">{logo ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={logo} alt={nome} />
-          ) : "D"}</div><b>{nome}</b></Link>
+            <img src={logo} alt={nome} className="brand__logo" />
+          ) : (<><div className="logo">D</div><b>{nome}</b></>)}</Link>
           <div className="cols">
             <div><h4>Igreja</h4><a href="#novo">Novo por aqui</a><a href="#minis">Ministérios</a><a href="#agenda">Agenda</a></div>
             <div><h4>Participe</h4><a href="#mensagem">Mensagens</a><a href="#give">Contribua</a><a href="#passos">Próximos passos</a></div>

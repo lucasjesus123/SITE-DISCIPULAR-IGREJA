@@ -48,6 +48,9 @@
 .inst-site .nav .wrap { display: flex; align-items: center; gap: 30px; height: 70px; }
 .inst-site .brand { display: flex; align-items: center; gap: 11px; color: #fff; text-decoration: none; flex: none; }
 .inst-site .brand b { white-space: nowrap; }
+/* Logo real da igreja no topo — maior e verticalmente alinhado. */
+.inst-site .brand__logo { height: 48px; width: auto; max-width: 240px; display: block; object-fit: contain; }
+.inst-site footer .brand__logo { height: 40px; }
 /* Empurra o botão do app/AO VIVO para a direita; o menu fica entre marca e CTA. */
 .inst-site .nav-cta { margin-left: auto; }
 .inst-site .brand .logo { width: 40px; height: 40px; border-radius: 11px; background: var(--mint); color: var(--ink); display: flex; align-items: center; justify-content: center; font-family: "Archivo"; font-weight: 900; font-size: 19px; }
