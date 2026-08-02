@@ -65,6 +65,10 @@ const schema = z.object({
   ASAAS_API_KEY: z.string().optional().default(""),
   ASAAS_WEBHOOK_TOKEN: z.string().optional().default(""),
 
+  // Segredo que autentica as chamadas de CRON (aniversários, automações).
+  // O agendador do sistema (systemd timer / cron) manda no header x-cron-secret.
+  CRON_SECRET: z.string().optional().default(""),
+
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
 });
 
