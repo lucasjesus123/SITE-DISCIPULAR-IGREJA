@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { tenantDaRequisicao } from "@/lib/tenant/resolve";
 import { encerrarSessao, sessaoAtual } from "@/lib/auth/session";
+import { papelDeGestao } from "@/lib/auth/roteador";
 import { tenantDb } from "@/lib/db/tenant-client";
 import { auditarAutenticacao } from "@/lib/audit";
 import { nomeDia } from "@/lib/services/site";
@@ -336,6 +337,13 @@ export default async function AppPerfil() {
           e o botão continua funcionando com JavaScript desligado, porque é um
           <form> de verdade.
         */}
+        {/* Quem tem papel de gestão pode alternar para o painel sem deslogar. */}
+        {papelDeGestao(sessao.papel) && (
+          <Link href="/escolher" className="btn btn--block" style={{ marginBottom: ".8rem" }}>
+            Ir para o Painel de Gestão
+          </Link>
+        )}
+
         <form action={sair}>
           <button type="submit" className="btn btn--block btn--ghost">
             Sair da conta

@@ -1,0 +1,52 @@
+/* Roteador de acesso — identidade Institucional (grafite + verde/menta). */
+.escolher {
+  --ink: #14161a;
+  --green: #0e7c5a;
+  --mint: #5ee6a8;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(1.5rem, 5vw, 3rem);
+  font-family: "Inter", system-ui, sans-serif;
+  color: #fff;
+  background:
+    radial-gradient(90% 70% at 88% 6%, rgb(94 230 168 / 0.16), transparent 60%),
+    radial-gradient(90% 80% at 6% 100%, rgb(14 124 90 / 0.4), transparent 60%),
+    linear-gradient(155deg, #191c22 0%, #14161a 45%, #101913 100%);
+}
+.escolher__caixa { width: 100%; max-width: 780px; text-align: center; }
+.escolher__kick { font-size: 0.78rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mint); font-weight: 700; }
+.escolher__titulo { font-family: "Archivo", sans-serif; font-weight: 900; font-size: clamp(1.8rem, 1.2rem + 3vw, 2.8rem); text-transform: uppercase; letter-spacing: -0.02em; line-height: 1.02; margin: 0.6rem 0 0.5rem; }
+.escolher__sub { color: #a9aab4; font-size: 1rem; max-width: 46ch; margin: 0 auto 2.2rem; }
+
+.escolher__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
+@media (max-width: 640px) { .escolher__grid { grid-template-columns: 1fr; } }
+
+.escolher__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+  text-align: left;
+  text-decoration: none;
+  color: #fff;
+  background: #191c22;
+  border: 1.5px solid #2f333b;
+  border-radius: 16px;
+  padding: 1.6rem 1.4rem;
+  transition: border-color 0.15s, transform 0.15s, background 0.15s;
+}
+.escolher__card:hover { border-color: var(--mint); transform: translateY(-2px); }
+.escolher__card--painel:hover { background: #1b2320; }
+.escolher__ico { width: 52px; height: 52px; border-radius: 13px; background: var(--ink); color: var(--mint); display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem; border: 1.5px solid #2f333b; }
+.escolher__ico svg { width: 26px; height: 26px; }
+.escolher__card--painel .escolher__ico { background: var(--green); color: #fff; border-color: var(--green); }
+.escolher__card-nome { font-family: "Archivo", sans-serif; font-weight: 800; font-size: 1.2rem; text-transform: uppercase; }
+.escolher__card-desc { color: #a9aab4; font-size: 0.9rem; line-height: 1.5; }
+.escolher__seta { position: absolute; top: 1.4rem; right: 1.4rem; color: var(--mint); font-size: 1.3rem; font-weight: 700; }
+
+.escolher__rodape { margin-top: 2rem; }
+.escolher__rodape a { color: #a9aab4; font-size: 0.9rem; text-decoration: none; }
+.escolher__rodape a:hover { color: #fff; }

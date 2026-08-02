@@ -192,7 +192,9 @@ export async function POST(request: Request) {
       }
 
       tenantAtivoId = tenant.id;
-      destino = membership.papel === "MEMBRO" ? "/app" : "/painel";
+      // Gestão escolhe por onde entrar (painel ou app) e alterna sem deslogar;
+      // membro puro vai direto pro app. Ver src/lib/auth/roteador.ts.
+      destino = membership.papel === "MEMBRO" ? "/app" : "/escolher";
     } else if (naPlataforma) {
       if (usuario.plataformaAdmin) {
         destino = "/plataforma";

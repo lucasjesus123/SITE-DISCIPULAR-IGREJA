@@ -168,6 +168,9 @@ export function LateralPainel({
         <p className="painel__rodape-papel">{rotulosPapel[papel]}</p>
 
         <div style={{ display: "grid", gap: ".2rem", marginTop: "0.9rem" }}>
+          <Link href="/app" className="painel__link">
+            <span className="painel__link-in"><Ico nome="/painel/configuracoes-app" /><span>Abrir o App da Igreja</span></span>
+          </Link>
           <Link href="/" className="painel__link">
             <span className="painel__link-in"><Ico nome="ver-site" /><span>Ver o site</span></span>
           </Link>

@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
 
 export default async function PaginaLogin() {
   const sessao = await sessaoAtual();
-  if (sessao) redirect(sessao.papel === "MEMBRO" ? "/app" : "/painel");
+  if (sessao) redirect(sessao.papel === "MEMBRO" ? "/app" : "/escolher");
 
   await obterTokenCsrf();
 
