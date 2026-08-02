@@ -1654,3 +1654,32 @@ body:has(.fundo-site) .theme-ink-800 {
 .lvr-msg__hora { display: block; font-size: 0.68rem; color: var(--pnl-text-dim); margin-top: 0.2rem; }
 .lvr-chat__form { display: flex; gap: 0.5rem; }
 .lvr-chat__form input { flex: 1; min-height: 44px; }
+
+/* =============================================================================
+   APP DE MEMBROS — tabbar Institucional (grafite, item ativo em menta) +
+   itens de toggle na tela de Configurações do App.
+   ========================================================================== */
+.appbar-inst {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+  display: grid;
+  background: #14161a;
+  border-top: 1.5px solid #26292f;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.appbar-inst__item {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 0.25rem; min-height: 56px; padding: 0.55rem 0.3rem;
+  color: #8b9098; font-size: 0.64rem; letter-spacing: 0.04em; font-weight: 600;
+  text-decoration: none;
+}
+.appbar-inst__item--on { color: #5ee6a8; }
+.appbar-inst__ico { position: relative; display: block; }
+.appbar-inst__live { position: absolute; top: -2px; right: -4px; width: 8px; height: 8px; border-radius: 50%; background: #c0392b; box-shadow: 0 0 0 2px #14161a; }
+
+/* Toggles da tela "Configurações do App de Membros" */
+.cfgapp-item { display: flex; gap: 0.7rem; align-items: flex-start; padding: 0.8rem 0.9rem; border: 1.5px solid var(--pnl-line); border-radius: 12px; cursor: pointer; }
+.cfgapp-item:has(input:checked) { border-color: var(--pnl-accent); background: rgb(var(--pnl-accent-rgb) / 0.05); }
+.cfgapp-item input { margin-top: 0.2rem; width: 1.1rem; height: 1.1rem; accent-color: var(--pnl-accent); flex: none; }
+.cfgapp-item__txt { display: grid; gap: 0.15rem; }
+.cfgapp-item__desc { color: var(--pnl-text-dim); font-size: 0.84rem; }
+.cfgapp-item__obs { font-size: 0.72rem; font-weight: 700; color: var(--pnl-accent); text-transform: uppercase; letter-spacing: 0.04em; }

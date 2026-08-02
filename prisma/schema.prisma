@@ -111,6 +111,7 @@ model Tenant {
   musicasMinisterio   MusicaMinisterio[]
   eventoMusicas       EventoMusica[]
   chatMinisterio      ChatMinisterio[]
+  configAppMembro     ConfiguracaoAppMembro?
 
   @@index([status])
   @@map("tenants")
@@ -1838,4 +1839,29 @@ model ChatMinisterio {
 
   @@index([tenantId, ministerioId, criadoEm])
   @@map("chat_ministerio")
+}
+
+// =============================================================================
+// CONFIGURAÇÃO DO APP DE MEMBROS — toggles que o admin liga/desliga por igreja.
+// Recurso desligado some da navegação do app (a lógica está em
+// src/lib/app-membro/recursos.ts). Uma linha por tenant.
+// =============================================================================
+model ConfiguracaoAppMembro {
+  id       String @id @default(cuid())
+  tenantId String @unique
+
+  inicio       Boolean @default(true)
+  palavra      Boolean @default(true)
+  contribuir   Boolean @default(true)
+  agenda       Boolean @default(true)
+  celula       Boolean @default(false)
+  perfil       Boolean @default(true)
+  notificacoes Boolean @default(true)
+
+  atualizadoEm DateTime @updatedAt
+  criadoEm     DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("config_app_membro")
 }

@@ -88,6 +88,7 @@ const MODELOS_TENANT = new Set<string>([
   "MusicaMinisterio",
   "EventoMusica",
   "ChatMinisterio",
+  "ConfiguracaoAppMembro",
 ]);
 
 /**

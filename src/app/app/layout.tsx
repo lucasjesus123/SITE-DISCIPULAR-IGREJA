@@ -8,6 +8,9 @@ import { estadoAoVivo } from "@/lib/youtube/live";
 import { obterTokenCsrf } from "@/lib/security/csrf";
 import { BarraApp } from "@/components/app/BarraApp";
 import { RegistrarServiceWorker } from "@/components/app/RegistrarServiceWorker";
+import { tenantDb } from "@/lib/db/tenant-client";
+import { carregarTogglesApp, carregarContextoMembro } from "@/lib/services/app-membro";
+import { navDoApp } from "@/lib/app-membro/recursos";
 import "../globals.css";
 
 /**
@@ -60,6 +63,18 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
 
   const logado = sessao !== null && sessao.tenantId === tenant.id;
 
+  // Navegação do app conforme os toggles da igreja + vínculos do membro
+  // (recurso desligado some da barra; Contribuir exige PIX; Célula exige vínculo).
+  const db = tenantDb(tenant.id);
+  const [toggles, contexto] = await Promise.all([
+    carregarTogglesApp(db),
+    carregarContextoMembro(db, {
+      pixConfigurado: Boolean(dados.config.pixChave),
+      userId: logado ? sessao!.userId : null,
+    }),
+  ]);
+  const itensNav = navDoApp(toggles, contexto).map((i) => ({ chave: i.chave, href: i.href, rotulo: i.rotulo }));
+
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: cssDoTema(dados.tema) }} />
@@ -81,6 +96,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
         <main style={{ flex: 1, paddingBottom: "5.5rem" }}>{children}</main>
 
         <BarraApp
+          itens={itensNav}
           logado={logado}
           aoVivo={live.aoVivo}
           nomeIgreja={dados.config.nomeExibicao}
