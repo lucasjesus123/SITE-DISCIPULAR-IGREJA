@@ -70,15 +70,17 @@
 .inst-site .hero-overlay { position: absolute; inset: 0; z-index: 1; background: linear-gradient(90deg, rgb(20 22 26 / 0.96), rgb(20 22 26 / 0.74) 46%, rgb(20 22 26 / 0.44)), linear-gradient(0deg, rgb(20 22 26 / 0.88), rgb(20 22 26 / 0.15)); }
 .inst-site .hero::before { content: ""; position: absolute; right: -160px; top: -120px; width: 520px; height: 520px; border-radius: 50%; background: radial-gradient(circle, rgb(94 230 168 / 0.16), transparent 66%); z-index: 2; }
 .inst-site .hero::after { content: ""; position: absolute; left: -140px; bottom: -160px; width: 420px; height: 420px; border-radius: 50%; background: radial-gradient(circle, rgb(14 124 90 / 0.28), transparent 66%); z-index: 2; }
-.inst-site .hero .wrap { position: relative; z-index: 3; }
+/* Hero centralizado e equilibrado. */
+.inst-site .hero .wrap { position: relative; z-index: 3; text-align: center; display: flex; flex-direction: column; align-items: center; }
 .inst-site .chip { display: inline-flex; align-items: center; gap: 8px; background: #22252b; border: 1px solid #31353d; color: #c7c9d0; font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 999px; text-decoration: none; margin-bottom: 22px; }
 .inst-site .chip b { color: var(--mint); }
-.inst-site .hero h1 { font-family: "Archivo"; font-weight: 900; font-size: 74px; line-height: 0.98; letter-spacing: -0.03em; text-transform: uppercase; margin: 0 0 18px; }
+/* Título responsivo: encolhe para caber sem estourar a largura. */
+.inst-site .hero h1 { font-family: "Archivo"; font-weight: 900; font-size: clamp(38px, 6vw, 62px); line-height: 1; letter-spacing: -0.02em; text-transform: uppercase; margin: 0 0 18px; max-width: 16ch; text-wrap: balance; }
 .inst-site .hero h1 span { color: var(--mint); }
-.inst-site .hero p { font-size: 18px; color: #c7c9d0; max-width: 560px; line-height: 1.6; }
-.inst-site .cta { display: flex; gap: 14px; margin-top: 32px; flex-wrap: wrap; }
-.inst-site .hero-verse { margin-top: 44px; display: inline-flex; align-items: center; gap: 12px; font-size: 13.5px; color: #9a9ea8; border-left: 3px solid var(--green); padding-left: 14px; }
-@media (max-width: 720px) { .inst-site .hero h1 { font-size: 46px; } .inst-site .hero { padding: 60px 0 68px; } }
+.inst-site .hero p { font-size: clamp(15px, 1rem + 0.4vw, 18px); color: #c7c9d0; max-width: 540px; line-height: 1.6; margin: 0 auto; }
+.inst-site .cta { display: flex; gap: 14px; margin-top: 32px; flex-wrap: wrap; justify-content: center; }
+.inst-site .hero-verse { margin-top: 44px; display: inline-flex; align-items: center; gap: 12px; font-size: 13.5px; color: #9a9ea8; border-left: 3px solid var(--green); padding-left: 14px; text-align: left; max-width: 90%; }
+@media (max-width: 720px) { .inst-site .hero { padding: 56px 0 60px; } }
 
 /* HORÁRIOS */
 .inst-site .horarios { background: var(--green); color: #fff; }
