@@ -9,6 +9,8 @@ import { ControlesIgreja } from "@/components/plataforma/ControlesIgreja";
 import { DominiosDaIgreja, type DominioListado } from "@/components/plataforma/DominiosDaIgreja";
 import { ModulosDaIgreja } from "@/components/plataforma/ModulosDaIgreja";
 import { carregarModulosPorTenant } from "@/lib/services/modulos";
+import { ChecklistOnboarding } from "@/components/plataforma/ChecklistOnboarding";
+import { passosOnboarding, progressoOnboarding, type EstadoOnboarding } from "@/lib/plataforma/onboarding";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Igreja" };
@@ -112,6 +114,26 @@ export default async function DetalheIgreja({ params }: { params: Promise<{ id: 
   const hostSubdominio = `${tenant.slug}.${env.ROOT_DOMAIN}`;
   const storageUsadoMb = Math.round((uso.storageBytes / (1024 * 1024)) * 10) / 10;
 
+  // Estado do onboarding: o que já está configurado nesta igreja.
+  const tdbOnb = tenantDb(tenant.id);
+  const [temRowModulos, siteCfg, wpp, pagto, admins] = await Promise.all([
+    prisma.configuracaoModulos.findUnique({ where: { tenantId: tenant.id }, select: { tenantId: true } }),
+    tdbOnb.siteConfig.findFirst({ select: { logoClaroId: true, pixChave: true } }),
+    prisma.whatsappInstance.findUnique({ where: { tenantId: tenant.id }, select: { status: true } }),
+    tdbOnb.configuracaoPagamento.findFirst({ select: { ativo: true } }),
+    prisma.membership.count({ where: { tenantId: tenant.id, papel: "ADMIN", ativo: true } }),
+  ]);
+  const estadoOnb: EstadoOnboarding = {
+    temAdmin: admins > 0,
+    modulosDefinidos: temRowModulos !== null,
+    dominioVerificado: tenant.dominios.some((d) => d.status === "VERIFICADO"),
+    temLogo: Boolean(siteCfg?.logoClaroId),
+    whatsappConectado: wpp?.status === "conectado",
+    pixConfigurado: Boolean(pagto?.ativo) || Boolean(siteCfg?.pixChave),
+  };
+  const passosOnb = passosOnboarding(estadoOnb);
+  const progressoOnb = progressoOnboarding(passosOnb);
+
   return (
     <>
       <div className="painel__topo">
@@ -129,6 +151,8 @@ export default async function DetalheIgreja({ params }: { params: Promise<{ id: 
           Voltar
         </Link>
       </div>
+
+      <ChecklistOnboarding passos={passosOnb} progresso={progressoOnb} />
 
       {tenant.excluidoEm && (
         <div className="alerta alerta--erro" role="alert" style={{ marginBottom: "1.5rem" }}>

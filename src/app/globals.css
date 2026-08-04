@@ -1716,3 +1716,14 @@ body:has(.fundo-site) .theme-ink-800 {
 .mods-item span { display: grid; gap: 0.1rem; }
 .mods-item small { color: var(--pnl-text-dim, #6b6f76); font-size: 0.8rem; }
 .mods-nota { font-size: 0.84rem; color: var(--pnl-text-dim, #6b6f76); }
+
+/* Onboarding checklist (Super Admin) */
+.onb-barra { height: 8px; border-radius: 999px; background: var(--pnl-line, #e4e6e9); overflow: hidden; margin: 0.9rem 0 1.1rem; }
+.onb-barra span { display: block; height: 100%; background: var(--pnl-accent, #34472f); transition: width .3s; }
+.onb-lista { list-style: none; display: grid; gap: 0.5rem; margin: 0; padding: 0; }
+.onb-item { display: flex; gap: 0.7rem; align-items: flex-start; padding: 0.6rem 0.8rem; border: 1.5px solid var(--pnl-line, #e4e6e9); border-radius: 12px; }
+.onb-item--ok { border-color: rgb(var(--pnl-accent-rgb, 52 71 47) / 0.4); background: rgb(var(--pnl-accent-rgb, 52 71 47) / 0.05); }
+.onb-check { width: 1.4rem; height: 1.4rem; flex: none; display: grid; place-items: center; border-radius: 50%; font-weight: 800; font-size: 0.8rem; color: var(--pnl-text-dim, #6b6f76); }
+.onb-item--ok .onb-check { background: var(--pnl-accent, #34472f); color: #fff; }
+.onb-item span { display: grid; gap: 0.1rem; }
+.onb-item small { color: var(--pnl-text-dim, #6b6f76); font-size: 0.82rem; }
