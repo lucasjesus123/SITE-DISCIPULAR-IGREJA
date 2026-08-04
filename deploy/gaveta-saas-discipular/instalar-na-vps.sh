@@ -104,11 +104,28 @@ cd "$GAVETA"
 
 if [[ -f .env ]]; then
   verde ".env já existe — mantendo seus segredos atuais (não regenero, para não deslogar ninguém)."
+  # Upgrade idempotente: acrescenta chaves NOVAS que ainda não existam no .env
+  # (ex.: CRON_SECRET), sem tocar em nada que já está lá. Necessário para quem
+  # já tinha o sistema instalado antes destas features.
+  garantir_env() {
+    local chave="$1" valor="$2"
+    if ! grep -qE "^${chave}=" .env; then
+      printf '%s\n' "${chave}=${valor}" >> .env
+      amarelo "  + adicionada chave ausente no .env: ${chave}"
+    fi
+  }
+  garantir_env "CRON_SECRET" "$(openssl rand -hex 24)"
+  garantir_env "ASAAS_BASE_URL" "https://api.asaas.com/v3"
+  garantir_env "ASAAS_API_KEY" ""
+  garantir_env "ASAAS_WEBHOOK_TOKEN" ""
+  garantir_env "UAZAPI_BASE_URL" "https://free.uazapi.com"
+  garantir_env "UAZAPI_ADMIN_TOKEN" ""
 else
   amarelo "Gerando segredos fortes e escrevendo .env ..."
   SESSION_SECRET="$(openssl rand -base64 48)"
   ENCRYPTION_KEY="$(openssl rand -base64 32)"
   CSRF_SECRET="$(openssl rand -base64 32)"
+  CRON_SECRET="$(openssl rand -hex 24)"
   DB_SENHA="$(openssl rand -base64 24 | tr -d '/+=' | head -c 32)"
 
   # Escrevemos o .env com printf (não heredoc): cada valor já foi expandido
@@ -137,6 +154,9 @@ else
     printf '%s\n' "SESSION_SECRET=${SESSION_SECRET}"
     printf '%s\n' "ENCRYPTION_KEY=${ENCRYPTION_KEY}"
     printf '%s\n' "CSRF_SECRET=${CSRF_SECRET}"
+    # Segredo dos CRONs (aniversários, boas-vindas, convite de retorno). O
+    # instalar-crons.sh lê este valor do .env — já vem pronto, sem editar nada.
+    printf '%s\n' "CRON_SECRET=${CRON_SECRET}"
     printf '%s\n' "STORAGE_DIR=/var/lib/discipular/storage"
     printf '%s\n' "MAX_UPLOAD_BYTES=26214400"
     printf '%s\n' "YOUTUBE_API_KEY="
@@ -145,6 +165,15 @@ else
     printf '%s\n' "SMTP_USER="
     printf '%s\n' "SMTP_PASSWORD="
     printf '%s\n' "SMTP_FROM=Discipular <nao-responda@${DOMINIO}>"
+    # Integrações OPCIONAIS — deixe em branco para configurar depois.
+    # ASAAS (PIX/Financeiro) pode ser configurado por igreja DENTRO do painel
+    # (Pagamentos); estas chaves servem só como fallback global, se quiser.
+    printf '%s\n' "ASAAS_BASE_URL=https://api.asaas.com/v3"
+    printf '%s\n' "ASAAS_API_KEY="
+    printf '%s\n' "ASAAS_WEBHOOK_TOKEN="
+    # WhatsApp (UAZAPI) — token do disparo. Vazio = disparos ficam desligados.
+    printf '%s\n' "UAZAPI_BASE_URL=https://free.uazapi.com"
+    printf '%s\n' "UAZAPI_ADMIN_TOKEN="
     printf '%s\n' "LOG_LEVEL=info"
   } > .env
   umask 022
