@@ -945,6 +945,11 @@ model SiteConfig {
   heroCtaTexto  String? @db.VarChar(60)
   heroCtaLink   String? @db.VarChar(200)
 
+  // --- Conteúdo editável da home (JSON validado no app). Ministérios e
+  // depoimentos que aparecem na home Institucional; cada igreja edita o seu.
+  ministeriosJson String? @db.Text
+  depoimentosJson String? @db.Text
+
   // --- Contato
   emailContato    String? @db.VarChar(254)
   telefoneContato String? @db.VarChar(20)

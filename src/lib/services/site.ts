@@ -1,6 +1,10 @@
 import { cache } from "react";
 import { tenantDb } from "@/lib/db/tenant-client";
 import { normalizarTema, type TemaTenant } from "@/lib/site/theme";
+import {
+  parseMinisterios, parseDepoimentos, MINISTERIOS_PADRAO, DEPOIMENTOS_PADRAO,
+  type Ministerio, type Depoimento,
+} from "@/lib/site/conteudo-home";
 
 /**
  * Carregamento dos dados do site público.
@@ -55,6 +59,8 @@ export interface ConfigSite {
   pixTitular: string | null;
   pixDescricao: string | null;
   modulos: Record<string, boolean>;
+  ministerios: Ministerio[];
+  depoimentos: Depoimento[];
 }
 
 export interface CampusPublico {
@@ -133,6 +139,8 @@ const CONFIG_PADRAO: ConfigSite = {
   pixTitular: null,
   pixDescricao: null,
   modulos: {},
+  ministerios: MINISTERIOS_PADRAO,
+  depoimentos: DEPOIMENTOS_PADRAO,
 };
 
 export const carregarDadosSite = cache(async (tenantId: string): Promise<DadosSite> => {
@@ -197,6 +205,8 @@ export const carregarDadosSite = cache(async (tenantId: string): Promise<DadosSi
           ...CONFIG_PADRAO,
           ...config,
           modulos: (config.modulos as Record<string, boolean> | null) ?? {},
+          ministerios: parseMinisterios(config.ministeriosJson),
+          depoimentos: parseDepoimentos(config.depoimentosJson),
         }
       : CONFIG_PADRAO,
     tema: normalizarTema(config),

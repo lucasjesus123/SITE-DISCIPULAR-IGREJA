@@ -372,3 +372,52 @@ function traduzir(erro: unknown, acao: string): ResultadoAcao {
   const ref = logger.erro("Falha em Server Action", erro, { acao });
   return { ok: false, mensagem: `Não foi possível salvar. Referência: ${ref}` };
 }
+
+// -----------------------------------------------------------------------------
+// CONTEÚDO DA HOME — ministérios e depoimentos (JSON validado).
+// -----------------------------------------------------------------------------
+export async function salvarConteudoHome(dadosBrutos: unknown): Promise<ResultadoAcao> {
+  const acao = "salvarConteudoHome";
+  try {
+    const ctx = await exigirPermissao("site.editar");
+    const limite = await verificarLimite(REGRAS.escritaPainel, ctx.sessao.userId, ctx.tenant.id);
+    if (!limite.permitido) return { ok: false, mensagem: "Muitas operações seguidas. Aguarde." };
+
+    const { serializarMinisterios, serializarDepoimentos } = await import("@/lib/site/conteudo-home");
+
+    const schema = z.object({
+      ministerios: z.array(z.object({
+        titulo: z.string().trim().max(80).optional().default(""),
+        descricao: z.string().trim().max(400).optional().default(""),
+        icone: z.string().trim().max(4).optional().default(""),
+      })).max(6).default([]),
+      depoimentos: z.array(z.object({
+        texto: z.string().trim().max(500).optional().default(""),
+        nome: z.string().trim().max(80).optional().default(""),
+        papel: z.string().trim().max(80).optional().default(""),
+      })).max(6).default([]),
+    });
+    const dados = schema.parse(dadosBrutos);
+
+    await ctx.db.siteConfig.upsert({
+      where: { tenantId: ctx.tenant.id },
+      create: {
+        tenantId: ctx.tenant.id,
+        nomeExibicao: ctx.tenant.nome,
+        ministeriosJson: serializarMinisterios(dados.ministerios),
+        depoimentosJson: serializarDepoimentos(dados.depoimentos),
+      },
+      update: {
+        ministeriosJson: serializarMinisterios(dados.ministerios),
+        depoimentosJson: serializarDepoimentos(dados.depoimentos),
+      },
+    });
+
+    await auditar(ctx, { acao: "site.conteudoHome", alvoTipo: "SiteConfig" });
+    revalidatePath("/painel/site");
+    revalidatePath("/");
+    return { ok: true, mensagem: "Conteúdo da home salvo." };
+  } catch (erro) {
+    return traduzir(erro, acao);
+  }
+}

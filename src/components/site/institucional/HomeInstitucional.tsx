@@ -196,9 +196,14 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, logoUrl }: Pr
         <h2>Nossos ministérios</h2>
         <p className="lead">Há um lugar para você servir, crescer e viver em comunidade.</p>
         <div className="cards3">
-          <div className="mcard"><div className="ic">♪</div><h3>Louvor</h3><p>Uma equipe que conduz a igreja à presença de Deus com excelência e coração.</p><Link href="/quem-somos">Conhecer →</Link></div>
-          <div className="mcard"><div className="ic">☺</div><h3>Kids</h3><p>Um espaço seguro, lúdico e cheio de amor onde as crianças aprendem sobre Jesus.</p><Link href="/quem-somos">Conhecer →</Link></div>
-          <div className="mcard"><div className="ic">◎</div><h3>Células</h3><p>Grupos pequenos nos lares para cultivar comunhão, cuidado e crescimento.</p><Link href="/celulas">Conhecer →</Link></div>
+          {dados.config.ministerios.map((m, i) => (
+            <div className="mcard" key={i}>
+              <div className="ic">{m.icone || m.titulo.charAt(0)}</div>
+              <h3>{m.titulo}</h3>
+              <p>{m.descricao}</p>
+              <Link href="/quem-somos">Conhecer →</Link>
+            </div>
+          ))}
         </div>
       </div></section>
 
@@ -231,9 +236,16 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, logoUrl }: Pr
         <div className="eyebrow">Vidas transformadas</div>
         <h2>Histórias da nossa família</h2>
         <div className="cards3">
-          <div className="quote"><div className="mark">”</div><p>Cheguei quebrado e fui acolhido como filho. Hoje sirvo no louvor e minha família foi restaurada.</p><div className="who"><div className="av">R</div><div><b>Rafael M.</b><small>Membro há 3 anos</small></div></div></div>
-          <div className="quote"><div className="mark">”</div><p>Minha célula virou minha segunda casa. Encontrei amigos verdadeiros e um propósito.</p><div className="who"><div className="av">C</div><div><b>Carla S.</b><small>Líder de célula</small></div></div></div>
-          <div className="quote"><div className="mark">”</div><p>Meus filhos amam o Kids e pedem pra vir todo domingo. Que segurança de coração!</p><div className="who"><div className="av">J</div><div><b>Juliana P.</b><small>Mãe e voluntária</small></div></div></div>
+          {dados.config.depoimentos.map((d, i) => (
+            <div className="quote" key={i}>
+              <div className="mark">”</div>
+              <p>{d.texto}</p>
+              <div className="who">
+                <div className="av">{d.nome.charAt(0)}</div>
+                <div><b>{d.nome}</b><small>{d.papel}</small></div>
+              </div>
+            </div>
+          ))}
         </div>
       </div></section>
 
