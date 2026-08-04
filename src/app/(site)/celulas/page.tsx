@@ -2,16 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { tenantDaRequisicao } from "@/lib/tenant/resolve";
-import { carregarDadosSite } from "@/lib/services/site";
+import { carregarDadosSite, nomeDia } from "@/lib/services/site";
 
 /**
- * "A igreja, perto de você" — a rede Discipular Células.
+ * "A igreja, perto de você" — a rede de células desta igreja.
  *
- * Esta página é conteúdo institucional estático, espelhando o design de
- * referência: apresenta o que é uma célula, os três propósitos, como começar e
- * as dúvidas mais comuns. A busca pela célula mais próxima acontece no mapa
- * externo (Casas de Discípulos, no Google Sites), então aqui não expomos
- * endereços de lares nem dados de líderes.
+ * Whitelabel: a lista de células vem do banco (`carregarDadosSite().celulas`),
+ * já escopada ao tenant e sem expor endereço de lar (só bairro/cidade). Se a
+ * igreja ainda não cadastrou células, a página continua válida como convite e
+ * aponta para o Contato. Nada de nome/mapa fixos da igreja-âncora.
  */
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -33,8 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-// Link único do mapa de células (Casas de Discípulos).
-const LINK_MAPA = "https://sites.google.com/view/casasdediscipulos/home";
+export const dynamic = "force-dynamic";
 
 const svgCheck = (
   <svg
@@ -56,6 +54,20 @@ export default async function PaginaCelulas() {
   const tenant = await tenantDaRequisicao();
   if (!tenant) notFound();
 
+  const { config, celulas, campi } = await carregarDadosSite(tenant.id);
+  const temLista = celulas.length > 0;
+  // Destino do "Encontre uma célula": a lista real (se houver) ou o contato.
+  const ctaBusca = temLista ? "#celulas" : "/contato";
+  // Cidades onde a igreja está, para as estatísticas/legendas — do banco.
+  const cidades = [
+    ...new Set(
+      [...campi.map((c) => c.cidade), ...celulas.map((c) => c.cidade)].filter(
+        (c): c is string => Boolean(c),
+      ),
+    ),
+  ];
+  const legendaCidades = cidades.length > 0 ? cidades.join(" · ") : null;
+
   return (
     <>
       {/* --------------------------------------------------------- PAGE HERO */}
@@ -66,13 +78,13 @@ export default async function PaginaCelulas() {
             <span>/</span>
             <span>Células</span>
           </nav>
-          <p className="eyebrow">Discipular Células</p>
+          <p className="eyebrow">Células</p>
           <h1 className="page-hero__title">
             A igreja, perto <span className="serif-italic accent">de você.</span>
           </h1>
           <p className="lead">
-            Pequenos grupos reunidos nos lares para adorar, proclamar a Palavra e interceder — a
-            Casa de Discípulos em movimento.
+            Pequenos grupos reunidos nos lares para adorar, proclamar a Palavra e
+            interceder — a igreja em movimento, durante a semana.
           </p>
         </div>
       </section>
@@ -86,7 +98,7 @@ export default async function PaginaCelulas() {
               Fé que se vive <span className="serif-italic accent">em comunidade.</span>
             </h2>
             <p className="lead" style={{ marginTop: "1.4rem" }}>
-              A rede celular Discipular Células é a igreja, em comunhão, reunida em pequenos grupos —
+              A rede de células é a igreja, em comunhão, reunida em pequenos grupos —
               com o propósito de adorar, proclamar a Palavra e interceder.
             </p>
             <p style={{ marginTop: "1.2rem" }}>
@@ -94,24 +106,22 @@ export default async function PaginaCelulas() {
               pessoas que caminham ao seu lado. Um lugar para pertencer, crescer e cuidar uns dos
               outros.
             </p>
-            <a
-              href={LINK_MAPA}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href={ctaBusca}
               className="btn btn--lg"
               style={{ marginTop: "2rem" }}
             >
               Encontre uma célula
-            </a>
+            </Link>
           </div>
 
           <div className="split__media">
             <div className="frame frame--wide frame__mono">
               <div className="frame__grid" />
-              <span className="frame__cap">Discipular Células</span>
+              <span className="frame__cap">{config.nomeExibicao}</span>
               <div className="floating-tag">
-                <div className="k">Casas de Discípulos</div>
-                <div className="v">Pela cidade toda</div>
+                <div className="k">Células</div>
+                <div className="v">{legendaCidades ?? "Perto de você"}</div>
               </div>
             </div>
           </div>
@@ -190,8 +200,14 @@ export default async function PaginaCelulas() {
           <div className="split__media">
             <div className="stat-grid">
               <div className="stat">
-                <div className="stat__num">2</div>
-                <div className="stat__label">Campi · Lajeado e Vera Cruz</div>
+                <div className="stat__num">{temLista ? celulas.length : "∞"}</div>
+                <div className="stat__label">
+                  {temLista
+                    ? legendaCidades
+                      ? `Células · ${legendaCidades}`
+                      : "Células ativas"
+                    : "Espaço para você pertencer"}
+                </div>
               </div>
               <div className="stat">
                 <div className="stat__num">7d</div>
@@ -206,18 +222,55 @@ export default async function PaginaCelulas() {
                 <div className="stat__label">Só propósito: fazer discípulos</div>
               </div>
             </div>
-            <a
-              href={LINK_MAPA}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn"
-              style={{ marginTop: "2rem" }}
-            >
-              Ver mapa de células
-            </a>
+            <Link href={ctaBusca} className="btn" style={{ marginTop: "2rem" }}>
+              {temLista ? "Ver as células" : "Fale conosco"}
+            </Link>
           </div>
         </div>
       </section>
+
+      {/* ---------------------------------------------------- LISTA DE CÉLULAS */}
+      {temLista && (
+        <section className="section theme-cream" id="celulas">
+          <div className="container">
+            <div className="section-head">
+              <p className="eyebrow eyebrow--centered">Nossas células</p>
+              <h2 style={{ marginTop: "1.2rem" }}>
+                Encontre um grupo <span className="serif-italic accent">perto de você.</span>
+              </h2>
+              <p className="lead">
+                Por respeito à privacidade dos lares, mostramos o bairro e o horário —
+                fale conosco para receber o endereço completo.
+              </p>
+            </div>
+
+            <div className="grid cols-3">
+              {celulas.map((celula) => {
+                const quando = [nomeDia(celula.diaSemana), celula.horario]
+                  .filter(Boolean)
+                  .join(" · ");
+                const onde = [celula.bairro, celula.cidade].filter(Boolean).join(", ");
+                return (
+                  <article className="card" key={celula.id}>
+                    <h3 className="card__titulo">{celula.nome}</h3>
+                    {onde && <p className="index-tag">{onde}</p>}
+                    {quando && <p className="card__texto">{quando}</p>}
+                    {celula.liderNome && (
+                      <p className="card__texto">Liderança: {celula.liderNome}</p>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+
+            <div style={{ textAlign: "center", marginTop: "2.5rem" }}>
+              <Link href="/contato" className="btn">
+                Quero visitar uma célula
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ------------------------------------------------------------------ FAQ */}
       <section className="section theme-dark">
@@ -246,8 +299,8 @@ export default async function PaginaCelulas() {
                 <span className="faq__sign" />
               </summary>
               <div className="faq__a">
-                Nos lares, ao longo da semana, em vários pontos de Lajeado e Vera Cruz. Use o mapa de
-                células para achar o grupo mais próximo de você.
+                Nos lares, ao longo da semana{legendaCidades ? `, em ${legendaCidades}` : ""}. Veja
+                a lista de células nesta página para achar o grupo mais próximo de você.
               </div>
             </details>
             <details>

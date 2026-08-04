@@ -28,6 +28,25 @@ import { CopiarChave } from "@/components/site/CopiarChave";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * Descreve uma chave PIX para exibição, sem heurística arriscada: reconhece
+ * e-mail (tem "@") e CNPJ (14 dígitos, formatado); qualquer outra coisa é
+ * mostrada como o cliente digitou, rotulada genericamente. `copiavel` é o que
+ * vai para a área de transferência (CNPJ só dígitos; o resto, texto cru).
+ */
+function descreverPix(chave: string): { tipo: string; exibicao: string; copiavel: string } {
+  if (chave.includes("@")) return { tipo: "E-mail", exibicao: chave, copiavel: chave };
+  const d = chave.replace(/\D/g, "");
+  if (d.length === 14 && !/\s/.test(chave)) {
+    return {
+      tipo: "CNPJ",
+      exibicao: `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}-${d.slice(12)}`,
+      copiavel: d,
+    };
+  }
+  return { tipo: "Chave PIX", exibicao: chave, copiavel: chave };
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const tenant = await tenantDaRequisicao();
   if (!tenant) return {};
@@ -53,11 +72,13 @@ export default async function PaginaContribua() {
 
   const { config } = await carregarDadosSite(tenant.id);
 
-  // Chave crua (usada para copiar) e sua exibição formatada. Quando o cliente
-  // preencheu a chave no painel, ela vem do banco; senão, cai no CNPJ padrão.
-  const chaveCrua = config.pixChave?.trim() || "54746859000173";
-  const chaveExibicao = config.pixChave?.trim() || "54.746.859/0001-73";
-  const titular = config.pixTitular?.trim() || "Discipular Igreja";
+  // PIX vem 100% da configuração desta igreja. Sem chave configurada, o cartão
+  // mostra um estado "em breve" — nunca cai na chave da igreja-âncora.
+  const pixChave = config.pixChave?.trim() || null;
+  const pix = pixChave ? descreverPix(pixChave) : null;
+  const titular = config.pixTitular?.trim() || config.nomeExibicao;
+  const telefoneContato =
+    config.whatsapp?.trim() || config.telefoneContato?.trim() || null;
 
   return (
     <>
@@ -118,34 +139,45 @@ export default async function PaginaContribua() {
             <div className="pix-card">
               <div className="pix-card__head">
                 <span className="pix-badge">PIX</span>
-                <span className="pix-card__owner">Discipular Igreja</span>
+                <span className="pix-card__owner">{titular}</span>
               </div>
               <h3>Oferte com PIX em segundos.</h3>
-              <p className="pix-card__note">
-                Copie a chave abaixo (CNPJ) e faça sua oferta pelo app do seu
-                banco, quando e de onde quiser.
-              </p>
-              <div className="pix-key">
-                <div>
-                  <p className="pix-key__label">Chave PIX · CNPJ</p>
-                  <p className="pix-key__val">{chaveExibicao}</p>
-                </div>
-                <CopiarChave chave={chaveCrua} />
-              </div>
-              <div className="pix-facts">
-                <div className="pix-fact">
-                  <p className="k">Favorecido</p>
-                  <p className="v">{titular}</p>
-                </div>
-                <div className="pix-fact">
-                  <p className="k">Tipo de chave</p>
-                  <p className="v">CNPJ</p>
-                </div>
-              </div>
-              <p className="pix-card__note">
-                Recibo ou dúvidas sobre contribuições? Fale conosco: (51)
-                99266-8095.
-              </p>
+              {pix ? (
+                <>
+                  <p className="pix-card__note">
+                    Copie a chave abaixo e faça sua oferta pelo app do seu banco,
+                    quando e de onde quiser.
+                  </p>
+                  <div className="pix-key">
+                    <div>
+                      <p className="pix-key__label">Chave PIX · {pix.tipo}</p>
+                      <p className="pix-key__val">{pix.exibicao}</p>
+                    </div>
+                    <CopiarChave chave={pix.copiavel} />
+                  </div>
+                  <div className="pix-facts">
+                    <div className="pix-fact">
+                      <p className="k">Favorecido</p>
+                      <p className="v">{titular}</p>
+                    </div>
+                    <div className="pix-fact">
+                      <p className="k">Tipo de chave</p>
+                      <p className="v">{pix.tipo}</p>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <p className="pix-card__note">
+                  A chave PIX será disponibilizada em breve. Enquanto isso, fale
+                  com a secretaria da igreja para contribuir.
+                </p>
+              )}
+              {telefoneContato && (
+                <p className="pix-card__note">
+                  Recibo ou dúvidas sobre contribuições? Fale conosco:{" "}
+                  {telefoneContato}.
+                </p>
+              )}
             </div>
           </div>
         </div>

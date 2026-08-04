@@ -13,23 +13,6 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-const WHATSAPP_PADRAO = { href: "https://wa.me/5551992668095", texto: "(51) 99266-8095" };
-const EMAIL_PADRAO = "contato@discipularigreja.com.br";
-const INSTAGRAM_PADRAO = { href: "https://www.instagram.com/discipularigreja/", texto: "@discipularigreja" };
-
-const CAMPI_PADRAO = [
-  {
-    idx: "01",
-    nome: "Sede Lajeado",
-    endereco: "RSC-453, 1186 – pv 04 – Floresta, Lajeado/RS",
-  },
-  {
-    idx: "02",
-    nome: "Campus Vera Cruz",
-    endereco: "R. Jacob Schneider, 111 – Centro, Vera Cruz/RS",
-  },
-] as const;
-
 const O_QUE_ESPERAR = [
   {
     titulo: "Venha como está",
@@ -59,29 +42,47 @@ export default async function PaginaContato() {
   const [dados] = await Promise.all([carregarDadosSite(tenant.id), obterTokenCsrf()]);
   const { config, campi } = dados;
 
-  const whatsappHref = config.whatsapp
-    ? `https://wa.me/${config.whatsapp.replace(/\D/g, "")}`
-    : WHATSAPP_PADRAO.href;
-  const whatsappTexto = config.whatsapp ?? WHATSAPP_PADRAO.texto;
-  const emailContato = config.emailContato ?? EMAIL_PADRAO;
-  const instagramHref = config.instagram ?? INSTAGRAM_PADRAO.href;
-  const instagramTexto = config.instagram
-    ? config.instagram.replace(/^https?:\/\/(www\.)?instagram\.com\//, "@").replace(/\/$/, "")
-    : INSTAGRAM_PADRAO.texto;
+  // Canais: só o que a igreja preencheu. Nada de fallback para os contatos da
+  // igreja-âncora — uma igreja sem WhatsApp configurado simplesmente não mostra
+  // a linha, em vez de exibir um número que não é dela.
+  const whatsapp = config.whatsapp?.trim() || null;
+  const whatsappHref = whatsapp ? `https://wa.me/${whatsapp.replace(/\D/g, "")}` : null;
+  const emailContato = config.emailContato?.trim() || null;
+  const instagram = config.instagram?.trim() || null;
+  const instagramHref = instagram
+    ? instagram.startsWith("http")
+      ? instagram
+      : `https://www.instagram.com/${instagram.replace(/^@/, "")}`
+    : null;
+  const instagramTexto = instagram
+    ? instagram.replace(/^https?:\/\/(www\.)?instagram\.com\//, "@").replace(/\/$/, "")
+    : null;
+  // Sub-rótulo das redes: lista as que existem (Instagram, YouTube…).
+  const redesSub = [
+    config.instagram?.trim() && "Instagram",
+    config.youtube?.trim() && "YouTube",
+    config.facebook?.trim() && "Facebook",
+    config.spotify?.trim() && "Spotify",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  const temCanais = Boolean(whatsapp || emailContato || instagram);
 
-  const enderecos =
-    campi.length > 0
-      ? campi.map((campus, i) => ({
-          idx: String(i + 1).padStart(2, "0"),
-          nome: campus.nome,
-          endereco: [
-            [campus.logradouro, campus.numero].filter(Boolean).join(", "),
-            [campus.bairro, campus.cidade, campus.uf].filter(Boolean).join(", "),
-          ]
-            .filter(Boolean)
-            .join(" – "),
-        }))
-      : CAMPI_PADRAO.map((c) => ({ idx: c.idx, nome: c.nome, endereco: c.endereco }));
+  // Endereços: os campi reais desta igreja. Sem campus cadastrado, a seção
+  // "Onde estamos" nem aparece.
+  const enderecos = campi.map((campus, i) => ({
+    idx: String(i + 1).padStart(2, "0"),
+    nome: campus.nome,
+    endereco: [
+      [campus.logradouro, campus.numero].filter(Boolean).join(", "),
+      [campus.bairro, campus.cidade, campus.uf].filter(Boolean).join(", "),
+    ]
+      .filter(Boolean)
+      .join(" – "),
+  }));
+  // Título da seção de endereços, coerente com a quantidade real de campi.
+  const tituloEnderecos =
+    enderecos.length > 1 ? "Vários lugares para você." : "Onde a gente se encontra.";
 
   return (
     <>
@@ -97,8 +98,8 @@ export default async function PaginaContato() {
             Vamos nos <span className="serif-italic accent">conhecer.</span>
           </h1>
           <p className="lead">
-            Estamos em Lajeado e Vera Cruz, de portas abertas. Planeje sua visita
-            ou mande uma mensagem — será um prazer receber você.
+            De portas abertas. Planeje sua visita ou mande uma mensagem — será um
+            prazer receber você.
           </p>
         </div>
       </section>
@@ -111,56 +112,69 @@ export default async function PaginaContato() {
               Como falar <span className="serif-italic accent">com a gente.</span>
             </h2>
 
-            <div className="info-line">
-              <div className="ic" aria-hidden="true">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a1 1 0 01-1 1A16 16 0 014 5a1 1 0 011-1z" strokeLinejoin="round" />
-                </svg>
+            {whatsapp && (
+              <div className="info-line">
+                <div className="ic" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a1 1 0 01-1 1A16 16 0 014 5a1 1 0 011-1z" strokeLinejoin="round" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="k">WhatsApp</p>
+                  <p className="v">
+                    <a href={whatsappHref!} target="_blank" rel="noopener noreferrer">
+                      {whatsapp}
+                    </a>
+                  </p>
+                  <p className="sub">O jeito mais rápido de falar conosco.</p>
+                </div>
               </div>
-              <div>
-                <p className="k">WhatsApp</p>
-                <p className="v">
-                  <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
-                    {whatsappTexto}
-                  </a>
-                </p>
-                <p className="sub">O jeito mais rápido de falar conosco.</p>
-              </div>
-            </div>
+            )}
 
-            <div className="info-line">
-              <div className="ic" aria-hidden="true">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <rect x="3" y="5" width="18" height="14" rx="2" />
-                  <path d="m3 7 9 6 9-6" strokeLinejoin="round" />
-                </svg>
+            {emailContato && (
+              <div className="info-line">
+                <div className="ic" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <rect x="3" y="5" width="18" height="14" rx="2" />
+                    <path d="m3 7 9 6 9-6" strokeLinejoin="round" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="k">E-mail</p>
+                  <p className="v">
+                    <a href={`mailto:${emailContato}`}>{emailContato}</a>
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="k">E-mail</p>
-                <p className="v">
-                  <a href={`mailto:${emailContato}`}>{emailContato}</a>
-                </p>
-              </div>
-            </div>
+            )}
 
-            <div className="info-line">
-              <div className="ic" aria-hidden="true">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <rect x="3" y="3" width="18" height="18" rx="5" />
-                  <circle cx="12" cy="12" r="4" />
-                  <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
-                </svg>
+            {instagram && (
+              <div className="info-line">
+                <div className="ic" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <rect x="3" y="3" width="18" height="18" rx="5" />
+                    <circle cx="12" cy="12" r="4" />
+                    <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="k">Redes sociais</p>
+                  <p className="v">
+                    <a href={instagramHref!} target="_blank" rel="noopener noreferrer">
+                      {instagramTexto}
+                    </a>
+                  </p>
+                  {redesSub && <p className="sub">{redesSub}</p>}
+                </div>
               </div>
-              <div>
-                <p className="k">Redes sociais</p>
-                <p className="v">
-                  <a href={instagramHref} target="_blank" rel="noopener noreferrer">
-                    {instagramTexto}
-                  </a>
-                </p>
-                <p className="sub">Instagram &amp; YouTube</p>
-              </div>
-            </div>
+            )}
+
+            {!temCanais && (
+              <p className="lead">
+                Use o formulário ao lado para falar com a gente — respondemos
+                assim que possível.
+              </p>
+            )}
           </div>
 
           <div className="split__media">
@@ -181,11 +195,12 @@ export default async function PaginaContato() {
         </div>
       </section>
 
+      {enderecos.length > 0 && (
       <section className="section theme-dark">
         <div className="container">
           <p className="eyebrow">Onde estamos</p>
           <h2>
-            Uma igreja, <span className="serif-italic accent">dois lugares.</span>
+            <span className="serif-italic accent">{tituloEnderecos}</span>
           </h2>
           <p className="lead">
             Você é bem-vindo em qualquer um dos nossos endereços. Venha como você
@@ -210,6 +225,7 @@ export default async function PaginaContato() {
           </div>
         </div>
       </section>
+      )}
 
       <section className="section theme-cream">
         <div className="container">

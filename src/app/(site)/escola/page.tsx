@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { tenantDaRequisicao } from "@/lib/tenant/resolve";
-import { carregarDadosSite } from "@/lib/services/site";
+import { carregarDadosSite, nomeDia, formatarPreco } from "@/lib/services/site";
 import { obterTokenCsrf } from "@/lib/security/csrf";
 import {
   Campo,
@@ -37,13 +37,13 @@ export async function generateMetadata(): Promise<Metadata> {
   const { config } = await carregarDadosSite(tenant.id);
 
   return {
-    title: "Escola Discipular",
+    title: "Escola & Cursos",
     description:
       `Cursos da ${config.nomeExibicao}: fundamentos sólidos para uma fé que sustenta a vida. ` +
       `Conheça as turmas e faça sua inscrição.`,
     alternates: { canonical: "/escola" },
     openGraph: {
-      title: `Escola Discipular · ${config.nomeExibicao}`,
+      title: `Escola & Cursos · ${config.nomeExibicao}`,
       description: "Formação bíblica para quem quer conhecer no que crê e por quê.",
     },
   };
@@ -69,6 +69,10 @@ export default async function PaginaEscola() {
 
   const [dados] = await Promise.all([carregarDadosSite(tenant.id), obterTokenCsrf()]);
   const { cursos } = dados;
+  // Telefone de dúvidas: o que a igreja configurou (WhatsApp tem prioridade).
+  // Sem nada configurado, a linha some — nunca cai num número da outra igreja.
+  const telefoneContato =
+    dados.config.whatsapp?.trim() || dados.config.telefoneContato?.trim() || null;
 
   // Lista fechada: só um curso ativo e com inscrições abertas desta igreja pode
   // ser selecionado. O id sai do banco, nunca da URL.
@@ -82,15 +86,15 @@ export default async function PaginaEscola() {
           <nav className="breadcrumb">
             <Link href="/">Início</Link>
             <span>/</span>
-            <span>Escola Discipular</span>
+            <span>Escola &amp; Cursos</span>
           </nav>
-          <p className="eyebrow">Escola Discipular</p>
+          <p className="eyebrow">Escola &amp; Cursos</p>
           <h1 className="page-hero__title">
             Uma fé com <span className="serif-italic accent">fundamento.</span>
           </h1>
           <p className="lead">
-            Seja bem-vindo à Escola Discipular. Cursos que aprofundam a Palavra e
-            formam discípulos maduros.
+            Cursos que aprofundam a Palavra e formam discípulos maduros. Conheça
+            as turmas da {dados.config.nomeExibicao} e faça a sua inscrição.
           </p>
         </div>
       </section>
@@ -104,63 +108,50 @@ export default async function PaginaEscola() {
               Conhecer no que se <span className="serif-italic accent">crê — e por quê.</span>
             </h2>
             <p className="lead">
-              Duas trilhas de formação para quem quer ir além na caminhada com Deus.
+              Formação para quem quer ir além na caminhada com Deus.
             </p>
           </div>
 
-          <div className="grid cols-2">
-            <article className="card">
-              <p className="course__meta">Segundas-feira · 20h00</p>
-              <h3 className="card__titulo">Teologia Discipular</h3>
-              <p className="card__texto">
-                Um mergulho consistente nas doutrinas da fé cristã — das Escrituras
-                à vida prática. Ideal para quem deseja fundamentar a fé e responder
-                o porquê daquilo em que crê.
+          {cursos.length > 0 ? (
+            <div className="grid cols-2">
+              {cursos.map((curso) => {
+                // Metadados vêm todos do banco desta igreja: dia, horário e preço
+                // são renderizados só quando existem (nada é inventado).
+                const meta = [nomeDia(curso.diaSemana), curso.horario]
+                  .filter(Boolean)
+                  .join(" · ");
+                const preco = formatarPreco(curso.precoCentavos, curso.periodicidade);
+                const texto = curso.resumo ?? curso.descricao ?? null;
+                return (
+                  <article className="card" key={curso.id}>
+                    {meta && <p className="course__meta">{meta}</p>}
+                    <h3 className="card__titulo">{curso.nome}</h3>
+                    {texto && <p className="card__texto">{texto}</p>}
+                    {preco && (
+                      <p className="course__price">{preco}</p>
+                    )}
+                    {curso.inscricoesAbertas ? (
+                      <a href="#inscricao" className="btn btn--sm">
+                        Inscrever-me
+                      </a>
+                    ) : (
+                      <p className="course__meta" style={{ marginTop: ".4rem" }}>
+                        Inscrições em breve
+                      </p>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="card" style={{ textAlign: "center", maxWidth: "42rem", margin: "0 auto" }}>
+              <p className="lead">
+                As turmas do próximo semestre estão sendo preparadas.{" "}
+                <Link href="/contato" className="accent">Fale conosco</Link> para
+                ser avisado assim que as inscrições abrirem.
               </p>
-              <ul className="ticks">
-                <li>
-                  <span className="ic">{svgCheck}</span>
-                  <span>Bases bíblicas e doutrinárias</span>
-                </li>
-                <li>
-                  <span className="ic">{svgCheck}</span>
-                  <span>Aplicação à vida e ao ministério</span>
-                </li>
-              </ul>
-              <p className="course__price">
-                R$ 49,90 <span>/ por mês</span>
-              </p>
-              <a href="#inscricao" className="btn btn--sm">
-                Inscrever-me
-              </a>
-            </article>
-
-            <article className="card">
-              <p className="course__meta">Sextas-feira · 20h00</p>
-              <h3 className="card__titulo">Trilha Discipular</h3>
-              <p className="card__texto">
-                O caminho do discipulado, passo a passo: uma trilha de estudo
-                pensada para crescer em intimidade com Deus e maturidade cristã, do
-                primeiro passo à liderança.
-              </p>
-              <ul className="ticks">
-                <li>
-                  <span className="ic">{svgCheck}</span>
-                  <span>Discipulado prático e progressivo</span>
-                </li>
-                <li>
-                  <span className="ic">{svgCheck}</span>
-                  <span>Crescimento em caráter e serviço</span>
-                </li>
-              </ul>
-              <p className="course__price">
-                R$ 49,90 <span>/ por mês</span>
-              </p>
-              <a href="#inscricao" className="btn btn--sm">
-                Inscrever-me
-              </a>
-            </article>
-          </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -183,12 +174,14 @@ export default async function PaginaEscola() {
               </li>
               <li>
                 <span className="ic">{svgCheck}</span>
-                <span>Investimento de R$ 49,90/mês por curso</span>
+                <span>Valores e horários informados em cada curso</span>
               </li>
-              <li>
-                <span className="ic">{svgCheck}</span>
-                <span>Dúvidas? (51) 99266-8095</span>
-              </li>
+              {telefoneContato && (
+                <li>
+                  <span className="ic">{svgCheck}</span>
+                  <span>Dúvidas? {telefoneContato}</span>
+                </li>
+              )}
             </ul>
           </div>
 
