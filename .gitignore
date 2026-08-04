@@ -66,3 +66,4 @@ osv-report.json
 .turbo/
 .eslintcache
 *.tsbuildinfo
+qa/runs/
