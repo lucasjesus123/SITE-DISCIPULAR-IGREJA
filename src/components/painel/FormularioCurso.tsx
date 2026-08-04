@@ -150,7 +150,7 @@ export function FormularioCurso({
             required
             maxLength={160}
             defaultValue={v.nome}
-            placeholder="Teologia Discipular"
+            placeholder="Ex.: Fundamentos da Fé"
             autoComplete="off"
           />
         </Campo>
