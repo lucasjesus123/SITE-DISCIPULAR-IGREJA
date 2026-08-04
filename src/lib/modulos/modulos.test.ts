@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   itemLiberado,
   moduloAtivo,
+  modulosDoPlano,
   MODULOS_PADRAO,
   normalizarModulos,
   type ConfigModulos,
@@ -40,6 +41,21 @@ test("itemLiberado exige módulo ligado E permissão", () => {
   // item sem módulo (base) → só depende da permissão
   assert.equal(itemLiberado(cfg, undefined, true), true);
   assert.equal(itemLiberado(cfg, undefined, false), false);
+});
+
+test("modulosDoPlano: ESSENCIAL traz o básico; CRESCIMENTO/MULTISEDE trazem tudo", () => {
+  const ess = modulosDoPlano("ESSENCIAL");
+  assert.equal(ess.site, true);
+  assert.equal(ess.app, true);
+  assert.equal(ess.celulas, true);
+  assert.equal(ess.financeiro, false);
+  assert.equal(ess.kids, false);
+  assert.equal(ess.louvor, false);
+
+  for (const chave of Object.keys(MODULOS_PADRAO) as (keyof ConfigModulos)[]) {
+    assert.equal(modulosDoPlano("CRESCIMENTO")[chave], true, `CRESCIMENTO ${chave}`);
+    assert.equal(modulosDoPlano("MULTISEDE")[chave], true, `MULTISEDE ${chave}`);
+  }
 });
 
 test("igreja 'só Louvor': só o módulo louvor liga (fora os essenciais)", () => {

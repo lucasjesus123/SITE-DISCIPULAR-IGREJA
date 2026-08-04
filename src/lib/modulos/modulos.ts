@@ -1,4 +1,5 @@
 import type { Permissao } from "@/lib/auth/permissoes";
+import type { TenantPlan } from "@prisma/client";
 
 /**
  * MÓDULOS ("gavetas") do SaaS — PURO e testável.
@@ -95,6 +96,23 @@ export function itemLiberado(
   if (!temPermissao) return false;
   if (!modulo) return true;
   return moduloAtivo(config, modulo);
+}
+
+/**
+ * Preset de módulos por plano — um ponto de partida ao criar/mudar o plano.
+ * O admin ainda pode ligar/desligar módulo a módulo depois.
+ *   - ESSENCIAL: o básico de uma igreja (site, app, comunicação, células).
+ *   - CRESCIMENTO / MULTISEDE: tudo ligado (diferem em limites, não em módulos).
+ */
+export function modulosDoPlano(plano: TenantPlan): ConfigModulos {
+  if (plano === "ESSENCIAL") {
+    return {
+      gestao: true, site: true, app: true, comunicacao: true, celulas: true,
+      louvor: false, kids: false, financeiro: false, inscricoes: false, escola: false,
+    };
+  }
+  // CRESCIMENTO e MULTISEDE: tudo.
+  return { ...MODULOS_PADRAO };
 }
 
 /** Mapa de qual permissão "pertence" a qual módulo (para telas e nav). */

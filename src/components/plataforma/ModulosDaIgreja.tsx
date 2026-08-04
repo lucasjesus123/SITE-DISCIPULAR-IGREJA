@@ -1,17 +1,19 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import type { TenantPlan } from "@prisma/client";
 import { definirModulos } from "@/app/plataforma/acoes";
-import { MODULOS, type ConfigModulos } from "@/lib/modulos/modulos";
+import { MODULOS, modulosDoPlano, type ConfigModulos } from "@/lib/modulos/modulos";
 
 /**
  * Painel de "gavetas": o Super Admin liga/desliga cada módulo da igreja.
  * O módulo `gestao` é a base (sempre ligado) e não aparece como toggle.
  */
-export function ModulosDaIgreja({ tenantId, modulos }: { tenantId: string; modulos: ConfigModulos }) {
+export function ModulosDaIgreja({ tenantId, modulos, plano }: { tenantId: string; modulos: ConfigModulos; plano: TenantPlan }) {
   const [pendente, iniciar] = useTransition();
   const [msg, setMsg] = useState<{ ok: boolean; texto: string } | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const router = useRouter();
 
   function salvar(e: React.FormEvent<HTMLFormElement>) {
@@ -24,8 +26,20 @@ export function ModulosDaIgreja({ tenantId, modulos }: { tenantId: string; modul
     });
   }
 
+  // Marca os checkboxes conforme o preset do plano (sem salvar — o admin revisa).
+  function aplicarPreset() {
+    const preset = modulosDoPlano(plano);
+    const form = formRef.current;
+    if (!form) return;
+    for (const m of MODULOS) {
+      if (m.essencial) continue;
+      const input = form.elements.namedItem(m.chave);
+      if (input instanceof HTMLInputElement) input.checked = preset[m.chave];
+    }
+  }
+
   return (
-    <form onSubmit={salvar} className="stack" style={{ "--flow": "0.8rem" } as React.CSSProperties}>
+    <form ref={formRef} onSubmit={salvar} className="stack" style={{ "--flow": "0.8rem" } as React.CSSProperties}>
       {msg && <div className={`alerta alerta--${msg.ok ? "sucesso" : "erro"}`} role="alert">{msg.texto}</div>}
 
       <div className="mods-grid">
@@ -45,9 +59,14 @@ export function ModulosDaIgreja({ tenantId, modulos }: { tenantId: string; modul
         aparece para a igreja e se conecta ao resto automaticamente.
       </p>
 
-      <button type="submit" className="btn" disabled={pendente} style={{ justifySelf: "start" }}>
-        {pendente ? "Salvando…" : "Salvar módulos"}
-      </button>
+      <div style={{ display: "flex", gap: ".6rem", flexWrap: "wrap" }}>
+        <button type="submit" className="btn" disabled={pendente}>
+          {pendente ? "Salvando…" : "Salvar módulos"}
+        </button>
+        <button type="button" className="btn btn--ghost" onClick={aplicarPreset}>
+          Aplicar preset do plano ({plano})
+        </button>
+      </div>
     </form>
   );
 }

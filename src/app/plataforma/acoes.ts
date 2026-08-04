@@ -11,6 +11,7 @@ import { auditarPlataforma } from "@/lib/audit";
 import { gerarToken } from "@/lib/crypto";
 import { prisma } from "@/lib/db/prisma";
 import { tenantDb } from "@/lib/db/tenant-client";
+import { modulosDoPlano } from "@/lib/modulos/modulos";
 import { env, isProd } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { REGRAS, verificarLimite } from "@/lib/security/rate-limit";
@@ -272,6 +273,11 @@ export async function criarIgreja(dadosBrutos: unknown): Promise<ResultadoAcao> 
 
       await tx.membership.create({
         data: { tenantId: tenant.id, userId: user.id, papel: "ADMIN", ativo: true },
+      });
+
+      // A igreja nasce com as gavetas (módulos) do plano escolhido.
+      await tx.configuracaoModulos.create({
+        data: { tenantId: tenant.id, ...modulosDoPlano(dados.plano) },
       });
 
       return {

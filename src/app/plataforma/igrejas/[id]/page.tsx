@@ -239,7 +239,7 @@ export default async function DetalheIgreja({ params }: { params: Promise<{ id: 
       <section className="secao-painel">
         <h2 className="secao-painel__titulo">Módulos (gavetas)</h2>
         <p className="secao-painel__desc">Ligue só o que esta igreja contratou — site, app, Louvor, Kids, Financeiro… Ao ligar, a área aparece e se conecta ao resto.</p>
-        <ModulosDaIgreja tenantId={tenant.id} modulos={modulos} />
+        <ModulosDaIgreja tenantId={tenant.id} modulos={modulos} plano={tenant.plano} />
       </section>
 
       <DominiosDaIgreja tenantId={tenant.id} hostSubdominio={hostSubdominio} dominios={dominios} />
