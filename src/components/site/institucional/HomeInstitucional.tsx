@@ -3,6 +3,7 @@ import type { DadosSite } from "@/lib/services/site";
 import { urlArquivoPublico } from "@/lib/storage/urls";
 import { urlMiniatura } from "@/lib/youtube/live";
 import { formatarCnpj } from "@/lib/painel/formato";
+import { horariosSemanais, proximosEventos, type ItemAgendaHome } from "@/lib/site/agenda-home";
 import { FormWhatsAppInst } from "./FormWhatsAppInst";
 
 /**
@@ -42,6 +43,27 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, logoUrl }: Pr
   const telefone = config.telefoneContato ?? campusPrincipal?.telefone ?? "(00) 90000-0000";
   const email = config.emailContato ?? "";
   const mapaBusca = encodeURIComponent(`${nome} ${endereco}`);
+
+  // Horários e eventos vêm da Agenda de cada igreja (whitelabel). Sem dados,
+  // caem num fallback para a home nunca ficar vazia.
+  const itensAgenda: ItemAgendaHome[] = (dados.agenda ?? []).map((a) => ({
+    tipo: a.tipo,
+    titulo: a.titulo,
+    descricao: a.descricao,
+    diaSemana: a.diaSemana,
+    horario: a.horario,
+    dataHoraMs: a.dataHora ? new Date(a.dataHora).getTime() : null,
+  }));
+  const horariosDin = horariosSemanais(itensAgenda);
+  const horarios = horariosDin.length > 0 ? horariosDin : [
+    { dia: "Domingo", hora: "18h00", titulo: "Culto da Família" },
+    { dia: "Quarta", hora: "20h00", titulo: "Culto de Ensino" },
+    { dia: "Sexta", hora: "20h00", titulo: "Noite de Louvor" },
+  ];
+  const eventosDin = proximosEventos(itensAgenda, Date.now());
+  const eventos = eventosDin.length > 0 ? eventosDin : [
+    { dia: "—", mes: "", titulo: "Nenhum evento agendado", sub: "Volte em breve" },
+  ];
 
   return (
     <div className="inst-site">
@@ -92,9 +114,9 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, logoUrl }: Pr
 
       {/* HORÁRIOS */}
       <section className="horarios"><div className="wrap">
-        <div className="hcard"><div className="d">Domingo</div><div className="h">18h00</div><div className="n">Culto da Família</div></div>
-        <div className="hcard"><div className="d">Quarta</div><div className="h">20h00</div><div className="n">Culto de Ensino</div></div>
-        <div className="hcard"><div className="d">Sexta</div><div className="h">20h00</div><div className="n">Noite de Louvor</div></div>
+        {horarios.map((h, i) => (
+          <div className="hcard" key={i}><div className="d">{h.dia}</div><div className="h">{h.hora}</div><div className="n">{h.titulo}</div></div>
+        ))}
       </div></section>
 
       {/* NOVO POR AQUI */}
@@ -234,9 +256,13 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, logoUrl }: Pr
         <div className="eyebrow">Programe-se</div>
         <h2>Próximos eventos</h2>
         <div className="rows">
-          <Link className="arow" href="/batismo"><div className="date">17/08</div><div className="info"><b>Batismo nas Águas</b><small>Domingo · 9h · Sede</small></div><div className="go">→</div></Link>
-          <Link className="arow" href="/contato"><div className="date">22/08</div><div className="info"><b>Encontro de Casais</b><small>Sexta · 20h</small></div><div className="go">→</div></Link>
-          <Link className="arow" href="/contato"><div className="date">30/08</div><div className="info"><b>Ação Social no Bairro</b><small>Sábado · 14h · Voluntários</small></div><div className="go">→</div></Link>
+          {eventos.map((ev, i) => (
+            <Link className="arow" href="/agenda" key={i}>
+              <div className="date">{ev.dia}{ev.mes ? `/${ev.mes}` : ""}</div>
+              <div className="info"><b>{ev.titulo}</b><small>{ev.sub}</small></div>
+              <div className="go">→</div>
+            </Link>
+          ))}
         </div>
       </div></section>
 
