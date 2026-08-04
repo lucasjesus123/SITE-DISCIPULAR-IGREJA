@@ -922,13 +922,13 @@ model SiteConfig {
   // --- Cores. Guardadas como HEX e SEMPRE validadas com regex antes de
   // virarem CSS custom properties — senão seria injeção de CSS.
   // Ver src/lib/site/theme.ts
-  corAcento      String @default("#C2A15C") @db.VarChar(9)
-  corAcentoClara String @default("#DCC08A") @db.VarChar(9)
-  corTinta       String @default("#0B0D11") @db.VarChar(9)
-  corPapel       String @default("#FBF8F1") @db.VarChar(9)
+  corAcento      String @default("#34472F") @db.VarChar(9)
+  corAcentoClara String @default("#8FBF7A") @db.VarChar(9)
+  corTinta       String @default("#14161A") @db.VarChar(9)
+  corPapel       String @default("#EEF0F2") @db.VarChar(9)
 
-  fonteTitulo String @default("Fraunces") @db.VarChar(60)
-  fonteTexto  String @default("Instrument Sans") @db.VarChar(60)
+  fonteTitulo String @default("Archivo") @db.VarChar(60)
+  fonteTexto  String @default("Inter") @db.VarChar(60)
 
   // --- Hero da home
   heroTitulo    String? @db.VarChar(200)
@@ -1623,9 +1623,9 @@ model Ministerio {
   id       String @id @default(cuid())
   tenantId String
 
-  nome String         @db.VarChar(80)
-  tipo TipoMinisterio @default(LOUVOR)
-  ativo Boolean       @default(true)
+  nome  String         @db.VarChar(80)
+  tipo  TipoMinisterio @default(LOUVOR)
+  ativo Boolean        @default(true)
 
   criadoEm DateTime @default(now())
 
@@ -1839,11 +1839,11 @@ model ChatMinisterio {
   ministerioId String
 
   /// Tópico opcional por evento; nulo = canal geral do ministério.
-  eventoId  String?
+  eventoId    String?
   autorUserId String
-  autorNome String  @db.VarChar(160)
-  texto     String  @db.VarChar(2000)
-  fixada    Boolean @default(false)
+  autorNome   String  @db.VarChar(160)
+  texto       String  @db.VarChar(2000)
+  fixada      Boolean @default(false)
 
   criadoEm DateTime @default(now())
 
@@ -1906,9 +1906,9 @@ model Contribuicao {
   campusId     String?
   nome         String? @db.VarChar(160)
 
-  tipo         TipoContribuicao
+  tipo          TipoContribuicao
   valorCentavos BigInt
-  status       StatusContribuicao @default(PENDENTE)
+  status        StatusContribuicao @default(PENDENTE)
 
   /// Referências do gateway. asaasPaymentId é único por igreja (idempotência
   /// do webhook: o mesmo pagamento nunca gera dois lançamentos).

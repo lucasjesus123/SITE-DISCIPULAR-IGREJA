@@ -8,11 +8,15 @@
    Bordas firmes 1.5px, sem sombras difusas.
    ========================================================================== */
 .inst-site {
+  /* Grafite fixo = moldura escura neutra (nav, footer, seções escuras). */
   --ink: #14161a;
   --ink-2: #1b1e24;
-  --green: #34472f;
-  --mint: #8fbf7a;
-  --bg: #eef0f2;
+  /* Acento segue o tenant (token whitelabel). Fallback = verde/menta oficiais,
+     que também são o TEMA_PADRAO, então a Discipular fica idêntica ao aprovado
+     e uma igreja que escolher outra cor no painel tem a home coerente. */
+  --green: var(--gold, #34472f);
+  --mint: var(--gold-bright, #8fbf7a);
+  --bg: var(--paper, #eef0f2);
   --surface: #fff;
   --line: #e4e6e9;
   --muted: #6b6f76;
@@ -149,7 +153,7 @@
 .inst-site .apbar .hi { font-size: 11px; color: #9aa0a8; }
 .inst-site .apbar .nm { font-family: "Archivo"; font-weight: 800; text-transform: uppercase; font-size: 17px; margin-top: 2px; }
 .inst-site .apbody { padding: 14px; flex: 1; }
-.inst-site .apbanner { height: 96px; border-radius: 12px; background: linear-gradient(140deg, #34472f, #14161a); position: relative; color: #fff; display: flex; flex-direction: column; justify-content: flex-end; padding: 12px; }
+.inst-site .apbanner { height: 96px; border-radius: 12px; background: linear-gradient(140deg, var(--green), var(--ink)); position: relative; color: #fff; display: flex; flex-direction: column; justify-content: flex-end; padding: 12px; }
 .inst-site .apbanner .lv { position: absolute; top: 9px; left: 9px; background: #c0392b; font-size: 9px; font-weight: 800; padding: 3px 7px; border-radius: 5px; }
 .inst-site .apbanner b { font-family: "Archivo"; font-weight: 800; text-transform: uppercase; font-size: 13px; }
 .inst-site .aptiles { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 11px; }

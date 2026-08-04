@@ -12,7 +12,7 @@
 .ins-hd__in { max-width: 1180px; margin: 0 auto; padding: 0 26px; height: 66px; display: flex; align-items: center; gap: 28px; }
 .ins-hd__brand { display: flex; align-items: center; gap: 11px; color: #fff; text-decoration: none; flex: none; }
 .ins-hd__logo { height: 42px; width: auto; max-width: 220px; object-fit: contain; }
-.ins-hd__mark { width: 38px; height: 38px; border-radius: 10px; background: #8fbf7a; color: #14161a; display: grid; place-items: center; font-family: "Archivo", sans-serif; font-weight: 900; font-size: 18px; }
+.ins-hd__mark { width: 38px; height: 38px; border-radius: 10px; background: var(--gold-bright, #8fbf7a); color: #14161a; display: grid; place-items: center; font-family: "Archivo", sans-serif; font-weight: 900; font-size: 18px; }
 .ins-hd__nome { font-family: "Archivo", sans-serif; font-weight: 800; text-transform: uppercase; letter-spacing: 0.02em; font-size: 15px; white-space: nowrap; }
 .ins-hd__menu { display: flex; gap: 20px; list-style: none; margin: 0; padding: 0; }
 .ins-hd__menu a { color: #c7c9d0; text-decoration: none; font-size: 13.5px; font-weight: 500; }

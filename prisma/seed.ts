@@ -196,19 +196,19 @@ let desconectarBanco: (() => Promise<void>) | null = null;
 // =============================================================================
 
 /**
- * Tema "Preto & Branco Moderno" — a identidade final da Discipular Igreja.
- * Base branca, texto quase-preto, tipografia Archivo. O acento é neutro
- * (quase-preto em seções claras; o globals.css inverte para branco nas seções
- * escuras). O único toque de cor cromática do site é o vermelho do "Ao Vivo",
- * definido no CSS — não é cor de tema.
+ * Tema Institucional — identidade final da Discipular Igreja e padrão do SaaS:
+ * grafite (#14161A) + verde floresta (#34472F) + menta (#8FBF7A), Archivo nos
+ * títulos e Inter no texto. O acento escuro aparece sobre seções claras; a
+ * menta (corAcentoClara) é usada sobre seções escuras — a regra de contraste
+ * está em globals.css. O único vermelho do site é o "Ao Vivo" (CSS, não tema).
  */
 const TEMA_PB = {
-  corAcento: "#0E0E10",
-  corAcentoClara: "#000000",
-  corTinta: "#0A0A0B",
-  corPapel: "#FFFFFF",
+  corAcento: "#34472F",
+  corAcentoClara: "#8FBF7A",
+  corTinta: "#14161A",
+  corPapel: "#EEF0F2",
   fonteTitulo: "Archivo",
-  fonteTexto: "Archivo",
+  fonteTexto: "Inter",
 } as const;
 
 /** Os seis pilares — repetidos no site e na página "quem somos". */

@@ -206,6 +206,26 @@ input, textarea, select { font: inherit; color: inherit; }
 .theme-ink-800 { background: var(--ink-800); }
 
 /* -----------------------------------------------------------------------------
+   CONTRASTE DO ACENTO EM CONTEXTO ESCURO (temas coloridos)
+   Um acento ESCURO — verde floresta (#34472F, o padrão Institucional), vinho,
+   azul-marinho — desapareceria sobre um fundo escuro. Nestes contextos o acento
+   passa a usar a variante CLARA (corAcentoClara / --gold-bright), espelhando o
+   par verde/menta do Institucional. Para acento já mid-tone (dourado) isso só
+   clareia de leve — inofensivo. `.modo-mono` (acento neutro) tem especificidade
+   maior e continua vencendo onde a inversão para branco é necessária.
+   -------------------------------------------------------------------------- */
+.theme-dark,
+.theme-ink-800,
+.hero,
+.page-hero,
+.scripture,
+.site-header,
+.mobile-nav,
+.site-footer {
+  --gold: var(--gold-bright);
+}
+
+/* -----------------------------------------------------------------------------
    MODO MONOCROMÁTICO — tema "Preto & Branco Moderno"
    O layout do site (src/app/(site)/layout.tsx) adiciona `.modo-mono` quando a
    cor de acento do tenant é neutra. O acento quase-preto some sobre fundos

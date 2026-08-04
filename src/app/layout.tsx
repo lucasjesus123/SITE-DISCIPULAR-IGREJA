@@ -20,7 +20,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5, // nunca travar zoom: é requisito de acessibilidade
-  themeColor: "#0B0D11",
+  themeColor: "#14161A",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

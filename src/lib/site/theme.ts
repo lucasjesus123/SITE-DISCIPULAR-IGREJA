@@ -73,12 +73,17 @@ export interface TemaTenant {
 }
 
 export const TEMA_PADRAO: TemaTenant = {
-  corAcento: "#C2A15C",
-  corAcentoClara: "#DCC08A",
-  corTinta: "#0B0D11",
-  corPapel: "#FBF8F1",
-  fonteTitulo: "Fraunces",
-  fonteTexto: "Instrument Sans",
+  // Padrão whitelabel = identidade Institucional (grafite + verde floresta +
+  // menta), Archivo/Inter. Toda igreja replicada nasce com este visual; quem
+  // quiser troca as quatro cores no painel. corAcento é o verde escuro (bom
+  // sobre claro) e corAcentoClara é a menta (usada sobre seções escuras — ver
+  // a regra de contraste em globals.css).
+  corAcento: "#34472F",
+  corAcentoClara: "#8FBF7A",
+  corTinta: "#14161A",
+  corPapel: "#EEF0F2",
+  fonteTitulo: "Archivo",
+  fonteTexto: "Inter",
 };
 
 /** Normaliza o que veio do banco para valores comprovadamente seguros. */
