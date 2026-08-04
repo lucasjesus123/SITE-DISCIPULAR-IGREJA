@@ -5,11 +5,11 @@ import { tenantDaRequisicao } from "@/lib/tenant/resolve";
 import { carregarDadosSite } from "@/lib/services/site";
 import { tenantDb } from "@/lib/db/tenant-client";
 import { carregarModulos } from "@/lib/services/modulos";
-import { cssDoTema, urlGoogleFonts, temaMonocromatico } from "@/lib/site/theme";
+import { cssDoTema, urlGoogleFonts } from "@/lib/site/theme";
 import { estadoAoVivo } from "@/lib/youtube/live";
-import { Cabecalho } from "@/components/site/Cabecalho";
-import { Rodape } from "@/components/site/Rodape";
-import { BannerAoVivo } from "@/components/site/AoVivo";
+import { ChromeInstitucional } from "@/components/site/institucional/ChromeInstitucional";
+import "./institucional.css";
+import "./institucional-chrome.css";
 import { urlArquivoPublico } from "@/lib/storage/urls";
 
 /**
@@ -109,26 +109,7 @@ export default async function LayoutSite({ children }: { children: React.ReactNo
   const pathname = cabecalhos.get("x-pathname") ?? "";
   const homeInstitucional = pathname === "/" || pathname === "";
 
-  const menu = [
-    { rotulo: "Início", href: "/" },
-    { rotulo: "Quem Somos", href: "/quem-somos" },
-    { rotulo: "Pastores", href: "/pastores" },
-    { rotulo: "Células", href: "/celulas" },
-    { rotulo: "Escola", href: "/escola" },
-    { rotulo: "Mensagens", href: "/mensagens" },
-    { rotulo: "Contribua", href: "/contribua" },
-    { rotulo: "Contato", href: "/contato" },
-    // Páginas extras criadas pelo cliente no painel.
-    ...dados.paginas
-      .filter((p) => !["home", "quem-somos", "pastores", "celulas", "escola", "contribua", "contato", "mensagens"].includes(p.slug))
-      .map((p) => ({ rotulo: p.titulo, href: `/${p.slug}` })),
-  ];
-
   const estadoLive = { aoVivo: live.aoVivo, videoId: live.videoId, titulo: live.titulo };
-
-  // Acento neutro (cinza/preto) → ativa o tratamento "Preto & Branco Moderno":
-  // acento branco nas seções escuras, hero em caixa-alta pesada. Ver globals.css.
-  const classeModo = temaMonocromatico(dados.tema) ? "modo-mono" : undefined;
 
   return (
     <>
@@ -162,30 +143,20 @@ export default async function LayoutSite({ children }: { children: React.ReactNo
         // Home Institucional: nav + seções + footer próprios (dentro do children).
         <main id="conteudo">{children}</main>
       ) : (
-        <div className={["site-corpo", classeModo].filter(Boolean).join(" ")}>
-          <BannerAoVivo inicial={estadoLive} />
-
-          <Cabecalho
-            nomeIgreja={dados.config.nomeExibicao}
-            logoUrl={logoDoCabecalho(dados.config.logoClaroId, tenant.slug)}
-            menu={menu}
-            estadoLive={estadoLive}
-          />
-
-          <main id="conteudo">{children}</main>
-
-          <Rodape
-            config={dados.config}
-            campi={dados.campi}
-            menu={menu}
-            marcaUrl={
-              dados.config.logoClaroId
-                ? urlArquivoPublico(dados.config.logoClaroId)
-                : tenant.slug === "discipular"
-                  ? "/marca/mark-light.png"
-                  : null
-            }
-          />
+        // Páginas internas: mesmo chrome Institucional (nav + footer) da home.
+        <div className="site-corpo">
+          <ChromeInstitucional
+            nome={dados.config.nomeExibicao}
+            logo={logoDoCabecalho(dados.config.logoClaroId, tenant.slug)}
+            aoVivo={estadoLive.aoVivo}
+            socials={{
+              instagram: dados.config.instagram,
+              youtube: dados.config.youtube,
+              whatsapp: dados.config.whatsapp,
+            }}
+          >
+            {children}
+          </ChromeInstitucional>
         </div>
       )}
     </>

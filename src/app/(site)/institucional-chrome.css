@@ -1,0 +1,36 @@
+/* =============================================================================
+   CHROME INSTITUCIONAL para as páginas INTERNAS do site (nav + footer).
+   Classes próprias (.ins-hd / .ins-ft) — NÃO reaproveita `.inst-site ...` de
+   propósito, para não vazar estilo no corpo antigo das páginas internas.
+   ========================================================================== */
+.ins-hd {
+  position: sticky; top: 0; z-index: 50;
+  background: rgb(20 22 26 / 0.94); backdrop-filter: blur(8px);
+  border-bottom: 1px solid #26292f;
+  font-family: "Inter", system-ui, sans-serif;
+}
+.ins-hd__in { max-width: 1180px; margin: 0 auto; padding: 0 26px; height: 66px; display: flex; align-items: center; gap: 28px; }
+.ins-hd__brand { display: flex; align-items: center; gap: 11px; color: #fff; text-decoration: none; flex: none; }
+.ins-hd__logo { height: 42px; width: auto; max-width: 220px; object-fit: contain; }
+.ins-hd__mark { width: 38px; height: 38px; border-radius: 10px; background: #8fbf7a; color: #14161a; display: grid; place-items: center; font-family: "Archivo", sans-serif; font-weight: 900; font-size: 18px; }
+.ins-hd__nome { font-family: "Archivo", sans-serif; font-weight: 800; text-transform: uppercase; letter-spacing: 0.02em; font-size: 15px; white-space: nowrap; }
+.ins-hd__menu { display: flex; gap: 20px; list-style: none; margin: 0; padding: 0; }
+.ins-hd__menu a { color: #c7c9d0; text-decoration: none; font-size: 13.5px; font-weight: 500; }
+.ins-hd__menu a:hover { color: #fff; }
+.ins-hd__cta { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.ins-hd__live { display: flex; align-items: center; gap: 7px; background: #c0392b; color: #fff; font-weight: 700; font-size: 12.5px; padding: 9px 14px; border-radius: 9px; text-decoration: none; }
+.ins-hd__live .dot { width: 7px; height: 7px; border-radius: 50%; background: #fff; animation: ins-blink 1.3s infinite; }
+@keyframes ins-blink { 50% { opacity: 0.3; } }
+@media (max-width: 900px) { .ins-hd__menu { display: none; } }
+
+.ins-ft { background: #0f1115; color: #c7c9d0; padding: 48px 0 26px; font-family: "Inter", system-ui, sans-serif; }
+.ins-ft__in { max-width: 1180px; margin: 0 auto; padding: 0 26px; }
+.ins-ft__top { display: flex; justify-content: space-between; gap: 30px; flex-wrap: wrap; border-bottom: 1px solid #26292f; padding-bottom: 28px; }
+.ins-ft__brand { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; }
+.ins-ft__brand img { height: 36px; width: auto; }
+.ins-ft__brand b { font-family: "Archivo", sans-serif; font-weight: 800; text-transform: uppercase; font-size: 15px; }
+.ins-ft__cols { display: flex; gap: 46px; flex-wrap: wrap; }
+.ins-ft__cols h4 { font-family: "Archivo", sans-serif; color: #fff; font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; }
+.ins-ft__cols a { display: block; color: #9a9ea8; text-decoration: none; font-size: 13.5px; margin-bottom: 8px; }
+.ins-ft__cols a:hover { color: #fff; }
+.ins-ft__copy { padding-top: 20px; font-size: 12.5px; color: #71757e; }
