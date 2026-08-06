@@ -25,9 +25,17 @@
 //     um resumo. Sai com código 1 se algo falhar (bom para CI).
 // =============================================================================
 
-import { chromium } from "playwright";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { createRequire } from "node:module";
+
+// Playwright é resolvido via `require` (não via `import`) de propósito: o
+// `import` de ESM ignora o NODE_PATH, então o Playwright instalado GLOBALMENTE
+// (npm i -g playwright) não seria encontrado. O `require` do CommonJS honra o
+// NODE_PATH — por isso `NODE_PATH="$(npm root -g)" node qa/smoke.mjs` funciona.
+// Se preferir instalar local (`npm i playwright` no repo), também resolve.
+const require = createRequire(import.meta.url);
+const { chromium } = require("playwright");
 
 const BASE = (process.env.BASE_URL || "https://discipularigreja.com.br").replace(/\/$/, "");
 const OUT = join("qa", "runs", new Date().toISOString().replace(/[:.]/g, "-"));
