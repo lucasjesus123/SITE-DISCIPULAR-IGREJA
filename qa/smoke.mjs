@@ -105,21 +105,49 @@ async function talvezLogar(context, page) {
     console.log("\n(painel pulado — defina PANEL_EMAIL e PANEL_PASSWORD para incluí-lo)");
     return false;
   }
+  if (senha === "SUA_SENHA") {
+    console.log("\n== Painel ==  PANEL_PASSWORD ainda é o placeholder 'SUA_SENHA' — troque pela senha real.");
+    return false;
+  }
   console.log("\n== Painel (login somente leitura) ==");
   try {
     await page.goto(BASE + "/login", { waitUntil: "networkidle", timeout: 45_000 });
-    // Seletores tolerantes: e-mail, senha e botão de envio.
-    await page.fill('input[type="email"], input[name="email"]', email);
-    await page.fill('input[type="password"], input[name="senha"], input[name="password"]', senha);
-    await Promise.all([
-      page.waitForLoadState("networkidle", { timeout: 45_000 }),
-      page.click('button[type="submit"], button:has-text("Entrar")'),
-    ]);
-    const logou = !/\/login/.test(page.url());
-    console.log(logou ? "login OK → " + page.url() : "login NÃO confirmou (segue em /login)");
-    return logou;
+
+    // Localiza os campos de forma tolerante e AVISA se não achar (assim
+    // distinguimos "senha errada" de "formulário diferente do esperado").
+    const campoEmail = page.locator('input[type="email"], input[name="email"]').first();
+    const campoSenha = page.locator('input[type="password"], input[name="senha"], input[name="password"]').first();
+    if (!(await campoEmail.count()) || !(await campoSenha.count())) {
+      console.log("login NÃO testado: não achei os campos de e-mail/senha nesta tela de login.");
+      await page.screenshot({ path: join(OUT, "painel_login-form-nao-encontrado.png"), fullPage: true }).catch(() => {});
+      return false;
+    }
+
+    await campoEmail.fill(email);
+    await campoSenha.fill(senha);
+    await page.click('button[type="submit"], button:has-text("Entrar"), button:has-text("Acessar")').catch(() => {});
+
+    // Login costuma ser fetch + redirecionamento client-side: esperamos sair
+    // de /login por até 20s, sem falhar o processo se não sair.
+    await page.waitForURL((u) => !String(u).includes("/login"), { timeout: 20_000 }).catch(() => {});
+
+    const logou = !/\/login(\?|$|#|\/)/.test(page.url());
+    if (logou) {
+      console.log("login OK → " + page.url());
+      return true;
+    }
+
+    // Não saiu de /login: capture a mensagem de erro visível (prova do motivo).
+    const msg = await page
+      .locator('[role="alert"], .alerta, .erro, .form__erro, [data-erro]')
+      .first()
+      .innerText()
+      .catch(() => "");
+    console.log("login NÃO confirmou (segue em /login)" + (msg ? ` · mensagem da tela: "${msg.trim().slice(0, 160)}"` : " · sem mensagem visível (provável senha incorreta)"));
+    await page.screenshot({ path: join(OUT, "painel_login-falhou.png"), fullPage: true }).catch(() => {});
+    return false;
   } catch (e) {
-    console.log("falha no login:", String(e).slice(0, 160));
+    console.log("falha no login:", String(e).slice(0, 200));
     return false;
   }
 }
