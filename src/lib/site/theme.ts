@@ -36,6 +36,7 @@ const FONTES_PERMITIDAS = new Set([
   "Merriweather", "Source Serif 4", "DM Serif Display", "Cormorant Garamond",
   "Manrope", "Plus Jakarta Sans", "Outfit", "Sora", "Figtree", "Poppins",
   "Montserrat", "Raleway", "Work Sans", "Nunito Sans", "Libre Baskerville",
+  "Space Grotesk",
 ]);
 
 export function fonteSegura(valor: string | null | undefined, padrao: string): string {
@@ -162,7 +163,12 @@ export function urlGoogleFonts(tema: TemaTenant): string {
   // pesados (título do hero em 800, caixa-alta). Faixas menores deixavam o
   // hero fino demais.
   const familias = [...new Set([t.fonteTitulo, t.fonteTexto])]
+    // Space Grotesk não tem itálico; entra abaixo com o eixo certo.
+    .filter((f) => f !== "Space Grotesk")
     .map((f) => `family=${encodeURIComponent(f).replace(/%20/g, "+")}:ital,wght@0,300..800;1,300..800`)
     .join("&");
-  return `https://fonts.googleapis.com/css2?${familias}&display=swap`;
+  // Space Grotesk é o display da home tecnológica (.tk) — sempre carregado.
+  const grotesk = "family=Space+Grotesk:wght@400;500;600;700";
+  const lista = [familias, grotesk].filter(Boolean).join("&");
+  return `https://fonts.googleapis.com/css2?${lista}&display=swap`;
 }

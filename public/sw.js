@@ -19,7 +19,7 @@
  * offline). NENHUMA resposta de /api/ ou de rota autenticada entra no cache.
  */
 
-const VERSAO = "v1";
+const VERSAO = "v2";
 const CACHE_CASCO = `discipular-casco-${VERSAO}`;
 
 /** Só recursos públicos e sem dado pessoal. */
@@ -105,7 +105,10 @@ self.addEventListener("fetch", (evento) => {
   // ---------------------------------------------------------------------------
   if (requisicao.mode === "navigate") {
     evento.respondWith(
-      fetch(requisicao).catch(() =>
+      // `cache: "no-store"` é essencial: sem isso o próprio fetch pode devolver
+      // um HTML do cache HTTP do navegador, e uma atualização (site novo, texto
+      // editado no painel) demoraria a aparecer. Página SEMPRE fresca da rede.
+      fetch(requisicao, { cache: "no-store" }).catch(() =>
         caches.match("/app/offline").then(
           (offline) =>
             offline ??

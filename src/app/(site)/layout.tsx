@@ -10,6 +10,7 @@ import { estadoAoVivo } from "@/lib/youtube/live";
 import { ChromeInstitucional } from "@/components/site/institucional/ChromeInstitucional";
 import "./institucional.css";
 import "./institucional-chrome.css";
+import "./home-tech.css";
 import { urlArquivoPublico } from "@/lib/storage/urls";
 
 /**

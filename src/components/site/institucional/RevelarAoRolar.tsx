@@ -11,12 +11,14 @@ import { useEffect } from "react";
  */
 export function RevelarAoRolar() {
   useEffect(() => {
-    const raiz = document.querySelector(".inst-site");
+    const raiz = document.querySelector(".tk, .inst-site");
     if (!raiz) return;
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
 
     const alvos = Array.from(
-      raiz.querySelectorAll<HTMLElement>(".sec, .horarios, .cells, .give, .footcta, footer"),
+      raiz.querySelectorAll<HTMLElement>(
+        ".tk-sec, .tk-band, .tk-mq, .tk-foot, .sec, .horarios, .cells, .give, .footcta, footer",
+      ),
     );
     // Aplica o estado inicial só agora (com JS): sem JS, nada fica escondido.
     alvos.forEach((el) => el.classList.add("reveal"));
