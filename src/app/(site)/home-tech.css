@@ -46,7 +46,9 @@
 .tk-btn--glass:hover { border-color: var(--tk-verde); color: var(--tk-verde); }
 .tk-sec--light .tk-btn--glass { color: var(--tk-tinta); border-color: rgba(0,0,0,.14); }
 .tk-sec--light .tk-btn--glass:hover { border-color: var(--tk-verde2); color: var(--tk-verde2); }
-.tk-tag { display: inline-flex; align-items: center; gap: 8px; font-family: var(--disp); font-size: 12.5px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--tk-verde2); background: color-mix(in srgb, var(--tk-verde) 12%, transparent); border: 1px solid color-mix(in srgb, var(--tk-verde) 30%, transparent); padding: 8px 14px; border-radius: 999px; }
+.tk-tag { display: inline-flex; align-items: center; gap: 8px; font-family: var(--disp); font-size: 12.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--tk-verde); background: color-mix(in srgb, var(--tk-verde) 15%, transparent); border: 1px solid color-mix(in srgb, var(--tk-verde) 42%, transparent); padding: 8px 14px; border-radius: 999px; }
+/* Nas seções claras o texto vai pro verde escuro (lê bem no branco). */
+.tk-sec--light .tk-tag, .tk-sec--light2 .tk-tag { color: var(--tk-verde2); background: color-mix(in srgb, var(--tk-verde2) 12%, transparent); border-color: color-mix(in srgb, var(--tk-verde2) 34%, transparent); }
 .tk-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--tk-verde); box-shadow: 0 0 10px var(--tk-verde); animation: tk-pulse 1.4s infinite; }
 @keyframes tk-pulse { 50% { opacity: .35; transform: scale(.8); } }
 
