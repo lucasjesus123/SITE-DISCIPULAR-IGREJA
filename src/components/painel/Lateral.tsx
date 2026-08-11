@@ -80,6 +80,7 @@ const NAVEGACAO: GrupoNav[] = [
   {
     titulo: "Administração",
     itens: [
+      { rotulo: "Central de Relatórios", href: "/painel/relatorios", permissao: "relatorios.ver" },
       { rotulo: "Financeiro", href: "/painel/financeiro", permissao: "financeiro.gerenciar", modulo: "financeiro" },
       { rotulo: "Pagamentos (PIX)", href: "/painel/pagamentos", permissao: "config.gerenciar", modulo: "financeiro" },
       { rotulo: "App de Membros", href: "/painel/configuracoes-app", permissao: "config.gerenciar", modulo: "app" },

@@ -27,6 +27,20 @@ test("mes: do dia 1 ao dia 1 do mês seguinte", () => {
   assert.equal(i.rotulo, "Agosto de 2026");
 });
 
+test("trimestre: o trimestre que contém a referência (agosto → 3º tri)", () => {
+  const i = intervaloPeriodo("trimestre", REF);
+  assert.equal(i.inicioMs, Date.UTC(2026, 6, 1)); // 1º de julho
+  assert.equal(i.fimMs, Date.UTC(2026, 9, 1)); // 1º de outubro
+  assert.equal(i.rotulo, "3º trimestre de 2026");
+});
+
+test("semestre: agosto cai no 2º semestre (jul–dez)", () => {
+  const i = intervaloPeriodo("semestre", REF);
+  assert.equal(i.inicioMs, Date.UTC(2026, 6, 1)); // 1º de julho
+  assert.equal(i.fimMs, Date.UTC(2027, 0, 1)); // 1º de janeiro seguinte
+  assert.equal(i.rotulo, "2º semestre de 2026");
+});
+
 test("ano: de 1º de janeiro ao ano seguinte", () => {
   const i = intervaloPeriodo("ano", REF);
   assert.equal(i.inicioMs, Date.UTC(2026, 0, 1));

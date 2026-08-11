@@ -6,17 +6,21 @@
  * máquina — a virada perto da meia-noite é irrelevante para um relatório.
  */
 
-export type Periodo = "dia" | "semana" | "mes" | "ano";
+export type Periodo = "dia" | "semana" | "mes" | "trimestre" | "semestre" | "ano";
 
 export const PERIODOS: { chave: Periodo; rotulo: string }[] = [
   { chave: "dia", rotulo: "Dia" },
   { chave: "semana", rotulo: "Semana" },
   { chave: "mes", rotulo: "Mês" },
+  { chave: "trimestre", rotulo: "Trimestre" },
+  { chave: "semestre", rotulo: "Semestre" },
   { chave: "ano", rotulo: "Ano" },
 ];
 
+const CHAVES = new Set<string>(PERIODOS.map((p) => p.chave));
+
 export function ehPeriodo(v: string): v is Periodo {
-  return v === "dia" || v === "semana" || v === "mes" || v === "ano";
+  return CHAVES.has(v);
 }
 
 export interface Intervalo {
@@ -60,6 +64,18 @@ export function intervaloPeriodo(periodo: Periodo, refMs: number): Intervalo {
     const inicio = Date.UTC(ano, mes, 1);
     const fim = Date.UTC(ano, mes + 1, 1);
     return { inicioMs: inicio, fimMs: fim, rotulo: `${MESES[mes]} de ${ano}` };
+  }
+  if (periodo === "trimestre") {
+    const t = Math.floor(mes / 3); // 0..3
+    const inicio = Date.UTC(ano, t * 3, 1);
+    const fim = Date.UTC(ano, t * 3 + 3, 1);
+    return { inicioMs: inicio, fimMs: fim, rotulo: `${t + 1}º trimestre de ${ano}` };
+  }
+  if (periodo === "semestre") {
+    const s = mes < 6 ? 0 : 1; // 0 = Jan–Jun, 1 = Jul–Dez
+    const inicio = Date.UTC(ano, s * 6, 1);
+    const fim = Date.UTC(ano, s * 6 + 6, 1);
+    return { inicioMs: inicio, fimMs: fim, rotulo: `${s + 1}º semestre de ${ano}` };
   }
   // ano
   const inicio = Date.UTC(ano, 0, 1);

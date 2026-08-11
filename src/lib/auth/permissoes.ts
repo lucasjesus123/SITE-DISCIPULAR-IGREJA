@@ -56,6 +56,8 @@ export type Permissao =
   | "usuarios.gerenciar"
   | "config.gerenciar"
   | "auditoria.ler"
+  // Central de Relatórios (financeiro, secretaria, membros, células) — só ADMIN
+  | "relatorios.ver"
   | "arquivos.enviar"
   // WhatsApp (conectar número, enviar, automações)
   | "whatsapp.gerenciar"
@@ -160,7 +162,7 @@ const PERMISSOES_POR_PAPEL: Record<Papel, ReadonlySet<Permissao>> = {
     "agenda.gerenciar", "cursos.gerenciar", "mensagens.gerenciar",
     "site.ler", "site.editar", "site.publicar",
     "usuarios.ler", "usuarios.gerenciar",
-    "config.gerenciar", "auditoria.ler", "arquivos.enviar",
+    "config.gerenciar", "auditoria.ler", "arquivos.enviar", "relatorios.ver",
     "whatsapp.gerenciar", "financeiro.gerenciar", "inscricoes.gerenciar", "kids.gerenciar",
     "automacoes.gerenciar", "louvor.gerenciar",
   ]),
