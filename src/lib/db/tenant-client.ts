@@ -92,6 +92,8 @@ const MODELOS_TENANT = new Set<string>([
   "Contribuicao",
   "ConfiguracaoPagamento",
   "ConfiguracaoModulos",
+  "RegistroSecretaria",
+  "DisparoAgendado",
 ]);
 
 /**

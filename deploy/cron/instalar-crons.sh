@@ -65,6 +65,9 @@ criar_unidade "boas-vindas" "/api/cron/boas-vindas" "OnCalendar=*:0/5" "boas-vin
 # Convite de retorno: todo dia às 10:00.
 criar_unidade "convite-retorno" "/api/cron/convite-retorno" "OnCalendar=*-*-* 10:00:00" "convite de retorno"
 
+# Disparos agendados da Secretaria: de minuto em minuto (envia os que venceram).
+criar_unidade "disparos-agendados" "/api/cron/disparos-agendados" "OnCalendar=*:0/1" "disparos agendados da secretaria"
+
 systemctl daemon-reload
 echo
 echo "Pronto. Timers ativos:"

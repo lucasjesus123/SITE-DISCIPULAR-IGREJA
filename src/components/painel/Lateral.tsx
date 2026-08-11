@@ -53,6 +53,17 @@ const NAVEGACAO: GrupoNav[] = [
     ],
   },
   {
+    titulo: "Secretaria",
+    itens: [
+      { rotulo: "Visão da secretaria", href: "/painel/secretaria", permissao: "secretaria.gerenciar" },
+      { rotulo: "Visitantes", href: "/painel/secretaria/visitantes", permissao: "secretaria.gerenciar" },
+      { rotulo: "Batismo", href: "/painel/secretaria/batismo", permissao: "secretaria.gerenciar" },
+      { rotulo: "Apresentação de Crianças", href: "/painel/secretaria/apresentacao-criancas", permissao: "secretaria.gerenciar" },
+      { rotulo: "Integração", href: "/painel/secretaria/integracao", permissao: "secretaria.gerenciar" },
+      { rotulo: "Decisão", href: "/painel/secretaria/decisao", permissao: "secretaria.gerenciar" },
+    ],
+  },
+  {
     titulo: "Conteúdo",
     itens: [
       { rotulo: "Site da igreja", href: "/painel/site", permissao: "site.editar", modulo: "site" },

@@ -30,6 +30,8 @@ export type Permissao =
   // Triagem de formulários
   | "submissoes.ler"
   | "submissoes.processar"
+  // Secretaria (cadastros: visitantes, batismo, apresentação, integração, decisão)
+  | "secretaria.gerenciar"
   // Pedidos de oração
   | "oracao.ler"
   | "oracao.responder"
@@ -99,6 +101,7 @@ const PERMISSOES_POR_PAPEL: Record<Papel, ReadonlySet<Permissao>> = {
     "pessoas.editar",
     "submissoes.ler",
     "submissoes.processar",
+    "secretaria.gerenciar",
     "oracao.ler",
     "batismos.ler",
     "celulas.ler",
@@ -122,6 +125,7 @@ const PERMISSOES_POR_PAPEL: Record<Papel, ReadonlySet<Permissao>> = {
     "pessoas.lerSensivel",
     "submissoes.ler",
     "submissoes.processar",
+    "secretaria.gerenciar",
     "oracao.ler",
     "oracao.responder",
     "batismos.ler",
@@ -149,7 +153,7 @@ const PERMISSOES_POR_PAPEL: Record<Papel, ReadonlySet<Permissao>> = {
   ADMIN: new Set<Permissao>([
     "pessoas.ler", "pessoas.criar", "pessoas.editar", "pessoas.excluir",
     "pessoas.exportar", "pessoas.lerSensivel",
-    "submissoes.ler", "submissoes.processar",
+    "submissoes.ler", "submissoes.processar", "secretaria.gerenciar",
     "oracao.ler", "oracao.responder", "oracao.excluir",
     "batismos.ler", "batismos.aprovar",
     "celulas.ler", "celulas.gerenciar", "celulas.relatar",

@@ -115,6 +115,8 @@ model Tenant {
   contribuicoes       Contribuicao[]
   configPagamento     ConfiguracaoPagamento?
   configModulos       ConfiguracaoModulos?
+  registrosSecretaria RegistroSecretaria[]
+  disparosAgendados   DisparoAgendado[]
 
   @@index([status])
   @@map("tenants")
@@ -931,21 +933,21 @@ model SiteConfig {
   fonteTexto  String @default("Inter") @db.VarChar(60)
 
   // --- Hero da home
-  heroTitulo    String? @db.VarChar(200)
-  heroSubtitulo String? @db.VarChar(400)
-  heroEyebrow   String? @db.VarChar(80)
-  heroImagemId  String?
+  heroTitulo       String? @db.VarChar(200)
+  heroSubtitulo    String? @db.VarChar(400)
+  heroEyebrow      String? @db.VarChar(80)
+  heroImagemId     String?
   /// Imagem de fundo do site inteiro, exibida bem transparente atrás de tudo.
-  fundoImagemId String?
+  fundoImagemId    String?
   /// Fotos das seções (pastores). Preenchidas pelo painel; caem no lugar dos
   /// placeholders na home e na página Pastores.
-  fotoPastorId  String?
-  fotoPastoraId String?
+  fotoPastorId     String?
+  fotoPastoraId    String?
   /// Foto da comunidade — card "Você foi feito para fazer parte" na home.
   fotoComunidadeId String?
-  heroVideoUrl  String? @db.VarChar(500)
-  heroCtaTexto  String? @db.VarChar(60)
-  heroCtaLink   String? @db.VarChar(200)
+  heroVideoUrl     String? @db.VarChar(500)
+  heroCtaTexto     String? @db.VarChar(60)
+  heroCtaLink      String? @db.VarChar(200)
 
   // --- Conteúdo editável da home (JSON validado no app). Ministérios e
   // depoimentos que aparecem na home Institucional; cada igreja edita o seu.
@@ -1980,4 +1982,89 @@ model ConfiguracaoModulos {
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@map("config_modulos")
+}
+
+// =============================================================================
+// SECRETARIA — cadastros da recepção (visitantes, batismo, apresentação de
+// crianças, integração, decisão). Um modelo flexível: campos comuns em colunas
+// e o resto de cada formulário em `extra` (JSON validado no app).
+// =============================================================================
+
+enum TipoRegistroSecretaria {
+  VISITANTE
+  BATISMO
+  APRESENTACAO_CRIANCA
+  INTEGRACAO
+  DECISAO
+}
+
+model RegistroSecretaria {
+  id       String                 @id @default(cuid())
+  tenantId String
+  tipo     TipoRegistroSecretaria
+
+  nome           String    @db.VarChar(160)
+  contato        String?   @db.VarChar(30)
+  dataNascimento DateTime? @db.Date
+  comoConheceu   String?   @db.VarChar(200)
+  endereco       String?   @db.VarChar(300)
+  dataInscricao  DateTime? @db.Date
+  /// Data principal do formulário (visita / batismo / apresentação / etc.).
+  dataReferencia DateTime? @db.Date
+  observacao     String?   @db.Text
+
+  /// Campos específicos de cada tipo (pai/mãe/padrinhos, igreja anterior…).
+  extra Json?
+
+  /// Quem cadastrou. `criadoPorNome` é denormalizado para o relatório continuar
+  /// correto mesmo que o usuário seja removido depois.
+  criadoPorId   String?
+  criadoPorNome String? @db.VarChar(160)
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, tipo, criadoEm])
+  @@index([tenantId, tipo, dataReferencia])
+  @@map("registros_secretaria")
+}
+
+enum StatusDisparo {
+  PENDENTE
+  ENVIADO
+  FALHOU
+  CANCELADO
+}
+
+/// Mensagem de WhatsApp agendada para um momento futuro (ex.: daqui 15 min,
+/// amanhã às 11h). Um CRON de minuto em minuto envia as que já venceram.
+model DisparoAgendado {
+  id       String @id @default(cuid())
+  tenantId String
+
+  contato  String  @db.VarChar(30)
+  nome     String? @db.VarChar(160)
+  mensagem String  @db.Text
+
+  agendadoPara DateTime
+  status       StatusDisparo @default(PENDENTE)
+  erro         String?       @db.VarChar(300)
+  enviadoEm    DateTime?
+
+  /// Origem opcional (o registro da secretaria que disparou o agendamento).
+  registroId String?
+
+  criadoPorId   String?
+  criadoPorNome String? @db.VarChar(160)
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, status, agendadoPara])
+  @@index([status, agendadoPara])
+  @@map("disparos_agendados")
 }
