@@ -113,9 +113,11 @@ test("parseSecoesHome: por campo, com arrays de tamanho fixo", () => {
 
 test("serializarSecoesHome: nada preenchido devolve null; round-trip mantém edições", () => {
   assert.equal(serializarSecoesHome({}), null);
-  const s = serializarSecoesHome({ oracaoTitulo: "Ore conosco", appRecursos: ["Ao vivo"], passos: [{ titulo: "Sim!", texto: "" }] });
+  const s = serializarSecoesHome({ oracaoTitulo: "Ore conosco", minisTitulo: "Sirva com a gente", appRecursos: ["Ao vivo"], passos: [{ titulo: "Sim!", texto: "" }] });
   const r = parseSecoesHome(s);
   assert.equal(r.oracaoTitulo, "Ore conosco");
+  assert.equal(r.minisTitulo, "Sirva com a gente");
+  assert.equal(r.contatoTitulo, SECOES_HOME_PADRAO.contatoTitulo);
   assert.equal(r.appRecursos[0], "Ao vivo");
   assert.equal(r.passos[0]!.titulo, "Sim!");
   assert.equal(r.newsletterTitulo, SECOES_HOME_PADRAO.newsletterTitulo); // não editado → padrão

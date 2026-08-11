@@ -111,8 +111,14 @@
 .inst-site .hcard .n { font-size: 13px; opacity: 0.85; margin-top: 2px; }
 @media (max-width: 720px) { .inst-site .horarios .wrap { grid-template-columns: 1fr; } .inst-site .hcard { border-right: none; border-bottom: 1px solid rgb(255 255 255 / 0.16); } }
 
-.inst-site .sec { padding: 90px 0; }
-.inst-site .sec h2 { font-family: "Archivo"; font-weight: 900; font-size: 44px; line-height: 1.02; letter-spacing: -0.02em; text-transform: uppercase; margin: 14px 0 16px; }
+.inst-site .sec { padding: 96px 0; }
+.inst-site .sec h2 { font-family: "Archivo"; font-weight: 900; font-size: 46px; line-height: 1.0; letter-spacing: -0.03em; text-transform: uppercase; margin: 0 0 18px; }
+/* Sem sobrancelha de texto: um acento de marca desenhado (barra menta fina)
+   abre cada título. Dá presença de marca e ritmo sem virar "kicker de template". */
+.inst-site .sec h2::before { content: ""; display: block; width: 46px; height: 4px; border-radius: 999px; background: var(--green); margin-bottom: 20px; }
+.inst-site .msg h2::before, .inst-site .app h2::before, .inst-site .give h2::before,
+.inst-site .cells h2::before, .inst-site .pray h2::before, .inst-site .footcta h2::before { background: var(--mint); }
+.inst-site .center h2::before { margin-left: auto; margin-right: auto; }
 .inst-site .lead { font-size: 17px; color: var(--muted); max-width: 620px; line-height: 1.65; }
 @media (max-width: 720px) { .inst-site .sec { padding: 58px 0; } .inst-site .sec h2 { font-size: 31px; } }
 .inst-site .center { text-align: center; }

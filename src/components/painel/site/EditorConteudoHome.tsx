@@ -58,6 +58,14 @@ export function EditorConteudoHome({
         oracaoLead: g("sec_oracaoLead"),
         newsletterTitulo: g("sec_newsletterTitulo"),
         newsletterTexto: g("sec_newsletterTexto"),
+        minisTitulo: g("sec_minisTitulo"),
+        minisLead: g("sec_minisLead"),
+        depoimentosTitulo: g("sec_depoimentosTitulo"),
+        contribuaTitulo: g("sec_contribuaTitulo"),
+        contribuaTexto: g("sec_contribuaTexto"),
+        contatoTitulo: g("sec_contatoTitulo"),
+        contatoLead: g("sec_contatoLead"),
+        agendaTitulo: g("sec_agendaTitulo"),
       },
       ministerios: Array.from({ length: N }, (_, i) => ({ titulo: g(`m${i}_titulo`), descricao: g(`m${i}_descricao`), icone: g(`m${i}_icone`) })),
       depoimentos: Array.from({ length: N }, (_, i) => ({ texto: g(`d${i}_texto`), nome: g(`d${i}_nome`), papel: g(`d${i}_papel`) })),
@@ -185,6 +193,21 @@ export function EditorConteudoHome({
               <input name="sec_newsletterTexto" defaultValue={secoes.newsletterTexto} maxLength={300} />
             </label>
           </div>
+        </div>
+      </div>
+
+      {/* TÍTULOS DAS DEMAIS SEÇÕES */}
+      <div>
+        <p className="campo__rotulo" style={{ marginBottom: ".6rem" }}>Títulos das seções</p>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: ".6rem" }}>
+          <input name="sec_minisTitulo" defaultValue={secoes.minisTitulo} maxLength={80} placeholder="Ministérios — título" aria-label="Ministérios — título" />
+          <input name="sec_minisLead" defaultValue={secoes.minisLead} maxLength={300} placeholder="Ministérios — chamada" aria-label="Ministérios — chamada" />
+          <input name="sec_depoimentosTitulo" defaultValue={secoes.depoimentosTitulo} maxLength={80} placeholder="Depoimentos — título" aria-label="Depoimentos — título" />
+          <input name="sec_agendaTitulo" defaultValue={secoes.agendaTitulo} maxLength={80} placeholder="Agenda — título" aria-label="Agenda — título" />
+          <input name="sec_contribuaTitulo" defaultValue={secoes.contribuaTitulo} maxLength={80} placeholder="Contribua — título" aria-label="Contribua — título" />
+          <input name="sec_contribuaTexto" defaultValue={secoes.contribuaTexto} maxLength={400} placeholder="Contribua — texto" aria-label="Contribua — texto" />
+          <input name="sec_contatoTitulo" defaultValue={secoes.contatoTitulo} maxLength={80} placeholder="Contato — título" aria-label="Contato — título" />
+          <input name="sec_contatoLead" defaultValue={secoes.contatoLead} maxLength={400} placeholder="Contato — texto" aria-label="Contato — texto" />
         </div>
       </div>
 

@@ -427,6 +427,14 @@ export async function salvarConteudoHome(dadosBrutos: unknown): Promise<Resultad
         oracaoLead: z.string().trim().max(400).optional().default(""),
         newsletterTitulo: z.string().trim().max(80).optional().default(""),
         newsletterTexto: z.string().trim().max(300).optional().default(""),
+        minisTitulo: z.string().trim().max(80).optional().default(""),
+        minisLead: z.string().trim().max(300).optional().default(""),
+        depoimentosTitulo: z.string().trim().max(80).optional().default(""),
+        contribuaTitulo: z.string().trim().max(80).optional().default(""),
+        contribuaTexto: z.string().trim().max(400).optional().default(""),
+        contatoTitulo: z.string().trim().max(80).optional().default(""),
+        contatoLead: z.string().trim().max(400).optional().default(""),
+        agendaTitulo: z.string().trim().max(80).optional().default(""),
       }).optional(),
     });
     const dados = schema.parse(dadosBrutos);

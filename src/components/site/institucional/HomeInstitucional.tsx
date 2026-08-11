@@ -169,7 +169,6 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
       {/* NOVO POR AQUI */}
       <section className="sec novo" id="novo"><div className="wrap"><div className="grid">
         <div>
-          <div className="eyebrow">Novo por aqui</div>
           <h2>{bv.titulo}</h2>
           <p className="lead" style={{ marginBottom: 22 }}>{bv.lead}</p>
           <div className="expect">
@@ -195,7 +194,6 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
               : undefined
           }
         >
-          <div className="eyebrow on-dark">Bem-vindo</div>
           <div className="q">{bv.frase}</div>
         </div>
       </div></div></section>
@@ -204,7 +202,6 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
       <section className="sec msg" id="mensagem"><div className="wrap"><div className="grid">
         <PlayerMensagem videoId={msgVideoId} thumb={thumb} aoVivo={live.aoVivo} hrefFallback={linkMensagens} />
         <div>
-          <div className="eyebrow on-dark">Última mensagem</div>
           <h2>{msgTitulo}</h2>
           <p className="lead">Assista à palavra de domingo e acompanhe todas as transmissões ao vivo pelo nosso canal. A última mensagem fica sempre aqui na frente.</p>
           <div className="cta"><Link href="/mensagens" className="btn pri">Ver todas as mensagens</Link></div>
@@ -214,7 +211,6 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
       {/* APP DA IGREJA */}
       <section className="sec app" id="app"><div className="wrap"><div className="grid">
         <div>
-          <div className="eyebrow on-dark">Leve a igreja no bolso</div>
           <h2>{sec.appTitulo ? sec.appTitulo : <>Acesse o app<br />da {nome}</>}</h2>
           <p className="lead">{sec.appLead}</p>
           <ul className="feats">
@@ -244,9 +240,8 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
 
       {/* MINISTÉRIOS */}
       <section className="sec minis" id="minis"><div className="wrap">
-        <div className="eyebrow">Faça parte</div>
-        <h2>Nossos ministérios</h2>
-        <p className="lead">Há um lugar para você servir, crescer e viver em comunidade.</p>
+        <h2>{sec.minisTitulo}</h2>
+        <p className="lead">{sec.minisLead}</p>
         <div className="cards3">
           {dados.config.ministerios.map((m, i) => (
             <div className="mcard" key={i}>
@@ -264,7 +259,6 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
 
       {/* PRÓXIMOS PASSOS */}
       <section className="sec steps" id="passos"><div className="wrap center">
-        <div className="eyebrow">Cresça na fé</div>
         <h2>{sec.passosTitulo}</h2>
         <p className="lead">{sec.passosLead}</p>
         <div className="stepgrid" style={{ textAlign: "center" }}>
@@ -282,7 +276,6 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
       {/* CÉLULAS BAND */}
       <section className="sec cells"><div className="wrap">
         <div>
-          <div className="eyebrow on-dark">Comunhão</div>
           <h2>{sec.celulasTitulo}</h2>
           <p>{sec.celulasTexto}</p>
         </div>
@@ -291,8 +284,7 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
 
       {/* DEPOIMENTOS */}
       <section className="sec depo"><div className="wrap">
-        <div className="eyebrow">Vidas transformadas</div>
-        <h2>Histórias da nossa família</h2>
+        <h2>{sec.depoimentosTitulo}</h2>
         <div className="cards3">
           {dados.config.depoimentos.map((d, i) => (
             <div className="quote" key={i}>
@@ -310,9 +302,8 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
       {/* CONTRIBUA */}
       <section className="sec give" id="give"><div className="wrap">
         <div>
-          <div className="eyebrow on-dark">Generosidade</div>
-          <h2>Contribua com<br />a obra</h2>
-          <p>Sua oferta e dízimo sustentam a missão e abençoam vidas. Pelo site ou direto no app.</p>
+          <h2>{sec.contribuaTitulo}</h2>
+          <p>{sec.contribuaTexto}</p>
         </div>
         <div className="pixbox">
           <div className="lbl">Chave PIX{pixDisplay?.includes("/") ? " · CNPJ" : ""}</div>
@@ -323,8 +314,7 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
 
       {/* AGENDA */}
       <section className="sec agenda" id="agenda"><div className="wrap">
-        <div className="eyebrow">Programe-se</div>
-        <h2>Próximos eventos</h2>
+        <h2>{sec.agendaTitulo}</h2>
         <div className="rows">
           {eventos.map((ev, i) => (
             <Link className="arow" href="/agenda" key={i}>
@@ -338,7 +328,6 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
 
       {/* ORAÇÃO */}
       <section className="sec pray"><div className="wrap"><div className="box">
-        <div className="eyebrow on-dark">Estamos com você</div>
         <h2>{sec.oracaoTitulo}</h2>
         <p className="lead">{sec.oracaoLead}</p>
         <div className="cta" style={{ justifyContent: "center" }}>
@@ -349,9 +338,8 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
       {/* CONTATO */}
       <section className="sec contato" id="contato"><div className="wrap"><div className="grid">
         <div>
-          <div className="eyebrow">Fale conosco</div>
-          <h2>Venha nos<br />visitar</h2>
-          <p className="lead" style={{ marginBottom: 20 }}>Estamos de portas abertas. Envie sua mensagem — ela chega direto no nosso WhatsApp.</p>
+          <h2>{sec.contatoTitulo}</h2>
+          <p className="lead" style={{ marginBottom: 20 }}>{sec.contatoLead}</p>
           <p style={{ fontWeight: 600, lineHeight: 1.9 }}>📍 {endereco}<br />📞 {telefone}{email && <><br />✉ {email}</>}</p>
           {campusPrincipal && (
             <>
@@ -374,7 +362,6 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
 
       {/* NEWSLETTER */}
       <section className="sec footcta"><div className="wrap">
-        <div className="eyebrow on-dark">Fique por dentro</div>
         <h2>{sec.newsletterTitulo}</h2>
         <p>{sec.newsletterTexto}</p>
         <form className="news" action="/contato"><input className="f" name="email" type="email" placeholder="seu@email.com" /><button type="submit" className="btn pri">Inscrever</button></form>

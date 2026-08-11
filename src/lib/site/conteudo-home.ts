@@ -78,6 +78,15 @@ export interface SecoesHome {
   oracaoLead: string;
   newsletterTitulo: string;
   newsletterTexto: string;
+  // Títulos das demais seções
+  minisTitulo: string;
+  minisLead: string;
+  depoimentosTitulo: string;
+  contribuaTitulo: string;
+  contribuaTexto: string;
+  contatoTitulo: string;
+  contatoLead: string;
+  agendaTitulo: string;
 }
 
 export const SECOES_HOME_PADRAO: SecoesHome = {
@@ -106,6 +115,14 @@ export const SECOES_HOME_PADRAO: SecoesHome = {
   oracaoLead: "Envie seu pedido de oração. Nossa equipe de intercessão vai clamar por você em particular.",
   newsletterTitulo: "Receba as novidades",
   newsletterTexto: "Devocional, avisos e eventos direto no seu e-mail.",
+  minisTitulo: "Nossos ministérios",
+  minisLead: "Há um lugar para você servir, crescer e viver em comunidade.",
+  depoimentosTitulo: "Histórias da nossa família",
+  contribuaTitulo: "Contribua com a obra",
+  contribuaTexto: "Sua oferta e dízimo sustentam a missão e abençoam vidas. Pelo site ou direto no app.",
+  contatoTitulo: "Venha nos visitar",
+  contatoLead: "Estamos de portas abertas. Envie sua mensagem — ela chega direto no nosso WhatsApp.",
+  agendaTitulo: "Próximos eventos",
 };
 
 function texto(v: unknown): string {
@@ -234,6 +251,14 @@ export function parseSecoesHome(json: string | null | undefined): SecoesHome {
     oracaoLead: texto(o.oracaoLead) || p.oracaoLead,
     newsletterTitulo: texto(o.newsletterTitulo) || p.newsletterTitulo,
     newsletterTexto: texto(o.newsletterTexto) || p.newsletterTexto,
+    minisTitulo: texto(o.minisTitulo) || p.minisTitulo,
+    minisLead: texto(o.minisLead) || p.minisLead,
+    depoimentosTitulo: texto(o.depoimentosTitulo) || p.depoimentosTitulo,
+    contribuaTitulo: texto(o.contribuaTitulo) || p.contribuaTitulo,
+    contribuaTexto: texto(o.contribuaTexto) || p.contribuaTexto,
+    contatoTitulo: texto(o.contatoTitulo) || p.contatoTitulo,
+    contatoLead: texto(o.contatoLead) || p.contatoLead,
+    agendaTitulo: texto(o.agendaTitulo) || p.agendaTitulo,
   };
 }
 
@@ -244,6 +269,9 @@ export function serializarSecoesHome(v: {
   celulasTitulo?: string; celulasTexto?: string;
   oracaoTitulo?: string; oracaoLead?: string;
   newsletterTitulo?: string; newsletterTexto?: string;
+  minisTitulo?: string; minisLead?: string; depoimentosTitulo?: string;
+  contribuaTitulo?: string; contribuaTexto?: string;
+  contatoTitulo?: string; contatoLead?: string; agendaTitulo?: string;
 }): string | null {
   const appRecursos = (v.appRecursos ?? []).slice(0, 6).map(texto);
   const passos = (v.passos ?? []).slice(0, 5).map((x) => ({ titulo: texto(x.titulo), texto: texto(x.texto) }));
@@ -253,11 +281,12 @@ export function serializarSecoesHome(v: {
     celulasTitulo: texto(v.celulasTitulo), celulasTexto: texto(v.celulasTexto),
     oracaoTitulo: texto(v.oracaoTitulo), oracaoLead: texto(v.oracaoLead),
     newsletterTitulo: texto(v.newsletterTitulo), newsletterTexto: texto(v.newsletterTexto),
+    minisTitulo: texto(v.minisTitulo), minisLead: texto(v.minisLead), depoimentosTitulo: texto(v.depoimentosTitulo),
+    contribuaTitulo: texto(v.contribuaTitulo), contribuaTexto: texto(v.contribuaTexto),
+    contatoTitulo: texto(v.contatoTitulo), contatoLead: texto(v.contatoLead), agendaTitulo: texto(v.agendaTitulo),
   };
-  const algo =
-    obj.appTitulo || obj.appLead || obj.passosTitulo || obj.passosLead ||
-    obj.celulasTitulo || obj.celulasTexto || obj.oracaoTitulo || obj.oracaoLead ||
-    obj.newsletterTitulo || obj.newsletterTexto ||
-    appRecursos.some(Boolean) || passos.some((x) => x.titulo || x.texto);
+  const algo = Object.values(obj).some((x) =>
+    typeof x === "string" ? x : x.some((c: unknown) => (typeof c === "string" ? c : Boolean((c as { titulo?: string; texto?: string }).titulo || (c as { texto?: string }).texto))),
+  );
   return algo ? JSON.stringify(obj) : null;
 }
