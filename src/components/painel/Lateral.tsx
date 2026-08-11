@@ -40,15 +40,13 @@ const NAVEGACAO: GrupoNav[] = [
     itens: [{ rotulo: "Início", href: "/painel" }],
   },
   {
-    titulo: "Pessoas",
+    titulo: "Comunidade",
     itens: [
       { rotulo: "Caixa de entrada", href: "/painel/caixa-entrada", permissao: "submissoes.ler", contador: "caixaEntrada", alerta: true },
-      { rotulo: "Pessoas", href: "/painel/pessoas", permissao: "pessoas.ler" },
       { rotulo: "Acompanhamento", href: "/painel/acompanhamento", permissao: "pessoas.ler" },
       { rotulo: "Kids", href: "/painel/kids", permissao: "kids.gerenciar", modulo: "kids" },
       { rotulo: "Louvor", href: "/painel/louvor", permissao: "louvor.gerenciar", modulo: "louvor" },
       { rotulo: "Pedidos de oração", href: "/painel/oracao", permissao: "oracao.ler", contador: "oracoes" },
-      { rotulo: "Batismos", href: "/painel/batismos", permissao: "batismos.ler", contador: "batismos" },
       { rotulo: "Células", href: "/painel/celulas", permissao: "celulas.ler", modulo: "celulas" },
     ],
   },
@@ -56,8 +54,12 @@ const NAVEGACAO: GrupoNav[] = [
     titulo: "Secretaria",
     itens: [
       { rotulo: "Visão da secretaria", href: "/painel/secretaria", permissao: "secretaria.gerenciar" },
+      // Pessoas e Batismo vivem na Secretaria (uma única porta cada). Batismo
+      // aponta para a fila completa (/painel/batismos), que recebe as solicitações
+      // do formulário público do site + o fluxo SOLICITADO→REALIZADO.
+      { rotulo: "Pessoas", href: "/painel/pessoas", permissao: "pessoas.ler" },
       { rotulo: "Visitantes", href: "/painel/secretaria/visitantes", permissao: "secretaria.gerenciar" },
-      { rotulo: "Batismo", href: "/painel/secretaria/batismo", permissao: "secretaria.gerenciar" },
+      { rotulo: "Batismo", href: "/painel/batismos", permissao: "batismos.ler", contador: "batismos" },
       { rotulo: "Apresentação de Crianças", href: "/painel/secretaria/apresentacao-criancas", permissao: "secretaria.gerenciar" },
       { rotulo: "Integração", href: "/painel/secretaria/integracao", permissao: "secretaria.gerenciar" },
       { rotulo: "Decisão", href: "/painel/secretaria/decisao", permissao: "secretaria.gerenciar" },

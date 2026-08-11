@@ -124,15 +124,34 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
       <header className="hero" id="inicio">
         {heroImagem && <div className="hero-photo" style={{ backgroundImage: `url(${heroImagem})` }} />}
         <div className="hero-overlay" />
-        <div className="wrap">
-          <a href="#novo" className="chip">✦ <b>Novo por aqui?</b> Planeje sua primeira visita →</a>
-          <h1>{config.heroTitulo ? config.heroTitulo : <>Um lugar para<br /><span>pertencer</span> e crescer</>}</h1>
-          <p>{config.heroSubtitulo ?? config.tagline ?? "Uma igreja viva, acolhedora e comprometida com Jesus. Venha adorar com a gente — presencialmente, no site ou pelo nosso app."}</p>
-          <div className="cta">
-            <Link href="/app" className="btn pri">Acesse o app da igreja</Link>
-            <a href="#mensagem" className="btn gh">▶ Assista ao vivo</a>
+        <div className={`wrap${heroImagem ? "" : " tem-art"}`}>
+          <div className="hero-copy">
+            <a href="#novo" className="chip">✦ <b>Novo por aqui?</b> Planeje sua primeira visita →</a>
+            <h1>{config.heroTitulo ? config.heroTitulo : <>Um lugar para<br /><span>pertencer</span> e crescer</>}</h1>
+            <p>{config.heroSubtitulo ?? config.tagline ?? "Uma igreja viva, acolhedora e comprometida com Jesus. Venha adorar com a gente — presencialmente, no site ou pelo nosso app."}</p>
+            <div className="cta">
+              <Link href="/app" className="btn pri">Acesse o app da igreja</Link>
+              <a href="#mensagem" className="btn gh">▶ Assista ao vivo</a>
+            </div>
+            <div className="hero-verse">&ldquo;Alegrei-me quando me disseram: Vamos à casa do Senhor.&rdquo; — Salmos 122:1</div>
           </div>
-          <div className="hero-verse">&ldquo;Alegrei-me quando me disseram: Vamos à casa do Senhor.&rdquo; — Salmos 122:1</div>
+          {/* Sem foto de fundo, a metade direita ganha uma arte de marca (logo/monograma
+              + halos), para o hero nunca aparecer vazio. Puramente decorativo. */}
+          {!heroImagem && (
+            <div className="hero-art" aria-hidden="true">
+              <div className="hero-art__glow" />
+              <div className="hero-art__rings" />
+              <div className="hero-art__badge">
+                {logo ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={logo} alt="" />
+                ) : (
+                  <span>{nome.charAt(0)}</span>
+                )}
+              </div>
+              <div className="hero-art__cap">{nome}</div>
+            </div>
+          )}
         </div>
       </header>
 

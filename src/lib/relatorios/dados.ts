@@ -176,8 +176,38 @@ export async function carregarRelatorio(
     }
     case "visitantes":
       return relatorioPorTipoSecretaria(db, intervalo, "VISITANTE");
-    case "batismos":
-      return relatorioPorTipoSecretaria(db, intervalo, "BATISMO");
+    case "batismos": {
+      // Fonte única de batismo: a fila de solicitações (formulário público do
+      // site + fluxo SOLICITADO→REALIZADO). É a mesma lista da Secretaria.
+      const sol = await db.solicitacaoBatismo.findMany({
+        where: { criadoEm: inicioFim(intervalo) },
+        orderBy: { criadoEm: "asc" },
+        take: 3000,
+        select: { nome: true, telefone: true, email: true, status: true, dataBatismo: true, criadoEm: true },
+      });
+      const rot: Record<string, string> = {
+        SOLICITADO: "Solicitado", EM_PREPARO: "Em preparo", APROVADO: "Aprovado",
+        AGENDADO: "Agendado", REALIZADO: "Realizado", RECUSADO: "Recusado", CANCELADO: "Cancelado",
+      };
+      const aguardando = sol.filter((s) => ["SOLICITADO", "EM_PREPARO", "APROVADO"].includes(s.status)).length;
+      return {
+        titulo: "Batismos",
+        colunas: ["Nome", "Contato", "Status", "Data do batismo", "Solicitado em"],
+        linhas: sol.map((s) => [
+          s.nome,
+          s.telefone ?? s.email ?? "—",
+          rot[s.status] ?? s.status,
+          fmtData(s.dataBatismo),
+          fmtData(s.criadoEm),
+        ]),
+        resumo: [
+          { rotulo: "Total", valor: String(sol.length) },
+          { rotulo: "Realizados", valor: String(sol.filter((s) => s.status === "REALIZADO").length) },
+          { rotulo: "Agendados", valor: String(sol.filter((s) => s.status === "AGENDADO").length) },
+          { rotulo: "Aguardando", valor: String(aguardando) },
+        ],
+      };
+    }
     case "apresentacoes":
       return relatorioPorTipoSecretaria(db, intervalo, "APRESENTACAO_CRIANCA");
 

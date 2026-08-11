@@ -79,6 +79,18 @@
 .inst-site .hero::after { content: ""; position: absolute; left: -140px; bottom: -160px; width: 420px; height: 420px; border-radius: 50%; background: radial-gradient(circle, rgb(52 71 47 / 0.28), transparent 66%); z-index: 2; }
 /* Conteúdo do hero à ESQUERDA (o .hero centraliza na vertical via flex). */
 .inst-site .hero .wrap { position: relative; z-index: 3; text-align: left; width: 100%; }
+/* Sem foto de fundo, o hero vira 2 colunas: copy à esquerda + arte de marca à
+   direita, para a metade direita nunca ficar vazia. Com foto, volta a 1 coluna
+   e a foto sangra no fundo. */
+.inst-site .hero .wrap.tem-art { display: grid; grid-template-columns: 1.02fr 0.98fr; gap: 48px; align-items: center; }
+@media (max-width: 900px) { .inst-site .hero .wrap.tem-art { grid-template-columns: 1fr; gap: 30px; } .inst-site .hero-art { min-height: 300px; } }
+.inst-site .hero-art { position: relative; align-self: stretch; min-height: 440px; border-radius: 26px; border: 1.5px solid #2b3037; background: linear-gradient(158deg, #191c22, #0d0f13); overflow: hidden; display: grid; place-items: center; }
+.inst-site .hero-art__glow { position: absolute; width: 360px; height: 360px; border-radius: 50%; background: radial-gradient(circle, rgb(143 191 122 / 0.22), transparent 66%); }
+.inst-site .hero-art__rings { position: absolute; width: 310px; height: 310px; border-radius: 50%; border: 1.5px solid rgb(143 191 122 / 0.20); box-shadow: 0 0 0 42px rgb(143 191 122 / 0.06), 0 0 0 84px rgb(143 191 122 / 0.035); }
+.inst-site .hero-art__badge { position: relative; z-index: 2; width: 138px; height: 138px; border-radius: 50%; background: rgb(255 255 255 / 0.03); border: 1.5px solid rgb(143 191 122 / 0.38); display: grid; place-items: center; }
+.inst-site .hero-art__badge img { width: 84px; height: 84px; object-fit: contain; }
+.inst-site .hero-art__badge span { font-family: "Archivo"; font-weight: 900; font-size: 66px; line-height: 1; color: var(--mint); }
+.inst-site .hero-art__cap { position: absolute; bottom: 26px; z-index: 2; font-family: "Archivo"; font-weight: 800; text-transform: uppercase; letter-spacing: 0.14em; font-size: 11.5px; color: #c7c9d0; text-align: center; padding: 0 20px; }
 .inst-site .chip { display: inline-flex; align-items: center; gap: 8px; background: #22252b; border: 1px solid #31353d; color: #c7c9d0; font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 999px; text-decoration: none; margin-bottom: 22px; }
 .inst-site .chip b { color: var(--mint); }
 /* Título GRANDE, responsivo: cresce até 88px em telas largas. */
@@ -252,3 +264,62 @@
 .inst-site footer a { display: block; color: #9a9ea8; text-decoration: none; font-size: 13.5px; margin-bottom: 9px; }
 .inst-site footer a:hover { color: #fff; }
 .inst-site footer .copy { padding-top: 22px; font-size: 12.5px; color: #71757e; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+
+/* =============================================================================
+   TAPA — acabamento de alto nível (só visual, nenhuma palavra muda).
+   Superfícies do navegador tematizadas, profundidade viva no hover, um momento
+   de entrada no hero e numerais tabulares. Tudo escopado em .inst-site.
+   ========================================================================== */
+
+/* Superfícies do navegador: seleção, cursor, scrollbar e foco vêm da paleta —
+   o sinal mais barato de que a página foi CONSTRUÍDA, não montada. */
+.inst-site ::selection { background: var(--mint); color: var(--ink); }
+.inst-site { caret-color: var(--green); }
+html:has(.inst-site) { scrollbar-color: var(--green) var(--bg); scrollbar-width: thin; }
+html:has(.inst-site)::-webkit-scrollbar { width: 12px; height: 12px; }
+html:has(.inst-site)::-webkit-scrollbar-track { background: var(--bg); }
+html:has(.inst-site)::-webkit-scrollbar-thumb { background: var(--green); border: 3px solid var(--bg); border-radius: 999px; }
+html:has(.inst-site)::-webkit-scrollbar-thumb:hover { background: var(--ink); }
+.inst-site a:focus-visible, .inst-site button:focus-visible, .inst-site input:focus-visible,
+.inst-site textarea:focus-visible, .inst-site .btn:focus-visible {
+  outline: 2.5px solid var(--mint); outline-offset: 3px; border-radius: 8px;
+}
+/* Números que representam dado (horário, PIX, data da agenda) alinham em coluna. */
+.inst-site .hcard .h, .inst-site .pixbox .key, .inst-site .arow .date { font-variant-numeric: tabular-nums; }
+
+/* Profundidade viva: sem sombra difusa (fora do mundo da marca) — a vida vem de
+   elevação sutil + a borda acendendo no verde. */
+.inst-site .btn { transition: transform .18s cubic-bezier(.2,.85,.25,1), filter .15s, background .15s; }
+.inst-site .btn:hover { transform: translateY(-2px); }
+.inst-site .btn:active { transform: translateY(0); }
+.inst-site .ex, .inst-site .mcard, .inst-site .step, .inst-site .quote {
+  transition: transform .22s cubic-bezier(.2,.85,.25,1), border-color .2s, box-shadow .22s;
+}
+.inst-site .ex:hover, .inst-site .mcard:hover, .inst-site .step:hover {
+  transform: translateY(-4px); border-color: var(--green);
+  box-shadow: 0 14px 30px -18px rgb(20 22 26 / 0.45);
+}
+.inst-site .mcard:hover .ic { background: var(--green); color: #fff; }
+.inst-site .mcard .ic { transition: background .2s, color .2s; }
+.inst-site .arow { transition: background .18s, padding .18s; border-radius: 12px; }
+.inst-site .arow:hover { background: var(--surface); padding-left: 16px; padding-right: 16px; }
+.inst-site .quote:hover { border-color: var(--green); }
+.inst-site .pixbox .btn.pri { transition: transform .18s cubic-bezier(.2,.85,.25,1), filter .15s; }
+.inst-site .live-btn:hover { filter: brightness(1.08); }
+.inst-site .menu a { transition: color .15s; }
+
+/* Um momento autoral: o hero entra em cascata na primeira dobra (ease-out
+   exponencial, a partir de um estado quase visível). Respeita quem pediu menos
+   movimento. */
+@media (prefers-reduced-motion: no-preference) {
+  .inst-site .hero .chip { animation: inst-surge .6s .04s both; }
+  .inst-site .hero h1 { animation: inst-surge .72s .14s both; }
+  .inst-site .hero > .wrap > .hero-copy > p, .inst-site .hero .wrap > p { animation: inst-surge .72s .26s both; }
+  .inst-site .hero .cta { animation: inst-surge .72s .38s both; }
+  .inst-site .hero-verse { animation: inst-surge .8s .52s both; }
+  .inst-site .hero-art { animation: inst-fade 1s .3s both; }
+  .inst-site .hero-art__rings { animation: inst-spin 46s linear infinite; }
+}
+@keyframes inst-surge { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes inst-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes inst-spin { to { transform: rotate(360deg); } }
