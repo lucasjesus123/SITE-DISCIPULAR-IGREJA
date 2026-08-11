@@ -36,6 +36,7 @@ export default async function Home() {
       dados={dados}
       live={{ aoVivo: live.aoVivo, videoId: live.videoId, titulo: live.titulo }}
       ultimaMsgVideoId={mensagens[0]?.youtubeVideoId ?? null}
+      ultimaMsgTitulo={mensagens[0]?.titulo ?? null}
       logoUrl={logoUrl}
     />
   );

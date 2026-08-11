@@ -28,7 +28,7 @@ export default async function PaginaConfigSite() {
       nomeExibicao: true, tagline: true, descricaoSeo: true,
       corAcento: true, corAcentoClara: true, corTinta: true, corPapel: true,
       fonteTitulo: true, fonteTexto: true,
-      heroEyebrow: true, heroTitulo: true, heroSubtitulo: true, heroImagemId: true, fundoImagemId: true, fotoPastorId: true, fotoPastoraId: true,
+      heroEyebrow: true, heroTitulo: true, heroSubtitulo: true, heroImagemId: true, fundoImagemId: true, fotoPastorId: true, fotoPastoraId: true, fotoComunidadeId: true,
       heroCtaTexto: true, heroCtaLink: true,
       emailContato: true, telefoneContato: true, whatsapp: true,
       instagram: true, facebook: true, youtube: true, spotify: true,
@@ -63,6 +63,7 @@ export default async function PaginaConfigSite() {
   const fundoImagemInicial = await carregarImagem(config?.fundoImagemId);
   const fotoPastorInicial = await carregarImagem(config?.fotoPastorId);
   const fotoPastoraInicial = await carregarImagem(config?.fotoPastoraId);
+  const fotoComunidadeInicial = await carregarImagem(config?.fotoComunidadeId);
 
   return (
     <>
@@ -98,6 +99,7 @@ export default async function PaginaConfigSite() {
           fundoImagemId: config?.fundoImagemId ?? "",
           fotoPastorId: config?.fotoPastorId ?? "",
           fotoPastoraId: config?.fotoPastoraId ?? "",
+          fotoComunidadeId: config?.fotoComunidadeId ?? "",
           emailContato: config?.emailContato ?? "",
           telefoneContato: config?.telefoneContato ?? "",
           whatsapp: config?.whatsapp ?? "",
@@ -117,6 +119,7 @@ export default async function PaginaConfigSite() {
         fundoImagemInicial={fundoImagemInicial}
         fotoPastorInicial={fotoPastorInicial}
         fotoPastoraInicial={fotoPastoraInicial}
+        fotoComunidadeInicial={fotoComunidadeInicial}
       />
 
       <section className="secao-painel" style={{ marginTop: "1.6rem" }}>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CreditoConexao } from "@/components/CreditoConexao";
 
 /**
  * Nav + rodapé Institucional para as páginas INTERNAS do site (mensagens,
@@ -82,7 +83,7 @@ export function ChromeInstitucional({ nome, logo, aoVivo, socials, children }: P
               </div>
             </div>
           </div>
-          <div className="ins-ft__copy">© {nome}. Todos os direitos reservados.</div>
+          <div className="ins-ft__copy">© {nome}. Todos os direitos reservados. · <CreditoConexao /></div>
         </div>
       </footer>
     </>

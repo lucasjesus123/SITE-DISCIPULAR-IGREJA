@@ -45,6 +45,7 @@ export interface ConfigSite {
   fundoImagemId: string | null;
   fotoPastorId: string | null;
   fotoPastoraId: string | null;
+  fotoComunidadeId: string | null;
   logoClaroId: string | null;
   logoEscuroId: string | null;
   faviconId: string | null;
@@ -125,6 +126,7 @@ const CONFIG_PADRAO: ConfigSite = {
   fundoImagemId: null,
   fotoPastorId: null,
   fotoPastoraId: null,
+  fotoComunidadeId: null,
   logoClaroId: null,
   logoEscuroId: null,
   faviconId: null,

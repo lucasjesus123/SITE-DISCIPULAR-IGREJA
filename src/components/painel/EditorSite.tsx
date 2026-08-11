@@ -24,6 +24,7 @@ export interface DadosSiteForm {
   fundoImagemId: string;
   fotoPastorId: string;
   fotoPastoraId: string;
+  fotoComunidadeId: string;
   emailContato: string;
   telefoneContato: string;
   whatsapp: string;
@@ -54,6 +55,7 @@ export function EditorSite({
   fundoImagemInicial,
   fotoPastorInicial,
   fotoPastoraInicial,
+  fotoComunidadeInicial,
 }: {
   inicial: DadosSiteForm;
   fontes: string[];
@@ -61,6 +63,7 @@ export function EditorSite({
   fundoImagemInicial?: ArquivoEnviado | null;
   fotoPastorInicial?: ArquivoEnviado | null;
   fotoPastoraInicial?: ArquivoEnviado | null;
+  fotoComunidadeInicial?: ArquivoEnviado | null;
 }) {
   const router = useRouter();
   const [pendente, iniciar] = useTransition();
@@ -164,6 +167,15 @@ export function EditorSite({
             ajuda="Foto exibida bem apagada atrás de todo o site, como textura. Fotos de louvor/congregação ficam ótimas. Deixe vazio para não usar."
             aoEnviar={(a) => setDados((d) => ({ ...d, fundoImagemId: a.id }))}
             aoRemover={() => setDados((d) => ({ ...d, fundoImagemId: "" }))}
+          />
+          <CampoUpload
+            nome="fotoComunidadeId"
+            rotulo="Foto da comunidade (card “Você foi feito para fazer parte”)"
+            publico
+            valorInicial={fotoComunidadeInicial ?? null}
+            ajuda="Foto da igreja reunida (louvor, congregação). Aparece no card ao lado do “Novo por aqui” na home. Deixe vazio para usar o fundo padrão."
+            aoEnviar={(a) => setDados((d) => ({ ...d, fotoComunidadeId: a.id }))}
+            aoRemover={() => setDados((d) => ({ ...d, fotoComunidadeId: "" }))}
           />
         </Secao>
 

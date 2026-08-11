@@ -5,6 +5,8 @@ import { urlMiniatura } from "@/lib/youtube/live";
 import { formatarCnpj } from "@/lib/painel/formato";
 import { horariosSemanais, proximosEventos, type ItemAgendaHome } from "@/lib/site/agenda-home";
 import { FormWhatsAppInst } from "./FormWhatsAppInst";
+import { PlayerMensagem } from "./PlayerMensagem";
+import { CreditoConexao } from "@/components/CreditoConexao";
 
 /**
  * Home Institucional (Direção 3 — grafite + verde). Porte fiel do design
@@ -20,14 +22,22 @@ interface Props {
   dados: DadosSite;
   live: { aoVivo: boolean; videoId: string | null; titulo: string | null };
   ultimaMsgVideoId: string | null;
+  ultimaMsgTitulo: string | null;
   /** Logo já resolvido (config da igreja ou fallback do tenant-âncora). */
   logoUrl: string | null;
 }
 
-export function HomeInstitucional({ dados, live, ultimaMsgVideoId, logoUrl }: Props) {
+export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitulo, logoUrl }: Props) {
   const { config, campi } = dados;
   const nome = config.nomeExibicao || "Igreja";
   const logo = logoUrl;
+  // Foto da comunidade (card "Você foi feito para fazer parte") e canal do YouTube.
+  const fotoComunidade = config.fotoComunidadeId ? urlArquivoPublico(config.fotoComunidadeId) : null;
+  const canalYoutube = config.youtube?.trim() || null;
+  // Vídeo/título da "última mensagem": ao vivo tem prioridade; senão, a última
+  // mensagem publicada no painel.
+  const msgVideoId = live.aoVivo && live.videoId ? live.videoId : ultimaMsgVideoId;
+  const msgTitulo = live.aoVivo && live.titulo ? live.titulo : ultimaMsgTitulo?.trim() || "A fé que move montanhas";
   const heroImagem = config.heroImagemId ? urlArquivoPublico(config.heroImagemId) : null;
   const pixDisplay = formatarCnpj(config.pixChave) ?? config.pixChave;
   const thumb = live.aoVivo && live.videoId ? urlMiniatura(live.videoId) : ultimaMsgVideoId ? urlMiniatura(ultimaMsgVideoId) : null;
@@ -43,6 +53,13 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, logoUrl }: Pr
   const telefone = config.telefoneContato ?? campusPrincipal?.telefone ?? "(00) 90000-0000";
   const email = config.emailContato ?? "";
   const mapaBusca = encodeURIComponent(`${nome} ${endereco}`);
+  // Fonte do mapa embutido: se a igreja colou um embed do Google no painel e ele
+  // é mesmo do Google Maps, usamos; senão montamos pelo endereço (sem API key).
+  // A validação de host impede injetar um iframe de terceiro pelo campo.
+  const mapaEmbedSrc =
+    campusPrincipal?.mapaEmbedUrl && /^https:\/\/(www\.)?google\.com\/maps\/embed/.test(campusPrincipal.mapaEmbedUrl)
+      ? campusPrincipal.mapaEmbedUrl
+      : `https://maps.google.com/maps?q=${mapaBusca}&z=15&output=embed`;
 
   // Horários e eventos vêm da Agenda de cada igreja (whitelabel). Sem dados,
   // caem num fallback para a home nunca ficar vazia.
@@ -92,7 +109,14 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, logoUrl }: Pr
         <div className="nav-cta">
           {/* "Acesse o App" sai do topo: já existe o item "App" no menu e a seção
               dedicada. Mantemos só o AO VIVO, que é ação de urgência. */}
-          <a href="#mensagem" className="live-btn"><span className="dot" />AO VIVO</a>
+          <a
+            href={canalYoutube ?? "#mensagem"}
+            target={canalYoutube ? "_blank" : undefined}
+            rel={canalYoutube ? "noopener noreferrer" : undefined}
+            className="live-btn"
+          >
+            <span className="dot" />AO VIVO
+          </a>
         </div>
       </div></nav>
 
@@ -123,32 +147,39 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, logoUrl }: Pr
       <section className="sec novo" id="novo"><div className="wrap"><div className="grid">
         <div>
           <div className="eyebrow">Novo por aqui</div>
-          <h2>Sua primeira vez? Relaxa.</h2>
+          <h2>Seja muito bem-vindo.</h2>
           <p className="lead" style={{ marginBottom: 22 }}>A gente preparou tudo pra você se sentir em casa desde o primeiro momento. Veja o que esperar:</p>
           <div className="expect">
             <div className="ex"><div className="i"><IcoCoracao /></div><b>Acolhimento</b><p>Nossa equipe te recebe e acompanha na chegada.</p></div>
-            <div className="ex"><div className="i"><IcoRelogio /></div><b>Duração</b><p>Os cultos duram cerca de 1h30.</p></div>
-            <div className="ex"><div className="i"><IcoCamiseta /></div><b>Vestimenta</b><p>Venha como estiver — o coração é o que importa.</p></div>
+            <div className="ex"><div className="i"><IcoRelogio /></div><b>Duração</b><p>Os cultos duram cerca de 2 horas.</p></div>
+            <div className="ex"><div className="i"><IcoMao /></div><b>Intimidade com Deus</b><p>Um tempo de adoração e presença para se encontrar com Ele.</p></div>
             <div className="ex"><div className="i"><IcoRosto /></div><b>Kids</b><p>Espaço seguro e divertido para as crianças.</p></div>
           </div>
           <div className="cta"><a href="#contato" className="btn grn">Planejar minha visita</a></div>
         </div>
-        <div className="novo-visual"><div className="eyebrow on-dark">Bem-vindo</div><div className="q">Você foi<br />feito para<br />fazer parte.</div></div>
+        <div
+          className="novo-visual"
+          style={
+            fotoComunidade
+              ? {
+                  backgroundImage: `linear-gradient(180deg, rgba(20,22,26,0.15), rgba(20,22,26,0.88)), url(${fotoComunidade})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }
+              : undefined
+          }
+        >
+          <div className="eyebrow on-dark">Bem-vindo</div>
+          <div className="q">Você foi<br />feito para<br />fazer parte.</div>
+        </div>
       </div></div></section>
 
       {/* MENSAGEM / AO VIVO */}
       <section className="sec msg" id="mensagem"><div className="wrap"><div className="grid">
-        <a className="player" href={linkMensagens} target={linkMensagens.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer">
-          {thumb && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={thumb} alt="Última mensagem" />
-          )}
-          {live.aoVivo && <span className="tag"><span style={{ width: 6, height: 6, borderRadius: "50%", background: "#fff", display: "inline-block" }} /> AO VIVO</span>}
-          <span className="play">▶</span>
-        </a>
+        <PlayerMensagem videoId={msgVideoId} thumb={thumb} aoVivo={live.aoVivo} hrefFallback={linkMensagens} />
         <div>
           <div className="eyebrow on-dark">Última mensagem</div>
-          <h2>{live.aoVivo && live.titulo ? live.titulo : "A fé que move montanhas"}</h2>
+          <h2>{msgTitulo}</h2>
           <p className="lead">Assista à palavra de domingo e acompanhe todas as transmissões ao vivo pelo nosso canal. A última mensagem fica sempre aqui na frente.</p>
           <div className="cta"><Link href="/mensagens" className="btn pri">Ver todas as mensagens</Link></div>
         </div>
@@ -168,11 +199,9 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, logoUrl }: Pr
             <li><span className="ck">✓</span> Agenda e inscrições</li>
             <li><span className="ck">✓</span> Avisos e devocional diário</li>
           </ul>
-          <div className="stores">
-            <Link href="/app" className="store"><span className="ic" aria-hidden="true"><IcoApple /></span><span><small>Baixar na</small><b>App Store</b></span></Link>
-            <Link href="/app" className="store"><span className="ic" aria-hidden="true"><IcoPlay /></span><span><small>Disponível no</small><b>Google Play</b></span></Link>
-            <Link href="/app" className="store ghost"><span className="ic" aria-hidden="true"><IcoGlobo /></span><span><small>Ou entre pelo</small><b>Navegador</b></span></Link>
-          </div>
+          <p style={{ marginTop: 6, fontFamily: '"Archivo", sans-serif', fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", fontSize: 14, color: "var(--mint)" }}>
+            Em breve, mais informações.
+          </p>
         </div>
         <div className="appphone"><div className="sc">
           <div className="apn" />
@@ -205,6 +234,9 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, logoUrl }: Pr
             </div>
           ))}
         </div>
+        <div className="cta" style={{ marginTop: 30, justifyContent: "center", display: "flex" }}>
+          <Link href="/contato" className="btn grn">Conhecer mais</Link>
+        </div>
       </div></section>
 
       {/* PRÓXIMOS PASSOS */}
@@ -216,7 +248,7 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, logoUrl }: Pr
           <div className="step"><div className="n">01</div><div className="ic"><IcoCruz /></div><b>Aceitei Jesus</b><small>Deu o primeiro passo? Conte pra gente.</small></div>
           <div className="step"><div className="n">02</div><div className="ic"><IcoGota /></div><b>Batismo</b><small>Inscreva-se no próximo batismo.</small></div>
           <div className="step"><div className="n">03</div><div className="ic"><IcoGrupo /></div><b>Célula</b><small>Encontre um grupo perto de você.</small></div>
-          <div className="step"><div className="n">04</div><div className="ic"><IcoLivro /></div><b>Discipulado</b><small>Cursos e trilhos de crescimento.</small></div>
+          <div className="step"><div className="n">04</div><div className="ic"><IcoLivro /></div><b>Trilha do Discípulo</b><small>Cursos e trilhas de crescimento.</small></div>
           <div className="step"><div className="n">05</div><div className="ic"><IcoMao /></div><b>Servir</b><small>Faça parte de um ministério.</small></div>
         </div>
       </div></section>
@@ -295,7 +327,21 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, logoUrl }: Pr
           <h2>Venha nos<br />visitar</h2>
           <p className="lead" style={{ marginBottom: 20 }}>Estamos de portas abertas. Envie sua mensagem — ela chega direto no nosso WhatsApp.</p>
           <p style={{ fontWeight: 600, lineHeight: 1.9 }}>📍 {endereco}<br />📞 {telefone}{email && <><br />✉ {email}</>}</p>
-          <a className="map" href={`https://www.google.com/maps/search/?api=1&query=${mapaBusca}`} target="_blank" rel="noopener noreferrer">🗺️ Ver no mapa</a>
+          {campusPrincipal && (
+            <>
+              <div style={{ marginTop: 18, borderRadius: 16, overflow: "hidden", border: "1.5px solid var(--line)" }}>
+                <iframe
+                  title="Localização no Google Maps"
+                  src={mapaEmbedSrc}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  allowFullScreen
+                  style={{ width: "100%", height: 280, border: 0, display: "block" }}
+                />
+              </div>
+              <a className="map" href={`https://www.google.com/maps/search/?api=1&query=${mapaBusca}`} target="_blank" rel="noopener noreferrer" style={{ marginTop: 10, display: "inline-block" }}>Abrir no Google Maps →</a>
+            </>
+          )}
         </div>
         <FormWhatsAppInst numero={config.whatsapp} />
       </div></div></section>
@@ -326,7 +372,7 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, logoUrl }: Pr
             </div>
           </div>
         </div>
-        <div className="copy"><span>© 2026 {nome}. Todos os direitos reservados.</span><span>Feito com fé 🖤</span></div>
+        <div className="copy"><span>© 2026 {nome}. Todos os direitos reservados. · <CreditoConexao /></span><span>Feito com fé 🖤</span></div>
       </div></footer>
     </div>
   );
@@ -335,13 +381,9 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, logoUrl }: Pr
 /* ---- Ícones de traço grafite (herdam --ink via stroke no CSS .ex .i svg) ---- */
 function IcoCoracao() { return <svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.2-9.2A5 5 0 0 1 12 6a5 5 0 0 1 9.2 5.8C19 16.5 12 21 12 21z" /></svg>; }
 function IcoRelogio() { return <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 2" /></svg>; }
-function IcoCamiseta() { return <svg viewBox="0 0 24 24"><path d="M8.5 3.5 4 6l2 3 2.2-1.2V20.5h7.6V7.8L18 9l2-3-4.5-2.5a3.5 3.5 0 0 1-7 0z" /></svg>; }
 function IcoRosto() { return <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M9 10h.01M15 10h.01" /><path d="M8.5 14a4.5 4.5 0 0 0 7 0" /></svg>; }
 function IcoCruz() { return <svg viewBox="0 0 24 24"><path d="M12 3v18M7.5 8h9" /></svg>; }
 function IcoGota() { return <svg viewBox="0 0 24 24"><path d="M12 3s6.5 6.5 6.5 10.5a6.5 6.5 0 0 1-13 0C5.5 9.5 12 3 12 3z" /></svg>; }
 function IcoGrupo() { return <svg viewBox="0 0 24 24"><circle cx="6" cy="8" r="2.5" /><circle cx="18" cy="8" r="2.5" /><circle cx="12" cy="16" r="2.5" /><path d="M8 9.6l2.6 4.4M16 9.6l-2.6 4.4" /></svg>; }
 function IcoLivro() { return <svg viewBox="0 0 24 24"><path d="M12 5v15M12 5a3 3 0 0 0-3-2H4v14h5a3 3 0 0 1 3 2M12 5a3 3 0 0 1 3-2h5v14h-5a3 3 0 0 0-3 2" /></svg>; }
 function IcoMao() { return <svg viewBox="0 0 24 24"><path d="M7 11V6a1.6 1.6 0 0 1 3.2 0v4M10.2 10V4.6a1.6 1.6 0 0 1 3.2 0V10M13.4 10V6a1.6 1.6 0 0 1 3.2 0v5.5M16.6 9.2a1.6 1.6 0 0 1 3.2 0v3.3a7 7 0 0 1-7 7 6.2 6.2 0 0 1-5.1-2.6L4.5 15" /></svg>; }
-function IcoApple() { return <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M16 1c.1 1-.3 2-.9 2.7-.6.7-1.6 1.3-2.5 1.2-.1-1 .4-2 .9-2.6C14.1 1.5 15.2 1 16 1zm2.7 7.3c-1.5.9-1.9 2.9-.5 4.4.4.9 1 1.5 1.8 1.9-.3.9-.7 1.7-1.3 2.5-.8 1.1-1.6 2.2-2.9 2.2s-1.6-.7-3-.7-1.8.7-3 .7-2.1-1.1-2.9-2.2C1.4 16.3.9 13 2.6 10.6c.8-1.2 2.2-1.9 3.6-1.9 1.2 0 2 .8 3 .8s1.6-.8 3-.8c.5 0 2 .1 3 1.4-.1.1-.4.3-.5.5z" /></svg>; }
-function IcoPlay() { return <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M4 3.5 20 12 4 20.5z" /></svg>; }
-function IcoGlobo() { return <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.6"><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c2.5 2.5 2.5 15.5 0 18M12 3c-2.5 2.5-2.5 15.5 0 18" /></svg>; }

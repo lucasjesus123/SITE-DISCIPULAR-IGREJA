@@ -941,6 +941,8 @@ model SiteConfig {
   /// placeholders na home e na página Pastores.
   fotoPastorId  String?
   fotoPastoraId String?
+  /// Foto da comunidade — card "Você foi feito para fazer parte" na home.
+  fotoComunidadeId String?
   heroVideoUrl  String? @db.VarChar(500)
   heroCtaTexto  String? @db.VarChar(60)
   heroCtaLink   String? @db.VarChar(200)

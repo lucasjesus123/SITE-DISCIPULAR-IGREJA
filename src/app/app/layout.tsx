@@ -12,6 +12,7 @@ import { tenantDb } from "@/lib/db/tenant-client";
 import { carregarTogglesApp, carregarContextoMembro } from "@/lib/services/app-membro";
 import { navDoApp } from "@/lib/app-membro/recursos";
 import { carregarModulos } from "@/lib/services/modulos";
+import { CreditoConexao } from "@/components/CreditoConexao";
 import "../globals.css";
 
 /**
@@ -105,7 +106,12 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
           paddingBottom: "env(safe-area-inset-bottom)",
         }}
       >
-        <main style={{ flex: 1, paddingBottom: "5.5rem" }}>{children}</main>
+        <main style={{ flex: 1, paddingBottom: "5.5rem" }}>
+          {children}
+          <p style={{ textAlign: "center", fontSize: 11, opacity: 0.5, marginTop: "2rem" }}>
+            <CreditoConexao />
+          </p>
+        </main>
 
         <BarraApp
           itens={itensNav}

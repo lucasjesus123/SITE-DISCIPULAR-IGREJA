@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import type { Papel } from "@prisma/client";
 import { papelTem, type Permissao } from "@/lib/auth/permissoes";
 import { moduloAtivo, type ConfigModulos, type ModuloChave } from "@/lib/modulos/modulos";
+import { CreditoConexao } from "@/components/CreditoConexao";
 
 /**
  * Menu lateral do painel.
@@ -190,6 +191,10 @@ export function LateralPainel({
             <span className="painel__link-in"><Ico nome="sair" /><span>Sair</span></span>
           </button>
         </div>
+
+        <p style={{ fontSize: "10.5px", opacity: 0.55, marginTop: "0.9rem" }}>
+          <CreditoConexao />
+        </p>
       </div>
     </aside>
   );
