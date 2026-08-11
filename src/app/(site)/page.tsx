@@ -31,6 +31,11 @@ export default async function Home() {
       ? "/marca/logo-white.png"
       : null;
 
+  // Vídeo do topo: o que a igreja definiu no painel; na falta, um padrão só para
+  // o tenant-âncora (Discipular). Outras igrejas caem no ao vivo / última mensagem.
+  const heroVideoId =
+    dados.config.heroVideoId ?? (tenant.slug === "discipular" ? "nJrTs2KWe74" : null);
+
   return (
     <HomeInstitucional
       dados={dados}
@@ -38,6 +43,7 @@ export default async function Home() {
       ultimaMsgVideoId={mensagens[0]?.youtubeVideoId ?? null}
       ultimaMsgTitulo={mensagens[0]?.titulo ?? null}
       logoUrl={logoUrl}
+      heroVideoId={heroVideoId}
     />
   );
 }

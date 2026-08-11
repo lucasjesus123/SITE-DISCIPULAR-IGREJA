@@ -20,6 +20,7 @@ export interface DadosSiteForm {
   heroSubtitulo: string;
   heroCtaTexto: string;
   heroCtaLink: string;
+  heroVideoId: string;
   heroImagemId: string;
   fundoImagemId: string;
   fotoPastorId: string;
@@ -150,6 +151,7 @@ export function EditorSite({
             <Texto rotulo="Texto do botão" {...campo("heroCtaTexto")} maxLength={60} />
             <Texto rotulo="Link do botão" {...campo("heroCtaLink")} maxLength={200} ajuda="Ex.: /quem-somos" />
           </div>
+          <Texto rotulo="Vídeo do topo (YouTube)" {...campo("heroVideoId")} maxLength={200} ajuda="Cole o link do YouTube. O vídeo toca dentro do site, sem sair para o YouTube. Em branco = usa a transmissão ao vivo / última mensagem." />
           <CampoUpload
             nome="heroImagemId"
             rotulo="Imagem de fundo da capa"

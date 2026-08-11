@@ -42,6 +42,7 @@ export interface ConfigSite {
   heroEyebrow: string | null;
   heroCtaTexto: string | null;
   heroCtaLink: string | null;
+  heroVideoId: string | null;
   heroImagemId: string | null;
   fundoImagemId: string | null;
   fotoPastorId: string | null;
@@ -125,6 +126,7 @@ const CONFIG_PADRAO: ConfigSite = {
   heroEyebrow: null,
   heroCtaTexto: null,
   heroCtaLink: null,
+  heroVideoId: null,
   heroImagemId: null,
   fundoImagemId: null,
   fotoPastorId: null,

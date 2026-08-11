@@ -62,6 +62,11 @@ const schemaMarca = z.object({
   heroSubtitulo: textoLongo(400).optional(),
   heroCtaTexto: textoLimpo(60).optional(),
   heroCtaLink: textoLimpo(200).optional(),
+  // Vídeo do topo: aceita link ou ID do YouTube; vazio = sem vídeo.
+  heroVideoId: z.preprocess(
+    (v) => (typeof v === "string" && v.trim() === "" ? undefined : v),
+    youtubeVideoId.optional(),
+  ),
   // Ids de Arquivo (cuid) de imagens. Vazio = sem imagem. A posse pelo tenant e
   // o tipo (imagem) são checados abaixo, antes de gravar.
   heroImagemId: z.string().max(30).optional(),
@@ -170,6 +175,7 @@ export async function salvarConfigSite(dadosBrutos: unknown): Promise<ResultadoA
         heroSubtitulo: dados.heroSubtitulo,
         heroCtaTexto: dados.heroCtaTexto,
         heroCtaLink: dados.heroCtaLink,
+        heroVideoId: dados.heroVideoId,
         heroImagemId,
         fundoImagemId,
         fotoPastorId,
@@ -205,6 +211,7 @@ export async function salvarConfigSite(dadosBrutos: unknown): Promise<ResultadoA
         heroSubtitulo: dados.heroSubtitulo ?? null,
         heroCtaTexto: dados.heroCtaTexto ?? null,
         heroCtaLink: dados.heroCtaLink ?? null,
+        heroVideoId: dados.heroVideoId ?? null,
         heroImagemId,
         fundoImagemId,
         fotoPastorId,

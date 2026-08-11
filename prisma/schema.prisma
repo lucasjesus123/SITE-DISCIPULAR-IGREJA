@@ -948,6 +948,8 @@ model SiteConfig {
   heroVideoUrl     String? @db.VarChar(500)
   heroCtaTexto     String? @db.VarChar(60)
   heroCtaLink      String? @db.VarChar(200)
+  /// Vídeo do topo (hero) — ID de 11 chars do YouTube. Toca embutido no site.
+  heroVideoId      String? @db.VarChar(20)
 
   // --- Conteúdo editável da home (JSON validado no app). Ministérios e
   // depoimentos que aparecem na home Institucional; cada igreja edita o seu.

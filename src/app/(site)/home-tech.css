@@ -29,7 +29,7 @@
 /* FUNDO ANIMADO (fixo atrás de tudo; seções claras o cobrem) */
 .tk-bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background: radial-gradient(120% 100% at 70% -10%, #10251A, var(--tk-bg) 60%); }
 .tk-bg__grid { position: absolute; inset: 0; background-image: linear-gradient(var(--tk-linha) 1px, transparent 1px), linear-gradient(90deg, var(--tk-linha) 1px, transparent 1px); background-size: 64px 64px; mask: radial-gradient(120% 80% at 50% 30%, #000, transparent 78%); opacity: .5; }
-.tk-orb { position: absolute; border-radius: 50%; filter: blur(72px); }
+.tk-orb { position: absolute; border-radius: 50%; filter: blur(54px); will-change: transform; }
 .tk-orb.a { width: 48vw; height: 48vw; left: -12vw; top: -14vw; background: radial-gradient(circle, color-mix(in srgb, var(--tk-verde) 42%, transparent), transparent 60%); animation: tk-drift1 20s ease-in-out infinite; }
 .tk-orb.b { width: 42vw; height: 42vw; right: -14vw; top: 34vh; background: radial-gradient(circle, color-mix(in srgb, var(--tk-verde2) 38%, transparent), transparent 60%); animation: tk-drift2 26s ease-in-out infinite; }
 .tk-orb.c { width: 36vw; height: 36vw; left: 24vw; bottom: -16vw; background: radial-gradient(circle, rgba(182,242,74,.22), transparent 60%); animation: tk-drift3 30s ease-in-out infinite; }
@@ -42,7 +42,7 @@
 .tk-btn { display: inline-flex; align-items: center; gap: 9px; font-family: var(--disp); font-weight: 600; font-size: 15px; padding: 15px 26px; border-radius: 14px; cursor: pointer; border: 1px solid transparent; transition: all .25s cubic-bezier(.2,.8,.2,1); }
 .tk-btn--verde { background: linear-gradient(135deg, var(--tk-verde), var(--tk-verde2)); color: #04120A; box-shadow: 0 8px 30px -6px var(--tk-glow); }
 .tk-btn--verde:hover { transform: translateY(-3px); box-shadow: 0 16px 46px -6px var(--tk-glow); }
-.tk-btn--glass { background: var(--tk-glass); color: var(--tk-text); border-color: var(--tk-linha); backdrop-filter: blur(10px); }
+.tk-btn--glass { background: var(--tk-glass); color: var(--tk-text); border-color: var(--tk-linha); }
 .tk-btn--glass:hover { border-color: var(--tk-verde); color: var(--tk-verde); }
 .tk-sec--light .tk-btn--glass { color: var(--tk-tinta); border-color: rgba(0,0,0,.14); }
 .tk-sec--light .tk-btn--glass:hover { border-color: var(--tk-verde2); color: var(--tk-verde2); }
@@ -73,7 +73,7 @@
 .tk-acts { display: flex; gap: 14px; flex-wrap: wrap; }
 .tk-verse { margin-top: 34px; font-size: 15px; color: color-mix(in srgb, var(--tk-muted) 90%, #fff); padding-left: 16px; border-left: 2px solid var(--tk-verde); max-width: 460px; font-style: italic; }
 .tk-chips { display: flex; gap: 12px; margin-top: 32px; flex-wrap: wrap; }
-.tk-chip { display: flex; flex-direction: column; background: var(--tk-glass); border: 1px solid var(--tk-linha); border-radius: 16px; padding: 13px 20px; backdrop-filter: blur(10px); }
+.tk-chip { display: flex; flex-direction: column; background: var(--tk-glass); border: 1px solid var(--tk-linha); border-radius: 16px; padding: 13px 20px; }
 .tk-chip b { font-family: var(--disp); font-size: 23px; color: var(--tk-verde); }
 .tk-chip span { font-size: 12px; color: var(--tk-muted); }
 /* video card */
@@ -93,7 +93,7 @@
 
 /* HORÁRIOS (bem definidos) */
 .tk-hgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-top: 44px; }
-.tk-hcard { position: relative; background: var(--tk-glass); border: 1px solid var(--tk-linha); border-radius: 18px; padding: 28px 26px; backdrop-filter: blur(10px); transition: all .3s cubic-bezier(.2,.8,.2,1); overflow: hidden; }
+.tk-hcard { position: relative; background: var(--tk-glass); border: 1px solid var(--tk-linha); border-radius: 18px; padding: 28px 26px; transition: all .3s cubic-bezier(.2,.8,.2,1); overflow: hidden; }
 .tk-hcard::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(var(--tk-verde), var(--tk-verde2)); }
 .tk-hcard:hover { transform: translateY(-5px); border-color: color-mix(in srgb, var(--tk-verde) 45%, transparent); }
 .tk-hcard .dia { font-family: var(--disp); font-weight: 700; font-size: 14px; letter-spacing: .08em; text-transform: uppercase; color: var(--tk-muted); }
@@ -102,7 +102,7 @@
 
 /* MARQUEE */
 .tk-mq { position: relative; z-index: 1; border-top: 1px solid var(--tk-linha); border-bottom: 1px solid var(--tk-linha); background: var(--tk-bg2); overflow: hidden; padding: 16px 0; }
-.tk-mq__row { display: flex; gap: 34px; white-space: nowrap; font-family: var(--disp); font-weight: 600; font-size: 20px; color: var(--tk-muted); width: max-content; animation: tk-scroll 24s linear infinite; }
+.tk-mq__row { display: flex; gap: 34px; white-space: nowrap; font-family: var(--disp); font-weight: 600; font-size: 20px; color: var(--tk-muted); width: max-content; animation: tk-scroll 24s linear infinite; will-change: transform; }
 .tk-mq__row .g { color: var(--tk-verde); }
 .tk-mq__row .s { color: rgba(255,255,255,.14); }
 @keyframes tk-scroll { to { transform: translateX(-50%); } }
@@ -119,7 +119,7 @@
     radial-gradient(38% 38% at 14% 18%, color-mix(in srgb, var(--tk-verde) 16%, transparent), transparent 62%),
     radial-gradient(40% 40% at 86% 82%, color-mix(in srgb, var(--tk-verde2) 14%, transparent), transparent 62%),
     radial-gradient(30% 30% at 62% 8%, rgba(182,242,74,.12), transparent 60%);
-  animation: tk-lightmove 26s ease-in-out infinite;
+  animation: tk-lightmove 26s ease-in-out infinite; will-change: transform;
 }
 @keyframes tk-lightmove { 50% { transform: translate(3%, 2.5%) scale(1.08); } }
 @media (prefers-reduced-motion: reduce) { .tk-sec--light::before, .tk-sec--light2::before { animation: none; } }
@@ -134,7 +134,7 @@
 
 /* grid de cards (glass no escuro, sólido no claro) */
 .tk-grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 50px; }
-.tk-card { position: relative; border-radius: 20px; padding: 34px 30px; overflow: hidden; transition: all .3s cubic-bezier(.2,.8,.2,1); background: var(--tk-glass); border: 1px solid var(--tk-linha); backdrop-filter: blur(10px); }
+.tk-card { position: relative; border-radius: 20px; padding: 34px 30px; overflow: hidden; transition: all .3s cubic-bezier(.2,.8,.2,1); background: var(--tk-glass); border: 1px solid var(--tk-linha); }
 .tk-sec--light .tk-card, .tk-sec--light2 .tk-card { background: #fff; border-color: rgba(0,0,0,.06); backdrop-filter: none; box-shadow: 0 14px 40px -22px rgba(21,50,40,.28); }
 .tk-card::before { content: ""; position: absolute; inset: 0; background: radial-gradient(120% 80% at 100% 0, color-mix(in srgb, var(--tk-verde) 14%, transparent), transparent 60%); opacity: 0; transition: opacity .3s; }
 .tk-card:hover { transform: translateY(-6px); border-color: color-mix(in srgb, var(--tk-verde) 45%, transparent); }
@@ -201,7 +201,7 @@
 /* GIVE */
 .tk-give { background: radial-gradient(100% 100% at 50% 0, #0f2418, var(--tk-bg) 72%); }
 .tk-give .wrap { display: flex; justify-content: space-between; align-items: center; gap: 40px; flex-wrap: wrap; }
-.tk-pix { background: var(--tk-glass); border: 1px solid color-mix(in srgb, var(--tk-verde) 30%, transparent); border-radius: 20px; padding: 30px 32px; min-width: 320px; backdrop-filter: blur(10px); box-shadow: 0 0 60px -20px var(--tk-glow); }
+.tk-pix { background: var(--tk-glass); border: 1px solid color-mix(in srgb, var(--tk-verde) 30%, transparent); border-radius: 20px; padding: 30px 32px; min-width: 320px; box-shadow: 0 0 60px -20px var(--tk-glow); }
 .tk-pix .l { font-family: var(--disp); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--tk-verde2); }
 .tk-pix .k { font-family: var(--disp); font-size: 21px; font-weight: 700; margin: 12px 0 20px; word-break: break-all; }
 .tk-pix .tk-btn { width: 100%; justify-content: center; }

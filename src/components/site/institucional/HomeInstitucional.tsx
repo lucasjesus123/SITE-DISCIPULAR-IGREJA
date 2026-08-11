@@ -6,6 +6,7 @@ import { formatarCnpj } from "@/lib/painel/formato";
 import { horariosSemanais, proximosEventos, type ItemAgendaHome } from "@/lib/site/agenda-home";
 import { FormWhatsAppInst } from "./FormWhatsAppInst";
 import { PlayerMensagem } from "./PlayerMensagem";
+import { HeroVideo } from "./HeroVideo";
 import { RevelarAoRolar } from "./RevelarAoRolar";
 import { CreditoConexao } from "@/components/CreditoConexao";
 
@@ -22,9 +23,11 @@ interface Props {
   ultimaMsgVideoId: string | null;
   ultimaMsgTitulo: string | null;
   logoUrl: string | null;
+  /** Vídeo do topo (config da igreja ou padrão do tenant-âncora). */
+  heroVideoId?: string | null;
 }
 
-export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitulo, logoUrl }: Props) {
+export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitulo, logoUrl, heroVideoId = null }: Props) {
   const { config, campi } = dados;
   const bv = config.boasVindas;
   const sec = config.secoes;
@@ -39,6 +42,10 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
   const pixDisplay = formatarCnpj(config.pixChave) ?? config.pixChave;
   const thumb = live.aoVivo && live.videoId ? urlMiniatura(live.videoId) : ultimaMsgVideoId ? urlMiniatura(ultimaMsgVideoId) : null;
   const linkVivo = canalYoutube ?? "#mensagem";
+  // Vídeo do topo: ao vivo tem prioridade; senão o vídeo definido no painel;
+  // senão a última mensagem. Toca embutido (HeroVideo).
+  const heroVid = live.aoVivo && live.videoId ? live.videoId : heroVideoId ?? ultimaMsgVideoId;
+  const heroThumb = heroVid ? urlMiniatura(heroVid) : null;
 
   const campusPrincipal = campi[0];
   const endereco = campusPrincipal
@@ -62,9 +69,9 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
   }));
   const horariosDin = horariosSemanais(itensAgenda);
   const horarios = horariosDin.length > 0 ? horariosDin : [
-    { dia: "Domingo", hora: "18h00", titulo: "Culto da Família" },
-    { dia: "Quarta", hora: "20h00", titulo: "Culto de Ensino" },
-    { dia: "Sexta", hora: "20h00", titulo: "Noite de Louvor" },
+    { dia: "Domingo", hora: "19h00", titulo: "Celebração da Família" },
+    { dia: "Quinta", hora: "20h00", titulo: "Trilha do Discípulo" },
+    { dia: "Sábado", hora: "20h00", titulo: "Culto de Jovens" },
   ];
   const eventosDin = proximosEventos(itensAgenda, Date.now());
   const eventos = eventosDin.length > 0 ? eventosDin : [
@@ -126,16 +133,14 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
             </div>
             <div className="tk-verse">{bv.versiculo}</div>
           </div>
-          <a className="tk-vcard" href={linkVivo} target={canalYoutube ? "_blank" : undefined} rel={canalYoutube ? "noopener noreferrer" : undefined}>
-            {thumb && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img className="tk-vcard__thumb" src={thumb} alt="" />
-            )}
-            <div className="tk-vcard__ov" />
-            {live.aoVivo && <div className="tk-vcard__lv"><span className="tk-dot" />Ao vivo agora</div>}
-            <div className="tk-vcard__play"><i>▶</i></div>
-            <div className="tk-vcard__cap"><b>{msgTitulo}</b><span>{heroCulto ? `${heroCulto.dia} · ${heroCulto.hora} · toque para assistir` : "Toque para assistir"}</span></div>
-          </a>
+          <HeroVideo
+            videoId={heroVid}
+            thumb={heroThumb}
+            aoVivo={live.aoVivo}
+            titulo={msgTitulo}
+            sub={heroCulto ? `${heroCulto.dia} · ${heroCulto.hora} · toque para assistir` : "Toque para assistir"}
+            hrefFallback={linkVivo}
+          />
         </div>
       </header>
 
