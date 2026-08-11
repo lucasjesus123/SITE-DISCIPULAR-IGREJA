@@ -7,6 +7,9 @@ import {
   parseMinisterios,
   serializarDepoimentos,
   serializarMinisterios,
+  BOAS_VINDAS_PADRAO,
+  parseBoasVindas,
+  serializarBoasVindas,
 } from "./conteudo-home";
 
 test("parseMinisterios cai no padrão com JSON inválido/vazio/nulo", () => {
@@ -48,4 +51,35 @@ test("round-trip: serializar → parse mantém os itens válidos", () => {
   const r = parseDepoimentos(s);
   assert.equal(r.length, 2);
   assert.equal(r[1]!.papel, "");
+});
+
+// --- Boas-vindas ("Novo por aqui" + versículo do topo) -----------------------
+test("parseBoasVindas: nulo/JSON quebrado volta ao padrão inteiro", () => {
+  assert.deepEqual(parseBoasVindas(null), BOAS_VINDAS_PADRAO);
+  assert.deepEqual(parseBoasVindas("{quebrado"), BOAS_VINDAS_PADRAO);
+  assert.deepEqual(parseBoasVindas("[]"), BOAS_VINDAS_PADRAO); // array não é objeto
+});
+
+test("parseBoasVindas: campo vazio cai no padrão, campo preenchido prevalece (por campo)", () => {
+  const json = JSON.stringify({ titulo: "Bem-vindo à Sede!", lead: "", cards: [{ titulo: "Recepção", texto: "" }] });
+  const r = parseBoasVindas(json);
+  assert.equal(r.titulo, "Bem-vindo à Sede!");
+  assert.equal(r.lead, BOAS_VINDAS_PADRAO.lead); // vazio → padrão
+  assert.equal(r.cards.length, 4); // sempre 4 (ícones fixos)
+  assert.equal(r.cards[0]!.titulo, "Recepção");
+  assert.equal(r.cards[0]!.texto, BOAS_VINDAS_PADRAO.cards[0]!.texto); // vazio → padrão
+  assert.equal(r.cards[3]!.titulo, BOAS_VINDAS_PADRAO.cards[3]!.titulo); // ausente → padrão
+});
+
+test("serializarBoasVindas: tudo em branco devolve null (volta ao padrão)", () => {
+  assert.equal(serializarBoasVindas({ titulo: "", lead: "", frase: "", versiculo: "", cards: [{ titulo: "", texto: "" }] }), null);
+});
+
+test("round-trip boas-vindas: serializar → parse mantém o que foi editado", () => {
+  const s = serializarBoasVindas({ titulo: "Casa de Discípulos", versiculo: "Salmos 122:1", cards: [{ titulo: "Café", texto: "Chegue 15min antes" }] });
+  const r = parseBoasVindas(s);
+  assert.equal(r.titulo, "Casa de Discípulos");
+  assert.equal(r.versiculo, "Salmos 122:1");
+  assert.equal(r.cards[0]!.titulo, "Café");
+  assert.equal(r.lead, BOAS_VINDAS_PADRAO.lead); // não editado → padrão
 });

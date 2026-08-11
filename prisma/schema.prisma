@@ -953,6 +953,9 @@ model SiteConfig {
   // depoimentos que aparecem na home Institucional; cada igreja edita o seu.
   ministeriosJson String? @db.Text
   depoimentosJson String? @db.Text
+  // Bloco "Novo por aqui" (título, chamada, 4 cards de expectativa, frase) +
+  // versículo do topo. Vazio = usa o texto padrão da home.
+  boasVindasJson  String? @db.Text
 
   // --- Contato
   emailContato    String? @db.VarChar(254)

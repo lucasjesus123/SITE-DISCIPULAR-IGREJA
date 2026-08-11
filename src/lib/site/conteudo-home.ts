@@ -30,6 +30,34 @@ export const DEPOIMENTOS_PADRAO: Depoimento[] = [
   { texto: "Meus filhos amam o Kids e pedem pra vir todo domingo. Que segurança de coração!", nome: "Juliana P.", papel: "Mãe e voluntária" },
 ];
 
+/** Bloco "Novo por aqui": título, chamada, 4 cards e a frase do card escuro,
+ *  mais o versículo do topo (hero). Os ícones dos 4 cards são fixos (SVG de
+ *  traço, por posição) — a igreja edita só os textos. */
+export interface CardBoasVindas {
+  titulo: string;
+  texto: string;
+}
+export interface BoasVindas {
+  titulo: string;
+  lead: string;
+  cards: CardBoasVindas[];
+  frase: string;
+  versiculo: string;
+}
+
+export const BOAS_VINDAS_PADRAO: BoasVindas = {
+  titulo: "Seja muito bem-vindo.",
+  lead: "A gente preparou tudo pra você se sentir em casa desde o primeiro momento. Veja o que esperar:",
+  cards: [
+    { titulo: "Acolhimento", texto: "Nossa equipe te recebe e acompanha na chegada." },
+    { titulo: "Duração", texto: "Os cultos duram cerca de 2 horas." },
+    { titulo: "Intimidade com Deus", texto: "Um tempo de adoração e presença para se encontrar com Ele." },
+    { titulo: "Kids", texto: "Espaço seguro e divertido para as crianças." },
+  ],
+  frase: "Você foi feito para fazer parte.",
+  versiculo: "“Alegrei-me quando me disseram: Vamos à casa do Senhor.” — Salmos 122:1",
+};
+
 function texto(v: unknown): string {
   return typeof v === "string" ? v.trim() : "";
 }
@@ -79,4 +107,47 @@ export function serializarDepoimentos(itens: { texto?: string; nome?: string; pa
     .map((d) => ({ texto: texto(d.texto), nome: texto(d.nome), papel: texto(d.papel) }))
     .filter((d) => d.texto && d.nome);
   return limpos.length > 0 ? JSON.stringify(limpos) : null;
+}
+
+/**
+ * Parse do bloco "Novo por aqui". DEFENSIVO e por campo: qualquer campo vazio
+ * ou inválido cai no padrão, então uma edição parcial nunca esvazia a home.
+ * Os 4 cards têm ícone fixo por posição; aqui só entram os textos.
+ */
+export function parseBoasVindas(json: string | null | undefined): BoasVindas {
+  let obj: Record<string, unknown> = {};
+  if (json) {
+    try {
+      const v = JSON.parse(json);
+      if (v && typeof v === "object" && !Array.isArray(v)) obj = v as Record<string, unknown>;
+    } catch {
+      // JSON quebrado: fica no padrão.
+    }
+  }
+  const cardsIn = Array.isArray(obj.cards) ? obj.cards : [];
+  const cards = BOAS_VINDAS_PADRAO.cards.map((padrao, i) => {
+    const r = (cardsIn[i] ?? {}) as Record<string, unknown>;
+    return { titulo: texto(r.titulo) || padrao.titulo, texto: texto(r.texto) || padrao.texto };
+  });
+  return {
+    titulo: texto(obj.titulo) || BOAS_VINDAS_PADRAO.titulo,
+    lead: texto(obj.lead) || BOAS_VINDAS_PADRAO.lead,
+    cards,
+    frase: texto(obj.frase) || BOAS_VINDAS_PADRAO.frase,
+    versiculo: texto(obj.versiculo) || BOAS_VINDAS_PADRAO.versiculo,
+  };
+}
+
+/** Serializa o bloco "Novo por aqui"; null se tudo em branco (volta ao padrão). */
+export function serializarBoasVindas(v: {
+  titulo?: string; lead?: string; frase?: string; versiculo?: string;
+  cards?: { titulo?: string; texto?: string }[];
+}): string | null {
+  const cards = (v.cards ?? []).slice(0, 4).map((c) => ({ titulo: texto(c.titulo), texto: texto(c.texto) }));
+  const obj = {
+    titulo: texto(v.titulo), lead: texto(v.lead),
+    frase: texto(v.frase), versiculo: texto(v.versiculo), cards,
+  };
+  const vazio = !obj.titulo && !obj.lead && !obj.frase && !obj.versiculo && cards.every((c) => !c.titulo && !c.texto);
+  return vazio ? null : JSON.stringify(obj);
 }

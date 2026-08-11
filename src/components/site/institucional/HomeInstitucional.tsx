@@ -29,6 +29,8 @@ interface Props {
 
 export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitulo, logoUrl }: Props) {
   const { config, campi } = dados;
+  const bv = config.boasVindas; // "Novo por aqui" + versículo do topo (editáveis no painel)
+  const iconesBoasVindas = [<IcoCoracao key="0" />, <IcoRelogio key="1" />, <IcoMao key="2" />, <IcoRosto key="3" />];
   const nome = config.nomeExibicao || "Igreja";
   const logo = logoUrl;
   // Foto da comunidade (card "Você foi feito para fazer parte") e canal do YouTube.
@@ -133,7 +135,7 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
               <Link href="/app" className="btn pri">Acesse o app da igreja</Link>
               <a href="#mensagem" className="btn gh">▶ Assista ao vivo</a>
             </div>
-            <div className="hero-verse">&ldquo;Alegrei-me quando me disseram: Vamos à casa do Senhor.&rdquo; — Salmos 122:1</div>
+            <div className="hero-verse">{bv.versiculo}</div>
           </div>
           {/* Sem foto de fundo, a metade direita ganha uma arte de marca (logo/monograma
               + halos), para o hero nunca aparecer vazio. Puramente decorativo. */}
@@ -166,13 +168,16 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
       <section className="sec novo" id="novo"><div className="wrap"><div className="grid">
         <div>
           <div className="eyebrow">Novo por aqui</div>
-          <h2>Seja muito bem-vindo.</h2>
-          <p className="lead" style={{ marginBottom: 22 }}>A gente preparou tudo pra você se sentir em casa desde o primeiro momento. Veja o que esperar:</p>
+          <h2>{bv.titulo}</h2>
+          <p className="lead" style={{ marginBottom: 22 }}>{bv.lead}</p>
           <div className="expect">
-            <div className="ex"><div className="i"><IcoCoracao /></div><b>Acolhimento</b><p>Nossa equipe te recebe e acompanha na chegada.</p></div>
-            <div className="ex"><div className="i"><IcoRelogio /></div><b>Duração</b><p>Os cultos duram cerca de 2 horas.</p></div>
-            <div className="ex"><div className="i"><IcoMao /></div><b>Intimidade com Deus</b><p>Um tempo de adoração e presença para se encontrar com Ele.</p></div>
-            <div className="ex"><div className="i"><IcoRosto /></div><b>Kids</b><p>Espaço seguro e divertido para as crianças.</p></div>
+            {bv.cards.map((c, i) => (
+              <div className="ex" key={i}>
+                <div className="i">{iconesBoasVindas[i]}</div>
+                <b>{c.titulo}</b>
+                <p>{c.texto}</p>
+              </div>
+            ))}
           </div>
           <div className="cta"><a href="#contato" className="btn grn">Planejar minha visita</a></div>
         </div>
@@ -189,7 +194,7 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
           }
         >
           <div className="eyebrow on-dark">Bem-vindo</div>
-          <div className="q">Você foi<br />feito para<br />fazer parte.</div>
+          <div className="q">{bv.frase}</div>
         </div>
       </div></div></section>
 

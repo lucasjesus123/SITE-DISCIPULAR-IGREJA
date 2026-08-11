@@ -388,7 +388,7 @@ export async function salvarConteudoHome(dadosBrutos: unknown): Promise<Resultad
     const limite = await verificarLimite(REGRAS.escritaPainel, ctx.sessao.userId, ctx.tenant.id);
     if (!limite.permitido) return { ok: false, mensagem: "Muitas operações seguidas. Aguarde." };
 
-    const { serializarMinisterios, serializarDepoimentos } = await import("@/lib/site/conteudo-home");
+    const { serializarMinisterios, serializarDepoimentos, serializarBoasVindas } = await import("@/lib/site/conteudo-home");
 
     const schema = z.object({
       ministerios: z.array(z.object({
@@ -401,6 +401,16 @@ export async function salvarConteudoHome(dadosBrutos: unknown): Promise<Resultad
         nome: z.string().trim().max(80).optional().default(""),
         papel: z.string().trim().max(80).optional().default(""),
       })).max(6).default([]),
+      boasVindas: z.object({
+        titulo: z.string().trim().max(80).optional().default(""),
+        lead: z.string().trim().max(300).optional().default(""),
+        frase: z.string().trim().max(160).optional().default(""),
+        versiculo: z.string().trim().max(240).optional().default(""),
+        cards: z.array(z.object({
+          titulo: z.string().trim().max(60).optional().default(""),
+          texto: z.string().trim().max(240).optional().default(""),
+        })).max(4).default([]),
+      }).optional(),
     });
     const dados = schema.parse(dadosBrutos);
 
@@ -411,10 +421,12 @@ export async function salvarConteudoHome(dadosBrutos: unknown): Promise<Resultad
         nomeExibicao: ctx.tenant.nome,
         ministeriosJson: serializarMinisterios(dados.ministerios),
         depoimentosJson: serializarDepoimentos(dados.depoimentos),
+        boasVindasJson: dados.boasVindas ? serializarBoasVindas(dados.boasVindas) : null,
       },
       update: {
         ministeriosJson: serializarMinisterios(dados.ministerios),
         depoimentosJson: serializarDepoimentos(dados.depoimentos),
+        boasVindasJson: dados.boasVindas === undefined ? undefined : serializarBoasVindas(dados.boasVindas),
       },
     });
 

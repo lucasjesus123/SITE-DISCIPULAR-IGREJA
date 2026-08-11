@@ -2,8 +2,9 @@ import { cache } from "react";
 import { tenantDb } from "@/lib/db/tenant-client";
 import { normalizarTema, type TemaTenant } from "@/lib/site/theme";
 import {
-  parseMinisterios, parseDepoimentos, MINISTERIOS_PADRAO, DEPOIMENTOS_PADRAO,
-  type Ministerio, type Depoimento,
+  parseMinisterios, parseDepoimentos, parseBoasVindas,
+  MINISTERIOS_PADRAO, DEPOIMENTOS_PADRAO, BOAS_VINDAS_PADRAO,
+  type Ministerio, type Depoimento, type BoasVindas,
 } from "@/lib/site/conteudo-home";
 
 /**
@@ -62,6 +63,7 @@ export interface ConfigSite {
   modulos: Record<string, boolean>;
   ministerios: Ministerio[];
   depoimentos: Depoimento[];
+  boasVindas: BoasVindas;
 }
 
 export interface CampusPublico {
@@ -143,6 +145,7 @@ const CONFIG_PADRAO: ConfigSite = {
   modulos: {},
   ministerios: MINISTERIOS_PADRAO,
   depoimentos: DEPOIMENTOS_PADRAO,
+  boasVindas: BOAS_VINDAS_PADRAO,
 };
 
 export const carregarDadosSite = cache(async (tenantId: string): Promise<DadosSite> => {
@@ -209,6 +212,7 @@ export const carregarDadosSite = cache(async (tenantId: string): Promise<DadosSi
           modulos: (config.modulos as Record<string, boolean> | null) ?? {},
           ministerios: parseMinisterios(config.ministeriosJson),
           depoimentos: parseDepoimentos(config.depoimentosJson),
+          boasVindas: parseBoasVindas(config.boasVindasJson),
         }
       : CONFIG_PADRAO,
     tema: normalizarTema(config),
