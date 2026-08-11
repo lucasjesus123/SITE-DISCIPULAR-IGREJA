@@ -146,6 +146,20 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
         ))}
       </div></div>
 
+      {/* HORÁRIOS (bem definidos) */}
+      <section className="tk-sec" id="horarios"><div className="wrap">
+        <div className="tk-head"><span className="tk-tag">Programe-se</span><h2>Horários dos <span className="gr">encontros</span></h2><p className="tk-lead">Toda semana, a casa aberta pra você.</p></div>
+        <div className="tk-hgrid">
+          {horarios.map((h, i) => (
+            <div className="tk-hcard" key={i}>
+              <div className="dia">{h.dia}</div>
+              <div className="hora">{h.hora}</div>
+              <div className="nome">{h.titulo}</div>
+            </div>
+          ))}
+        </div>
+      </div></section>
+
       {/* NOVO (CLARO) */}
       <section className="tk-sec tk-sec--light tk-novo" id="novo"><div className="wrap"><div className="grid">
         <div>
