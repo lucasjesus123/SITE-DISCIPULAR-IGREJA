@@ -29,9 +29,19 @@ test("horariosSemanais pega cultos recorrentes ordenados por dia da semana", () 
   assert.equal(h[2]!.titulo, "Sexta");
 });
 
-test("horariosSemanais respeita o máximo de 3", () => {
+test("horariosSemanais inclui qualquer tipo recorrente (ex.: célula), não só culto", () => {
+  const agenda = [
+    item({ titulo: "Células", tipo: "CELULA", diaSemana: 2, horario: "20:00" }),
+    item({ titulo: "Oração", tipo: "ORACAO", diaSemana: 1, horario: "06:00" }),
+  ];
+  const h = horariosSemanais(agenda);
+  assert.equal(h.length, 2);
+  assert.equal(h[1]!.titulo, "Células"); // terça vem depois de segunda
+});
+
+test("horariosSemanais respeita o máximo de 4", () => {
   const agenda = [0, 1, 2, 3, 4].map((d) => item({ titulo: `C${d}`, diaSemana: d, horario: "19:00" }));
-  assert.equal(horariosSemanais(agenda).length, 3);
+  assert.equal(horariosSemanais(agenda).length, 4);
 });
 
 test("proximosEventos lista só datas futuras, ordenadas", () => {

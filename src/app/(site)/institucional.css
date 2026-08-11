@@ -103,7 +103,7 @@
 
 /* HORÁRIOS */
 .inst-site .horarios { background: var(--green); color: #fff; }
-.inst-site .horarios .wrap { display: grid; grid-template-columns: repeat(3, 1fr); padding-left: 0; padding-right: 0; }
+.inst-site .horarios .wrap { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); padding-left: 0; padding-right: 0; }
 .inst-site .hcard { padding: 28px 24px; border-right: 1px solid rgb(255 255 255 / 0.16); }
 .inst-site .hcard:last-child { border-right: none; }
 .inst-site .hcard .d { font-family: "Archivo"; font-weight: 800; text-transform: uppercase; font-size: 15px; letter-spacing: 0.05em; }
@@ -327,5 +327,12 @@ html:has(.inst-site)::-webkit-scrollbar-thumb:hover { background: var(--ink); }
   .inst-site .hero-art__rings { animation: inst-spin 46s linear infinite; }
 }
 @keyframes inst-surge { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+
+/* Revelar ao rolar (funciona no celular): o JS marca .reveal ao montar e
+   .reveal--vis quando a seção entra na tela. Só sob no-preference. */
+@media (prefers-reduced-motion: no-preference) {
+  .inst-site .reveal { opacity: 0; transform: translateY(28px); }
+  .inst-site .reveal--vis { opacity: 1; transform: none; transition: opacity .7s cubic-bezier(.2,.8,.2,1), transform .75s cubic-bezier(.2,.8,.2,1); }
+}
 @keyframes inst-fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes inst-spin { to { transform: rotate(360deg); } }

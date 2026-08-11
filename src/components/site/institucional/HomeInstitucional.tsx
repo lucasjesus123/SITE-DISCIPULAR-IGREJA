@@ -6,6 +6,7 @@ import { formatarCnpj } from "@/lib/painel/formato";
 import { horariosSemanais, proximosEventos, type ItemAgendaHome } from "@/lib/site/agenda-home";
 import { FormWhatsAppInst } from "./FormWhatsAppInst";
 import { PlayerMensagem } from "./PlayerMensagem";
+import { RevelarAoRolar } from "./RevelarAoRolar";
 import { CreditoConexao } from "@/components/CreditoConexao";
 
 /**
@@ -88,6 +89,7 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
 
   return (
     <div className="inst-site">
+      <RevelarAoRolar />
       {/* NAV */}
       <nav className="nav"><div className="wrap">
         <Link href="/" className="brand">

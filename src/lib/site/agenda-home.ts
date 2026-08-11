@@ -32,12 +32,15 @@ export interface Horario {
 }
 
 /**
- * Faixa de horários: cultos recorrentes (tipo CULTO com dia+hora), ordenados
- * por dia da semana. Até `max` (a faixa tem 3 colunas).
+ * Faixa de horários: QUALQUER item recorrente (tem dia da semana + horário) e
+ * público — culto, célula, oração, ensaio, escola. Ordenado por dia da semana.
+ * Antes só entrava tipo CULTO, o que escondia "Células" e afins; agora a igreja
+ * controla pelo que marca como recorrente + "mostrar no site". Eventos com data
+ * (dataHora) NÃO entram aqui — vão para "próximos eventos". Até `max` (3 colunas).
  */
-export function horariosSemanais(agenda: ItemAgendaHome[], max = 3): Horario[] {
+export function horariosSemanais(agenda: ItemAgendaHome[], max = 4): Horario[] {
   return agenda
-    .filter((a) => a.tipo === "CULTO" && a.diaSemana != null && a.horario)
+    .filter((a) => a.diaSemana != null && a.horario && a.dataHoraMs == null)
     .sort((a, b) => (a.diaSemana as number) - (b.diaSemana as number))
     .slice(0, max)
     .map((a) => ({ dia: DIAS[a.diaSemana as number] ?? "", hora: formatarHora(a.horario as string), titulo: a.titulo }));
