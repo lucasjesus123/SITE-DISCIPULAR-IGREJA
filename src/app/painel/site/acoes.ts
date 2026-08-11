@@ -388,7 +388,7 @@ export async function salvarConteudoHome(dadosBrutos: unknown): Promise<Resultad
     const limite = await verificarLimite(REGRAS.escritaPainel, ctx.sessao.userId, ctx.tenant.id);
     if (!limite.permitido) return { ok: false, mensagem: "Muitas operações seguidas. Aguarde." };
 
-    const { serializarMinisterios, serializarDepoimentos, serializarBoasVindas } = await import("@/lib/site/conteudo-home");
+    const { serializarMinisterios, serializarDepoimentos, serializarBoasVindas, serializarSecoesHome } = await import("@/lib/site/conteudo-home");
 
     const schema = z.object({
       ministerios: z.array(z.object({
@@ -411,6 +411,23 @@ export async function salvarConteudoHome(dadosBrutos: unknown): Promise<Resultad
           texto: z.string().trim().max(240).optional().default(""),
         })).max(4).default([]),
       }).optional(),
+      secoes: z.object({
+        appTitulo: z.string().trim().max(80).optional().default(""),
+        appLead: z.string().trim().max(400).optional().default(""),
+        appRecursos: z.array(z.string().trim().max(80)).max(6).default([]),
+        passosTitulo: z.string().trim().max(80).optional().default(""),
+        passosLead: z.string().trim().max(300).optional().default(""),
+        passos: z.array(z.object({
+          titulo: z.string().trim().max(60).optional().default(""),
+          texto: z.string().trim().max(200).optional().default(""),
+        })).max(5).default([]),
+        celulasTitulo: z.string().trim().max(80).optional().default(""),
+        celulasTexto: z.string().trim().max(400).optional().default(""),
+        oracaoTitulo: z.string().trim().max(80).optional().default(""),
+        oracaoLead: z.string().trim().max(400).optional().default(""),
+        newsletterTitulo: z.string().trim().max(80).optional().default(""),
+        newsletterTexto: z.string().trim().max(300).optional().default(""),
+      }).optional(),
     });
     const dados = schema.parse(dadosBrutos);
 
@@ -422,11 +439,13 @@ export async function salvarConteudoHome(dadosBrutos: unknown): Promise<Resultad
         ministeriosJson: serializarMinisterios(dados.ministerios),
         depoimentosJson: serializarDepoimentos(dados.depoimentos),
         boasVindasJson: dados.boasVindas ? serializarBoasVindas(dados.boasVindas) : null,
+        secoesHomeJson: dados.secoes ? serializarSecoesHome(dados.secoes) : null,
       },
       update: {
         ministeriosJson: serializarMinisterios(dados.ministerios),
         depoimentosJson: serializarDepoimentos(dados.depoimentos),
         boasVindasJson: dados.boasVindas === undefined ? undefined : serializarBoasVindas(dados.boasVindas),
+        secoesHomeJson: dados.secoes === undefined ? undefined : serializarSecoesHome(dados.secoes),
       },
     });
 

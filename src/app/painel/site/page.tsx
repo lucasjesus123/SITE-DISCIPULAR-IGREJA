@@ -2,7 +2,7 @@ import { exigirPermissao } from "@/lib/auth/rbac";
 import { fontesDisponiveis, normalizarTema } from "@/lib/site/theme";
 import { EditorSite } from "@/components/painel/EditorSite";
 import { EditorConteudoHome } from "@/components/painel/site/EditorConteudoHome";
-import { parseMinisterios, parseDepoimentos, parseBoasVindas } from "@/lib/site/conteudo-home";
+import { parseMinisterios, parseDepoimentos, parseBoasVindas, parseSecoesHome } from "@/lib/site/conteudo-home";
 import type { ArquivoEnviado } from "@/components/painel/CampoUpload";
 import { urlArquivoPublico } from "@/lib/storage/urls";
 
@@ -34,13 +34,14 @@ export default async function PaginaConfigSite() {
       instagram: true, facebook: true, youtube: true, spotify: true,
       pixChave: true, pixTitular: true, pixDescricao: true,
       pwaNome: true, pwaNomeCurto: true, pwaCorTema: true,
-      ministeriosJson: true, depoimentosJson: true, boasVindasJson: true,
+      ministeriosJson: true, depoimentosJson: true, boasVindasJson: true, secoesHomeJson: true,
       // dadosBancariosCriptografados fica DE FORA de propósito.
     },
   });
   const ministeriosHome = parseMinisterios(config?.ministeriosJson);
   const depoimentosHome = parseDepoimentos(config?.depoimentosJson);
   const boasVindasHome = parseBoasVindas(config?.boasVindasJson);
+  const secoesHome = parseSecoesHome(config?.secoesHomeJson);
 
   const tema = normalizarTema(config);
 
@@ -126,7 +127,7 @@ export default async function PaginaConfigSite() {
       <section className="secao-painel" style={{ marginTop: "1.6rem" }}>
         <h2 className="secao-painel__titulo">Conteúdo da home</h2>
         <p className="secao-painel__desc">Ministérios e depoimentos que aparecem na página inicial.</p>
-        <EditorConteudoHome ministerios={ministeriosHome} depoimentos={depoimentosHome} boasVindas={boasVindasHome} />
+        <EditorConteudoHome ministerios={ministeriosHome} depoimentos={depoimentosHome} boasVindas={boasVindasHome} secoes={secoesHome} />
       </section>
     </>
   );

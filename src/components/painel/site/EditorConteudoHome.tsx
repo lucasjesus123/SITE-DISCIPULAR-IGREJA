@@ -3,21 +3,25 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { salvarConteudoHome } from "@/app/painel/site/acoes";
-import type { Depoimento, Ministerio, BoasVindas } from "@/lib/site/conteudo-home";
+import type { Depoimento, Ministerio, BoasVindas, SecoesHome } from "@/lib/site/conteudo-home";
 
 const N = 3; // a home mostra 3 de cada
 // Rótulo do ícone fixo de cada um dos 4 cards de "Novo por aqui" (o desenho é
 // fixo por posição; a igreja edita só os textos).
 const ICONES_BV = ["♥ Acolhimento", "⏱ Duração", "🙌 Presença", "☺ Kids"];
+// Número + ícone fixos dos 5 "Próximos passos".
+const ROTULO_PASSO = ["01 ✝", "02 💧", "03 ◎", "04 📖", "05 🙌"];
 
 export function EditorConteudoHome({
   ministerios,
   depoimentos,
   boasVindas,
+  secoes,
 }: {
   ministerios: Ministerio[];
   depoimentos: Depoimento[];
   boasVindas: BoasVindas;
+  secoes: SecoesHome;
 }) {
   const [pendente, iniciar] = useTransition();
   const [msg, setMsg] = useState<{ ok: boolean; texto: string } | null>(null);
@@ -26,6 +30,8 @@ export function EditorConteudoHome({
   const mins = padArray(ministerios, N, { titulo: "", descricao: "", icone: "" });
   const deps = padArray(depoimentos, N, { texto: "", nome: "", papel: "" });
   const bvCards = padArray(boasVindas.cards, 4, { titulo: "", texto: "" });
+  const appRecursos = padArray(secoes.appRecursos.map((r) => ({ v: r })), 6, { v: "" });
+  const passos = padArray(secoes.passos, 5, { titulo: "", texto: "" });
 
   function salvar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -38,6 +44,20 @@ export function EditorConteudoHome({
         versiculo: g("bv_versiculo"),
         frase: g("bv_frase"),
         cards: Array.from({ length: 4 }, (_, i) => ({ titulo: g(`bv_c${i}_titulo`), texto: g(`bv_c${i}_texto`) })),
+      },
+      secoes: {
+        appTitulo: g("sec_appTitulo"),
+        appLead: g("sec_appLead"),
+        appRecursos: Array.from({ length: 6 }, (_, i) => g(`sec_app_r${i}`)),
+        passosTitulo: g("sec_passosTitulo"),
+        passosLead: g("sec_passosLead"),
+        passos: Array.from({ length: 5 }, (_, i) => ({ titulo: g(`sec_p${i}_titulo`), texto: g(`sec_p${i}_texto`) })),
+        celulasTitulo: g("sec_celulasTitulo"),
+        celulasTexto: g("sec_celulasTexto"),
+        oracaoTitulo: g("sec_oracaoTitulo"),
+        oracaoLead: g("sec_oracaoLead"),
+        newsletterTitulo: g("sec_newsletterTitulo"),
+        newsletterTexto: g("sec_newsletterTexto"),
       },
       ministerios: Array.from({ length: N }, (_, i) => ({ titulo: g(`m${i}_titulo`), descricao: g(`m${i}_descricao`), icone: g(`m${i}_icone`) })),
       depoimentos: Array.from({ length: N }, (_, i) => ({ texto: g(`d${i}_texto`), nome: g(`d${i}_nome`), papel: g(`d${i}_papel`) })),
@@ -83,6 +103,88 @@ export function EditorConteudoHome({
               <input name={`bv_c${i}_texto`} defaultValue={c.texto} maxLength={240} placeholder="Texto do card" style={{ flex: 2, minWidth: 180 }} aria-label={`Texto card ${i + 1}`} />
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* ACESSE O APP */}
+      <div>
+        <p className="campo__rotulo" style={{ marginBottom: ".6rem" }}>Acesse o app</p>
+        <div className="stack" style={{ "--flow": ".7rem" } as React.CSSProperties}>
+          <label className="campo">
+            <span className="campo__rotulo">Título (em branco = “Acesse o app da {"{sua igreja}"}”)</span>
+            <input name="sec_appTitulo" defaultValue={secoes.appTitulo} maxLength={80} placeholder="Acesse o app da sua igreja" />
+          </label>
+          <label className="campo">
+            <span className="campo__rotulo">Chamada</span>
+            <textarea name="sec_appLead" defaultValue={secoes.appLead} rows={2} maxLength={400} />
+          </label>
+          <p className="campo__rotulo">Os 6 recursos (✓)</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: ".5rem" }}>
+            {appRecursos.map((r, i) => (
+              <input key={i} name={`sec_app_r${i}`} defaultValue={r.v} maxLength={80} placeholder={`Recurso ${i + 1}`} aria-label={`Recurso ${i + 1}`} />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* PRÓXIMOS PASSOS */}
+      <div>
+        <p className="campo__rotulo" style={{ marginBottom: ".6rem" }}>Próximos passos</p>
+        <div className="stack" style={{ "--flow": ".7rem" } as React.CSSProperties}>
+          <div style={{ display: "flex", gap: ".6rem", flexWrap: "wrap" }}>
+            <label className="campo" style={{ flex: 1, minWidth: 160 }}>
+              <span className="campo__rotulo">Título da seção</span>
+              <input name="sec_passosTitulo" defaultValue={secoes.passosTitulo} maxLength={80} />
+            </label>
+            <label className="campo" style={{ flex: 2, minWidth: 200 }}>
+              <span className="campo__rotulo">Chamada</span>
+              <input name="sec_passosLead" defaultValue={secoes.passosLead} maxLength={300} />
+            </label>
+          </div>
+          {passos.map((p, i) => (
+            <div key={i} style={{ display: "flex", gap: ".6rem", flexWrap: "wrap", alignItems: "center", border: "1.5px solid var(--pnl-line)", borderRadius: 12, padding: ".8rem" }}>
+              <span style={{ minWidth: 60, fontSize: ".82rem", fontWeight: 700, opacity: .7 }}>{ROTULO_PASSO[i]}</span>
+              <input name={`sec_p${i}_titulo`} defaultValue={p.titulo} maxLength={60} placeholder="Título" style={{ flex: 1, minWidth: 120 }} aria-label={`Passo ${i + 1} título`} />
+              <input name={`sec_p${i}_texto`} defaultValue={p.texto} maxLength={200} placeholder="Descrição" style={{ flex: 2, minWidth: 180 }} aria-label={`Passo ${i + 1} texto`} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* FAIXAS: Células, Oração, Newsletter */}
+      <div>
+        <p className="campo__rotulo" style={{ marginBottom: ".6rem" }}>Faixas (Células, Oração, Novidades)</p>
+        <div className="stack" style={{ "--flow": ".7rem" } as React.CSSProperties}>
+          <div style={{ display: "flex", gap: ".6rem", flexWrap: "wrap" }}>
+            <label className="campo" style={{ flex: 1, minWidth: 160 }}>
+              <span className="campo__rotulo">Células — título</span>
+              <input name="sec_celulasTitulo" defaultValue={secoes.celulasTitulo} maxLength={80} />
+            </label>
+            <label className="campo" style={{ flex: 2, minWidth: 220 }}>
+              <span className="campo__rotulo">Células — texto</span>
+              <input name="sec_celulasTexto" defaultValue={secoes.celulasTexto} maxLength={400} />
+            </label>
+          </div>
+          <div style={{ display: "flex", gap: ".6rem", flexWrap: "wrap" }}>
+            <label className="campo" style={{ flex: 1, minWidth: 160 }}>
+              <span className="campo__rotulo">Oração — título</span>
+              <input name="sec_oracaoTitulo" defaultValue={secoes.oracaoTitulo} maxLength={80} />
+            </label>
+            <label className="campo" style={{ flex: 2, minWidth: 220 }}>
+              <span className="campo__rotulo">Oração — texto</span>
+              <input name="sec_oracaoLead" defaultValue={secoes.oracaoLead} maxLength={400} />
+            </label>
+          </div>
+          <div style={{ display: "flex", gap: ".6rem", flexWrap: "wrap" }}>
+            <label className="campo" style={{ flex: 1, minWidth: 160 }}>
+              <span className="campo__rotulo">Novidades — título</span>
+              <input name="sec_newsletterTitulo" defaultValue={secoes.newsletterTitulo} maxLength={80} />
+            </label>
+            <label className="campo" style={{ flex: 2, minWidth: 220 }}>
+              <span className="campo__rotulo">Novidades — texto</span>
+              <input name="sec_newsletterTexto" defaultValue={secoes.newsletterTexto} maxLength={300} />
+            </label>
+          </div>
         </div>
       </div>
 

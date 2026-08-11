@@ -956,6 +956,9 @@ model SiteConfig {
   // Bloco "Novo por aqui" (título, chamada, 4 cards de expectativa, frase) +
   // versículo do topo. Vazio = usa o texto padrão da home.
   boasVindasJson  String? @db.Text
+  // Demais seções editáveis: "Acesse o app", "Próximos passos" e as faixas de
+  // Células, Oração e Newsletter. Vazio = texto padrão.
+  secoesHomeJson  String? @db.Text
 
   // --- Contato
   emailContato    String? @db.VarChar(254)

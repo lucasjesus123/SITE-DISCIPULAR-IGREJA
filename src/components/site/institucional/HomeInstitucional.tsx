@@ -30,7 +30,9 @@ interface Props {
 export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitulo, logoUrl }: Props) {
   const { config, campi } = dados;
   const bv = config.boasVindas; // "Novo por aqui" + versículo do topo (editáveis no painel)
+  const sec = config.secoes; // app, passos e faixas (editáveis no painel)
   const iconesBoasVindas = [<IcoCoracao key="0" />, <IcoRelogio key="1" />, <IcoMao key="2" />, <IcoRosto key="3" />];
+  const iconesPassos = [<IcoCruz key="0" />, <IcoGota key="1" />, <IcoGrupo key="2" />, <IcoLivro key="3" />, <IcoMao key="4" />];
   const nome = config.nomeExibicao || "Igreja";
   const logo = logoUrl;
   // Foto da comunidade (card "Você foi feito para fazer parte") e canal do YouTube.
@@ -213,15 +215,12 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
       <section className="sec app" id="app"><div className="wrap"><div className="grid">
         <div>
           <div className="eyebrow on-dark">Leve a igreja no bolso</div>
-          <h2>Acesse o app<br />da {nome}</h2>
-          <p className="lead">Tudo o que você vive na igreja, agora na palma da mão. Assista aos cultos, contribua, acompanhe sua célula e muito mais — em um só lugar, do seu jeito.</p>
+          <h2>{sec.appTitulo ? sec.appTitulo : <>Acesse o app<br />da {nome}</>}</h2>
+          <p className="lead">{sec.appLead}</p>
           <ul className="feats">
-            <li><span className="ck">✓</span> Cultos e mensagens ao vivo</li>
-            <li><span className="ck">✓</span> Dízimos e ofertas por PIX</li>
-            <li><span className="ck">✓</span> Minha célula e grupos</li>
-            <li><span className="ck">✓</span> Kids ao vivo dos seus filhos</li>
-            <li><span className="ck">✓</span> Agenda e inscrições</li>
-            <li><span className="ck">✓</span> Avisos e devocional diário</li>
+            {sec.appRecursos.map((r, i) => (
+              <li key={i}><span className="ck">✓</span> {r}</li>
+            ))}
           </ul>
           <p style={{ marginTop: 6, fontFamily: '"Archivo", sans-serif', fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", fontSize: 14, color: "var(--mint)" }}>
             Em breve, mais informações.
@@ -266,14 +265,17 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
       {/* PRÓXIMOS PASSOS */}
       <section className="sec steps" id="passos"><div className="wrap center">
         <div className="eyebrow">Cresça na fé</div>
-        <h2>Próximos passos</h2>
-        <p className="lead">Um caminho simples para você avançar na sua jornada com Cristo.</p>
+        <h2>{sec.passosTitulo}</h2>
+        <p className="lead">{sec.passosLead}</p>
         <div className="stepgrid" style={{ textAlign: "center" }}>
-          <div className="step"><div className="n">01</div><div className="ic"><IcoCruz /></div><b>Aceitei Jesus</b><small>Deu o primeiro passo? Conte pra gente.</small></div>
-          <div className="step"><div className="n">02</div><div className="ic"><IcoGota /></div><b>Batismo</b><small>Inscreva-se no próximo batismo.</small></div>
-          <div className="step"><div className="n">03</div><div className="ic"><IcoGrupo /></div><b>Célula</b><small>Encontre um grupo perto de você.</small></div>
-          <div className="step"><div className="n">04</div><div className="ic"><IcoLivro /></div><b>Trilha do Discípulo</b><small>Cursos e trilhas de crescimento.</small></div>
-          <div className="step"><div className="n">05</div><div className="ic"><IcoMao /></div><b>Servir</b><small>Faça parte de um ministério.</small></div>
+          {sec.passos.map((p, i) => (
+            <div className="step" key={i}>
+              <div className="n">{String(i + 1).padStart(2, "0")}</div>
+              <div className="ic">{iconesPassos[i]}</div>
+              <b>{p.titulo}</b>
+              <small>{p.texto}</small>
+            </div>
+          ))}
         </div>
       </div></section>
 
@@ -281,8 +283,8 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
       <section className="sec cells"><div className="wrap">
         <div>
           <div className="eyebrow on-dark">Comunhão</div>
-          <h2>Encontre uma célula</h2>
-          <p>Ninguém foi feito para caminhar sozinho. Achamos um grupo perto de você para viver a fé em comunidade.</p>
+          <h2>{sec.celulasTitulo}</h2>
+          <p>{sec.celulasTexto}</p>
         </div>
         <Link href="/celulas" className="btn pri">Buscar grupo perto de mim</Link>
       </div></section>
@@ -337,8 +339,8 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
       {/* ORAÇÃO */}
       <section className="sec pray"><div className="wrap"><div className="box">
         <div className="eyebrow on-dark">Estamos com você</div>
-        <h2>Podemos orar por você?</h2>
-        <p className="lead">Envie seu pedido de oração. Nossa equipe de intercessão vai clamar por você em particular.</p>
+        <h2>{sec.oracaoTitulo}</h2>
+        <p className="lead">{sec.oracaoLead}</p>
         <div className="cta" style={{ justifyContent: "center" }}>
           <Link href="/oracao" className="btn pri">Enviar pedido de oração</Link>
         </div>
@@ -373,8 +375,8 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
       {/* NEWSLETTER */}
       <section className="sec footcta"><div className="wrap">
         <div className="eyebrow on-dark">Fique por dentro</div>
-        <h2>Receba as novidades</h2>
-        <p>Devocional, avisos e eventos direto no seu e-mail.</p>
+        <h2>{sec.newsletterTitulo}</h2>
+        <p>{sec.newsletterTexto}</p>
         <form className="news" action="/contato"><input className="f" name="email" type="email" placeholder="seu@email.com" /><button type="submit" className="btn pri">Inscrever</button></form>
       </div></section>
 

@@ -58,6 +58,56 @@ export const BOAS_VINDAS_PADRAO: BoasVindas = {
   versiculo: "“Alegrei-me quando me disseram: Vamos à casa do Senhor.” — Salmos 122:1",
 };
 
+/** Demais seções editáveis da home: "Acesse o app", "Próximos passos" e as
+ *  faixas de Células, Oração e Newsletter. Ícones e números são fixos por
+ *  posição; a igreja edita só os textos. */
+export interface PassoHome {
+  titulo: string;
+  texto: string;
+}
+export interface SecoesHome {
+  appTitulo: string; // vazio = "Acesse o app da <nome da igreja>" (dinâmico)
+  appLead: string;
+  appRecursos: string[]; // 6
+  passosTitulo: string;
+  passosLead: string;
+  passos: PassoHome[]; // 5
+  celulasTitulo: string;
+  celulasTexto: string;
+  oracaoTitulo: string;
+  oracaoLead: string;
+  newsletterTitulo: string;
+  newsletterTexto: string;
+}
+
+export const SECOES_HOME_PADRAO: SecoesHome = {
+  appTitulo: "",
+  appLead: "Tudo o que você vive na igreja, agora na palma da mão. Assista aos cultos, contribua, acompanhe sua célula e muito mais — em um só lugar, do seu jeito.",
+  appRecursos: [
+    "Cultos e mensagens ao vivo",
+    "Dízimos e ofertas por PIX",
+    "Minha célula e grupos",
+    "Kids ao vivo dos seus filhos",
+    "Agenda e inscrições",
+    "Avisos e devocional diário",
+  ],
+  passosTitulo: "Próximos passos",
+  passosLead: "Um caminho simples para você avançar na sua jornada com Cristo.",
+  passos: [
+    { titulo: "Aceitei Jesus", texto: "Deu o primeiro passo? Conte pra gente." },
+    { titulo: "Batismo", texto: "Inscreva-se no próximo batismo." },
+    { titulo: "Célula", texto: "Encontre um grupo perto de você." },
+    { titulo: "Trilha do Discípulo", texto: "Cursos e trilhas de crescimento." },
+    { titulo: "Servir", texto: "Faça parte de um ministério." },
+  ],
+  celulasTitulo: "Encontre uma célula",
+  celulasTexto: "Ninguém foi feito para caminhar sozinho. Achamos um grupo perto de você para viver a fé em comunidade.",
+  oracaoTitulo: "Podemos orar por você?",
+  oracaoLead: "Envie seu pedido de oração. Nossa equipe de intercessão vai clamar por você em particular.",
+  newsletterTitulo: "Receba as novidades",
+  newsletterTexto: "Devocional, avisos e eventos direto no seu e-mail.",
+};
+
 function texto(v: unknown): string {
   return typeof v === "string" ? v.trim() : "";
 }
@@ -150,4 +200,64 @@ export function serializarBoasVindas(v: {
   };
   const vazio = !obj.titulo && !obj.lead && !obj.frase && !obj.versiculo && cards.every((c) => !c.titulo && !c.texto);
   return vazio ? null : JSON.stringify(obj);
+}
+
+/** Parse das demais seções (app, passos, faixas) — defensivo por campo. */
+export function parseSecoesHome(json: string | null | undefined): SecoesHome {
+  let o: Record<string, unknown> = {};
+  if (json) {
+    try {
+      const v = JSON.parse(json);
+      if (v && typeof v === "object" && !Array.isArray(v)) o = v as Record<string, unknown>;
+    } catch {
+      // JSON quebrado: tudo no padrão.
+    }
+  }
+  const recIn = Array.isArray(o.appRecursos) ? o.appRecursos : [];
+  const appRecursos = SECOES_HOME_PADRAO.appRecursos.map((d, i) => texto(recIn[i]) || d);
+  const pasIn = Array.isArray(o.passos) ? o.passos : [];
+  const passos = SECOES_HOME_PADRAO.passos.map((d, i) => {
+    const r = (pasIn[i] ?? {}) as Record<string, unknown>;
+    return { titulo: texto(r.titulo) || d.titulo, texto: texto(r.texto) || d.texto };
+  });
+  const p = SECOES_HOME_PADRAO;
+  return {
+    appTitulo: texto(o.appTitulo), // vazio permitido (=> título dinâmico com o nome da igreja)
+    appLead: texto(o.appLead) || p.appLead,
+    appRecursos,
+    passosTitulo: texto(o.passosTitulo) || p.passosTitulo,
+    passosLead: texto(o.passosLead) || p.passosLead,
+    passos,
+    celulasTitulo: texto(o.celulasTitulo) || p.celulasTitulo,
+    celulasTexto: texto(o.celulasTexto) || p.celulasTexto,
+    oracaoTitulo: texto(o.oracaoTitulo) || p.oracaoTitulo,
+    oracaoLead: texto(o.oracaoLead) || p.oracaoLead,
+    newsletterTitulo: texto(o.newsletterTitulo) || p.newsletterTitulo,
+    newsletterTexto: texto(o.newsletterTexto) || p.newsletterTexto,
+  };
+}
+
+/** Serializa as demais seções; null se nada foi preenchido (volta ao padrão). */
+export function serializarSecoesHome(v: {
+  appTitulo?: string; appLead?: string; appRecursos?: string[];
+  passosTitulo?: string; passosLead?: string; passos?: { titulo?: string; texto?: string }[];
+  celulasTitulo?: string; celulasTexto?: string;
+  oracaoTitulo?: string; oracaoLead?: string;
+  newsletterTitulo?: string; newsletterTexto?: string;
+}): string | null {
+  const appRecursos = (v.appRecursos ?? []).slice(0, 6).map(texto);
+  const passos = (v.passos ?? []).slice(0, 5).map((x) => ({ titulo: texto(x.titulo), texto: texto(x.texto) }));
+  const obj = {
+    appTitulo: texto(v.appTitulo), appLead: texto(v.appLead), appRecursos,
+    passosTitulo: texto(v.passosTitulo), passosLead: texto(v.passosLead), passos,
+    celulasTitulo: texto(v.celulasTitulo), celulasTexto: texto(v.celulasTexto),
+    oracaoTitulo: texto(v.oracaoTitulo), oracaoLead: texto(v.oracaoLead),
+    newsletterTitulo: texto(v.newsletterTitulo), newsletterTexto: texto(v.newsletterTexto),
+  };
+  const algo =
+    obj.appTitulo || obj.appLead || obj.passosTitulo || obj.passosLead ||
+    obj.celulasTitulo || obj.celulasTexto || obj.oracaoTitulo || obj.oracaoLead ||
+    obj.newsletterTitulo || obj.newsletterTexto ||
+    appRecursos.some(Boolean) || passos.some((x) => x.titulo || x.texto);
+  return algo ? JSON.stringify(obj) : null;
 }

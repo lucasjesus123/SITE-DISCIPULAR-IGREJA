@@ -10,6 +10,9 @@ import {
   BOAS_VINDAS_PADRAO,
   parseBoasVindas,
   serializarBoasVindas,
+  SECOES_HOME_PADRAO,
+  parseSecoesHome,
+  serializarSecoesHome,
 } from "./conteudo-home";
 
 test("parseMinisterios cai no padrão com JSON inválido/vazio/nulo", () => {
@@ -82,4 +85,38 @@ test("round-trip boas-vindas: serializar → parse mantém o que foi editado", (
   assert.equal(r.versiculo, "Salmos 122:1");
   assert.equal(r.cards[0]!.titulo, "Café");
   assert.equal(r.lead, BOAS_VINDAS_PADRAO.lead); // não editado → padrão
+});
+
+// --- Seções (app, passos, faixas) --------------------------------------------
+test("parseSecoesHome: nulo/quebrado volta ao padrão", () => {
+  assert.deepEqual(parseSecoesHome(null), SECOES_HOME_PADRAO);
+  assert.deepEqual(parseSecoesHome("{x"), SECOES_HOME_PADRAO);
+});
+
+test("parseSecoesHome: por campo, com arrays de tamanho fixo", () => {
+  const json = JSON.stringify({
+    appTitulo: "Baixe o Discipular",
+    appRecursos: ["Só o primeiro"],
+    passos: [{ titulo: "Decidi seguir Jesus", texto: "" }],
+    celulasTitulo: "",
+  });
+  const r = parseSecoesHome(json);
+  assert.equal(r.appTitulo, "Baixe o Discipular");
+  assert.equal(r.appRecursos.length, 6);
+  assert.equal(r.appRecursos[0], "Só o primeiro");
+  assert.equal(r.appRecursos[1], SECOES_HOME_PADRAO.appRecursos[1]); // ausente → padrão
+  assert.equal(r.passos.length, 5);
+  assert.equal(r.passos[0]!.titulo, "Decidi seguir Jesus");
+  assert.equal(r.passos[0]!.texto, SECOES_HOME_PADRAO.passos[0]!.texto); // vazio → padrão
+  assert.equal(r.celulasTitulo, SECOES_HOME_PADRAO.celulasTitulo);
+});
+
+test("serializarSecoesHome: nada preenchido devolve null; round-trip mantém edições", () => {
+  assert.equal(serializarSecoesHome({}), null);
+  const s = serializarSecoesHome({ oracaoTitulo: "Ore conosco", appRecursos: ["Ao vivo"], passos: [{ titulo: "Sim!", texto: "" }] });
+  const r = parseSecoesHome(s);
+  assert.equal(r.oracaoTitulo, "Ore conosco");
+  assert.equal(r.appRecursos[0], "Ao vivo");
+  assert.equal(r.passos[0]!.titulo, "Sim!");
+  assert.equal(r.newsletterTitulo, SECOES_HOME_PADRAO.newsletterTitulo); // não editado → padrão
 });

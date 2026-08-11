@@ -2,9 +2,9 @@ import { cache } from "react";
 import { tenantDb } from "@/lib/db/tenant-client";
 import { normalizarTema, type TemaTenant } from "@/lib/site/theme";
 import {
-  parseMinisterios, parseDepoimentos, parseBoasVindas,
-  MINISTERIOS_PADRAO, DEPOIMENTOS_PADRAO, BOAS_VINDAS_PADRAO,
-  type Ministerio, type Depoimento, type BoasVindas,
+  parseMinisterios, parseDepoimentos, parseBoasVindas, parseSecoesHome,
+  MINISTERIOS_PADRAO, DEPOIMENTOS_PADRAO, BOAS_VINDAS_PADRAO, SECOES_HOME_PADRAO,
+  type Ministerio, type Depoimento, type BoasVindas, type SecoesHome,
 } from "@/lib/site/conteudo-home";
 
 /**
@@ -64,6 +64,7 @@ export interface ConfigSite {
   ministerios: Ministerio[];
   depoimentos: Depoimento[];
   boasVindas: BoasVindas;
+  secoes: SecoesHome;
 }
 
 export interface CampusPublico {
@@ -146,6 +147,7 @@ const CONFIG_PADRAO: ConfigSite = {
   ministerios: MINISTERIOS_PADRAO,
   depoimentos: DEPOIMENTOS_PADRAO,
   boasVindas: BOAS_VINDAS_PADRAO,
+  secoes: SECOES_HOME_PADRAO,
 };
 
 export const carregarDadosSite = cache(async (tenantId: string): Promise<DadosSite> => {
@@ -213,6 +215,7 @@ export const carregarDadosSite = cache(async (tenantId: string): Promise<DadosSi
           ministerios: parseMinisterios(config.ministeriosJson),
           depoimentos: parseDepoimentos(config.depoimentosJson),
           boasVindas: parseBoasVindas(config.boasVindasJson),
+          secoes: parseSecoesHome(config.secoesHomeJson),
         }
       : CONFIG_PADRAO,
     tema: normalizarTema(config),
