@@ -65,6 +65,13 @@ RUN if [ -f package-lock.json ]; then \
 # -----------------------------------------------------------------------------
 FROM base AS builder
 
+# Cache-bust por commit: o deploy passa --build-arg GIT_SHA=<commit>. Quando o
+# código muda, GIT_SHA muda e força recompilar A PARTIR DAQUI (as deps acima
+# continuam em cache). Blinda contra o caso em que o Docker reaproveitava um
+# COPY antigo e a imagem subia com código velho.
+ARG GIT_SHA=dev
+RUN echo "build do commit ${GIT_SHA}" > /tmp/.commit
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
@@ -103,6 +110,10 @@ RUN npm run build
 FROM base AS migrador
 
 ENV NODE_ENV=production
+# Cache-bust por commit (mesma ideia do builder): garante que uma migração nova
+# seja sempre incluída, mesmo que o cache tentasse reaproveitar o COPY prisma.
+ARG GIT_SHA=dev
+RUN echo "migrador do commit ${GIT_SHA}" > /tmp/.commit
 COPY --from=deps /app/node_modules ./node_modules
 COPY package.json ./
 COPY prisma ./prisma
