@@ -36,9 +36,16 @@ titulo "2/5 Reconstruindo a imagem (cache-bust do commit $SHA)"
 $COMPOSE build --build-arg GIT_SHA="$SHA" app
 
 titulo "3/5 Migrando o banco"
-# Perfil 'migracao': sobe o migrador, aplica as migrações pendentes e morre.
-$COMPOSE --profile migracao build --build-arg GIT_SHA="$SHA" migrador
-$COMPOSE --profile migracao run --rm migrador
+# Migração pela imagem "toolbox" (estágio builder, roda como root) — o mesmo
+# caminho do instalador. O serviço compose `migrador` roda como usuário 1001 e
+# o Prisma não consegue escrever o engine ("Can't write to @prisma/engines"),
+# então NÃO o usamos aqui. A toolbox reaproveita o build do passo 2 (rápido).
+REDE_DADOS="$(docker network ls --format '{{.Name}}' | grep -E '(^|_)dados$' | grep discipular | head -1)"
+REDE_DADOS="${REDE_DADOS:-discipular_dados}"
+docker build --target builder --build-arg GIT_SHA="$SHA" -t discipular-toolbox:latest .
+docker run --rm --network "$REDE_DADOS" --env-file .env -e HOME=/root \
+  discipular-toolbox:latest \
+  npx prisma migrate deploy
 
 titulo "4/5 Subindo a aplicação"
 $COMPOSE up -d --force-recreate app
