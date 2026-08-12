@@ -188,7 +188,7 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
 
       {/* MENSAGEM (ESCURO) */}
       <section className="tk-sec tk-msg" id="mensagem"><div className="wrap"><div className="grid">
-        <PlayerMensagem videoId={msgVideoId} thumb={thumb} aoVivo={live.aoVivo} hrefFallback={linkVivo} />
+        <PlayerMensagem videoId={msgVideoId} thumb={thumb ?? fotoComunidade ?? heroImagem} aoVivo={live.aoVivo} hrefFallback={linkVivo} />
         <div>
           <span className="tk-tag">Última mensagem</span>
           <h2>{msgTitulo}</h2>
