@@ -150,6 +150,7 @@ export default async function LayoutSite({ children }: { children: React.ReactNo
             nome={dados.config.nomeExibicao}
             logo={logoDoCabecalho(dados.config.logoClaroId, tenant.slug)}
             aoVivo={estadoLive.aoVivo}
+            menu={dados.config.secoes.menu}
             socials={{
               instagram: dados.config.instagram,
               youtube: dados.config.youtube,

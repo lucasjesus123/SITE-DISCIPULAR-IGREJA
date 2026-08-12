@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CreditoConexao } from "@/components/CreditoConexao";
+import type { ItemMenu } from "@/lib/site/conteudo-home";
 
 /**
  * Nav + rodapé Institucional para as páginas INTERNAS do site (mensagens,
@@ -15,10 +16,18 @@ interface Props {
   logo: string | null;
   aoVivo: boolean;
   socials: { instagram: string | null; youtube: string | null; whatsapp: string | null };
+  /** Mesmo menu editável da home. Âncora (#x) vira /#x para funcionar da interna. */
+  menu?: ItemMenu[];
   children: React.ReactNode;
 }
 
-export function ChromeInstitucional({ nome, logo, aoVivo, socials, children }: Props) {
+/** Âncora de seção da home (#novo) vira /#novo; link normal fica igual. */
+function destino(href: string): string {
+  return href.startsWith("#") ? `/${href}` : href;
+}
+
+export function ChromeInstitucional({ nome, logo, aoVivo, socials, menu, children }: Props) {
+  const itens = menu && menu.length > 0 ? menu : null;
   return (
     <>
       <header className="ins-hd">
@@ -35,13 +44,19 @@ export function ChromeInstitucional({ nome, logo, aoVivo, socials, children }: P
             )}
           </Link>
           <ul className="ins-hd__menu">
-            <li><Link href="/#novo">Novo por aqui</Link></li>
-            <li><Link href="/mensagens">Mensagens</Link></li>
-            <li><Link href="/#minis">Ministérios</Link></li>
-            <li><Link href="/app">App</Link></li>
-            <li><Link href="/#passos">Próximos Passos</Link></li>
-            <li><Link href="/contribua">Contribua</Link></li>
-            <li><Link href="/agenda">Agenda</Link></li>
+            {itens ? (
+              itens.map((m, i) => (<li key={i}><Link href={destino(m.href)}>{m.label}</Link></li>))
+            ) : (
+              <>
+                <li><Link href="/#novo">Novo por aqui</Link></li>
+                <li><Link href="/mensagens">Mensagens</Link></li>
+                <li><Link href="/#minis">Ministérios</Link></li>
+                <li><Link href="/app">App</Link></li>
+                <li><Link href="/#passos">Próximos Passos</Link></li>
+                <li><Link href="/contribua">Contribua</Link></li>
+                <li><Link href="/agenda">Agenda</Link></li>
+              </>
+            )}
           </ul>
           <div className="ins-hd__cta">
             {aoVivo && <Link href="/#mensagem" className="ins-hd__live"><span className="dot" />AO VIVO</Link>}
