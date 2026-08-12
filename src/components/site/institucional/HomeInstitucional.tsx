@@ -46,6 +46,9 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
   // senão a última mensagem. Toca embutido (HeroVideo).
   const heroVid = live.aoVivo && live.videoId ? live.videoId : heroVideoId ?? ultimaMsgVideoId;
   const heroThumb = heroVid ? urlMiniatura(heroVid) : null;
+  // Botão 1 do hero: link vazio = destino dinâmico (ao vivo). Externo abre em nova aba.
+  const heroB1 = sec.heroBtn1Link || linkVivo;
+  const heroB1Ext = /^https?:/.test(heroB1);
 
   const campusPrincipal = campi[0];
   const endereco = campusPrincipal
@@ -128,8 +131,8 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
             <h1>{config.heroTitulo ? config.heroTitulo : <>A fé que <span className="gr">move</span> a sua geração.</>}</h1>
             <p>{config.heroSubtitulo ?? config.tagline ?? "Uma igreja viva, jovem e conectada. Assista aos cultos ao vivo, entre numa célula e viva algo real — presencialmente ou pelo app."}</p>
             <div className="tk-acts">
-              <a href={linkVivo} target={canalYoutube ? "_blank" : undefined} rel={canalYoutube ? "noopener noreferrer" : undefined} className="tk-btn tk-btn--verde">▶ Assista ao vivo</a>
-              <Link href="/app" className="tk-btn tk-btn--glass">Baixar o app</Link>
+              <a href={heroB1} target={heroB1Ext ? "_blank" : undefined} rel={heroB1Ext ? "noopener noreferrer" : undefined} className="tk-btn tk-btn--verde">{sec.heroBtn1Texto}</a>
+              <Link href={sec.heroBtn2Link || "/app"} className="tk-btn tk-btn--glass">{sec.heroBtn2Texto}</Link>
             </div>
             <div className="tk-verse">{bv.versiculo}</div>
           </div>
@@ -192,8 +195,8 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
         <div>
           <span className="tk-tag">Última mensagem</span>
           <h2>{msgTitulo}</h2>
-          <p className="tk-lead">Assista à palavra de domingo e acompanhe todas as transmissões ao vivo pelo nosso canal.</p>
-          <div className="tk-acts" style={{ marginTop: 22 }}><Link href="/mensagens" className="tk-btn tk-btn--verde">Ver todas as mensagens</Link></div>
+          <p className="tk-lead">{sec.mensagemLead}</p>
+          <div className="tk-acts" style={{ marginTop: 22 }}><Link href={sec.mensagemBtnLink || "/mensagens"} className="tk-btn tk-btn--verde">{sec.mensagemBtnTexto}</Link></div>
         </div>
       </div></div></section>
 
@@ -206,7 +209,7 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
           <ul className="tk-feats">
             {sec.appRecursos.map((r, i) => (<li key={i}><span className="ck">✓</span>{r}</li>))}
           </ul>
-          <div className="tk-acts"><Link href="/app" className="tk-btn tk-btn--verde">Baixar agora</Link></div>
+          <div className="tk-acts"><Link href={sec.appBtnLink || "/app"} className="tk-btn tk-btn--verde">{sec.appBtnTexto}</Link></div>
         </div>
         <div className="tk-phone"><div className="tk-phone__glow" /><div className="tk-phone__ui">
           <div className="hi">Paz! 👋</div><div className="t">Início</div>
@@ -223,7 +226,7 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
               <div className="tk-card__ic">{m.icone || m.titulo.charAt(0)}</div>
               <h3>{m.titulo}</h3>
               <p>{m.descricao}</p>
-              <Link href="/quem-somos" className="tk-card__go">Conhecer →</Link>
+              <Link href={sec.minisBtnLink || "/quem-somos"} className="tk-card__go">{sec.minisBtnTexto}</Link>
             </div>
           ))}
         </div>
@@ -242,7 +245,7 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
       {/* CÉLULAS (FAIXA) */}
       <section className="tk-band"><div className="wrap">
         <div><h2>{sec.celulasTitulo}</h2><p>{sec.celulasTexto}</p></div>
-        <Link href="/celulas" className="tk-btn tk-btn--glass" style={{ background: "rgba(255,255,255,.12)", color: "#fff", borderColor: "rgba(255,255,255,.3)" }}>Buscar grupo perto de mim</Link>
+        <Link href={sec.celulasBtnLink || "/celulas"} className="tk-btn tk-btn--glass" style={{ background: "rgba(255,255,255,.12)", color: "#fff", borderColor: "rgba(255,255,255,.3)" }}>{sec.celulasBtnTexto}</Link>
       </div></section>
 
       {/* DEPOIMENTOS (CLARO) */}
@@ -266,7 +269,7 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
         <div className="tk-pix">
           <div className="l">Chave PIX{pixDisplay?.includes("/") ? " · CNPJ" : ""}</div>
           <div className="k">{pixDisplay ?? "Configure a chave PIX no painel"}</div>
-          <Link href="/contribua" className="tk-btn tk-btn--verde">Contribuir com PIX</Link>
+          <Link href={sec.contribuaBtnLink || "/contribua"} className="tk-btn tk-btn--verde">{sec.contribuaBtnTexto}</Link>
         </div>
       </div></section>
 
@@ -288,7 +291,7 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
       {/* ORAÇÃO (FAIXA) */}
       <section className="tk-band" style={{ background: "linear-gradient(120deg,#0d3324,#0a1610)" }}><div className="wrap">
         <div><h2>{sec.oracaoTitulo}</h2><p>{sec.oracaoLead}</p></div>
-        <Link href="/oracao" className="tk-btn tk-btn--verde">Enviar pedido de oração</Link>
+        <Link href={sec.oracaoBtnLink || "/oracao"} className="tk-btn tk-btn--verde">{sec.oracaoBtnTexto}</Link>
       </div></section>
 
       {/* CONTATO (CLARO) */}

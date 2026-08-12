@@ -66,6 +66,15 @@ export function EditorConteudoHome({
         contatoTitulo: g("sec_contatoTitulo"),
         contatoLead: g("sec_contatoLead"),
         agendaTitulo: g("sec_agendaTitulo"),
+        heroBtn1Texto: g("sec_heroBtn1Texto"), heroBtn1Link: g("sec_heroBtn1Link"),
+        heroBtn2Texto: g("sec_heroBtn2Texto"), heroBtn2Link: g("sec_heroBtn2Link"),
+        mensagemLead: g("sec_mensagemLead"),
+        mensagemBtnTexto: g("sec_mensagemBtnTexto"), mensagemBtnLink: g("sec_mensagemBtnLink"),
+        appBtnTexto: g("sec_appBtnTexto"), appBtnLink: g("sec_appBtnLink"),
+        minisBtnTexto: g("sec_minisBtnTexto"), minisBtnLink: g("sec_minisBtnLink"),
+        celulasBtnTexto: g("sec_celulasBtnTexto"), celulasBtnLink: g("sec_celulasBtnLink"),
+        oracaoBtnTexto: g("sec_oracaoBtnTexto"), oracaoBtnLink: g("sec_oracaoBtnLink"),
+        contribuaBtnTexto: g("sec_contribuaBtnTexto"), contribuaBtnLink: g("sec_contribuaBtnLink"),
       },
       ministerios: Array.from({ length: N }, (_, i) => ({ titulo: g(`m${i}_titulo`), descricao: g(`m${i}_descricao`), icone: g(`m${i}_icone`) })),
       depoimentos: Array.from({ length: N }, (_, i) => ({ texto: g(`d${i}_texto`), nome: g(`d${i}_nome`), papel: g(`d${i}_papel`) })),
@@ -193,6 +202,31 @@ export function EditorConteudoHome({
               <input name="sec_newsletterTexto" defaultValue={secoes.newsletterTexto} maxLength={300} />
             </label>
           </div>
+        </div>
+      </div>
+
+      {/* BOTÕES E LINKS DA HOME */}
+      <div>
+        <p className="campo__rotulo" style={{ marginBottom: ".4rem" }}>Botões e links da home</p>
+        <p className="lvr-nota" style={{ marginBottom: ".6rem" }}>Rótulo = o que aparece no botão. Link = para onde vai (ex.: /contribua ou um site). Em branco = padrão.</p>
+        <div className="stack" style={{ "--flow": ".6rem" } as React.CSSProperties}>
+          {([
+            ["Hero — botão 1 (ao vivo)", "heroBtn1Texto", "heroBtn1Link", secoes.heroBtn1Texto, secoes.heroBtn1Link],
+            ["Hero — botão 2 (app)", "heroBtn2Texto", "heroBtn2Link", secoes.heroBtn2Texto, secoes.heroBtn2Link],
+            ["Mensagens — botão", "mensagemBtnTexto", "mensagemBtnLink", secoes.mensagemBtnTexto, secoes.mensagemBtnLink],
+            ["App — botão", "appBtnTexto", "appBtnLink", secoes.appBtnTexto, secoes.appBtnLink],
+            ["Ministérios — link do card", "minisBtnTexto", "minisBtnLink", secoes.minisBtnTexto, secoes.minisBtnLink],
+            ["Células — botão", "celulasBtnTexto", "celulasBtnLink", secoes.celulasBtnTexto, secoes.celulasBtnLink],
+            ["Oração — botão", "oracaoBtnTexto", "oracaoBtnLink", secoes.oracaoBtnTexto, secoes.oracaoBtnLink],
+            ["Contribua — botão", "contribuaBtnTexto", "contribuaBtnLink", secoes.contribuaBtnTexto, secoes.contribuaBtnLink],
+          ] as const).map(([rot, nt, nl, vt, vl]) => (
+            <div key={nt} style={{ display: "flex", gap: ".6rem", flexWrap: "wrap", alignItems: "center", border: "1.5px solid var(--pnl-line)", borderRadius: 12, padding: ".7rem" }}>
+              <span style={{ minWidth: 150, fontSize: ".82rem", fontWeight: 600, opacity: .75 }}>{rot}</span>
+              <input name={`sec_${nt}`} defaultValue={vt} maxLength={60} placeholder="Rótulo" style={{ flex: 1, minWidth: 120 }} aria-label={`${rot} rótulo`} />
+              <input name={`sec_${nl}`} defaultValue={vl} maxLength={300} placeholder="Link" style={{ flex: 1, minWidth: 140 }} aria-label={`${rot} link`} />
+            </div>
+          ))}
+          <label className="campo"><span className="campo__rotulo">Mensagens — chamada (texto)</span><textarea name="sec_mensagemLead" defaultValue={secoes.mensagemLead} rows={2} maxLength={400} /></label>
         </div>
       </div>
 

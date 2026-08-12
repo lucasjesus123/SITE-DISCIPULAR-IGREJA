@@ -87,6 +87,25 @@ export interface SecoesHome {
   contatoTitulo: string;
   contatoLead: string;
   agendaTitulo: string;
+  // Botões e links da home (rótulo + destino). Link vazio nos do hero = usa o
+  // destino dinâmico (ao vivo). Os demais têm destino padrão.
+  heroBtn1Texto: string;
+  heroBtn1Link: string;
+  heroBtn2Texto: string;
+  heroBtn2Link: string;
+  mensagemLead: string;
+  mensagemBtnTexto: string;
+  mensagemBtnLink: string;
+  appBtnTexto: string;
+  appBtnLink: string;
+  minisBtnTexto: string;
+  minisBtnLink: string;
+  celulasBtnTexto: string;
+  celulasBtnLink: string;
+  oracaoBtnTexto: string;
+  oracaoBtnLink: string;
+  contribuaBtnTexto: string;
+  contribuaBtnLink: string;
 }
 
 export const SECOES_HOME_PADRAO: SecoesHome = {
@@ -123,6 +142,23 @@ export const SECOES_HOME_PADRAO: SecoesHome = {
   contatoTitulo: "Venha nos visitar",
   contatoLead: "Estamos de portas abertas. Envie sua mensagem — ela chega direto no nosso WhatsApp.",
   agendaTitulo: "Próximos eventos",
+  heroBtn1Texto: "▶ Assista ao vivo",
+  heroBtn1Link: "",
+  heroBtn2Texto: "Baixar o app",
+  heroBtn2Link: "/app",
+  mensagemLead: "Assista à palavra de domingo e acompanhe todas as transmissões ao vivo pelo nosso canal.",
+  mensagemBtnTexto: "Ver todas as mensagens",
+  mensagemBtnLink: "/mensagens",
+  appBtnTexto: "Baixar agora",
+  appBtnLink: "/app",
+  minisBtnTexto: "Conhecer →",
+  minisBtnLink: "/quem-somos",
+  celulasBtnTexto: "Buscar grupo perto de mim",
+  celulasBtnLink: "/celulas",
+  oracaoBtnTexto: "Enviar pedido de oração",
+  oracaoBtnLink: "/oracao",
+  contribuaBtnTexto: "Contribuir com PIX",
+  contribuaBtnLink: "/contribua",
 };
 
 function texto(v: unknown): string {
@@ -259,6 +295,23 @@ export function parseSecoesHome(json: string | null | undefined): SecoesHome {
     contatoTitulo: texto(o.contatoTitulo) || p.contatoTitulo,
     contatoLead: texto(o.contatoLead) || p.contatoLead,
     agendaTitulo: texto(o.agendaTitulo) || p.agendaTitulo,
+    heroBtn1Texto: texto(o.heroBtn1Texto) || p.heroBtn1Texto,
+    heroBtn1Link: texto(o.heroBtn1Link), // vazio = destino dinâmico (ao vivo)
+    heroBtn2Texto: texto(o.heroBtn2Texto) || p.heroBtn2Texto,
+    heroBtn2Link: texto(o.heroBtn2Link) || p.heroBtn2Link,
+    mensagemLead: texto(o.mensagemLead) || p.mensagemLead,
+    mensagemBtnTexto: texto(o.mensagemBtnTexto) || p.mensagemBtnTexto,
+    mensagemBtnLink: texto(o.mensagemBtnLink) || p.mensagemBtnLink,
+    appBtnTexto: texto(o.appBtnTexto) || p.appBtnTexto,
+    appBtnLink: texto(o.appBtnLink) || p.appBtnLink,
+    minisBtnTexto: texto(o.minisBtnTexto) || p.minisBtnTexto,
+    minisBtnLink: texto(o.minisBtnLink) || p.minisBtnLink,
+    celulasBtnTexto: texto(o.celulasBtnTexto) || p.celulasBtnTexto,
+    celulasBtnLink: texto(o.celulasBtnLink) || p.celulasBtnLink,
+    oracaoBtnTexto: texto(o.oracaoBtnTexto) || p.oracaoBtnTexto,
+    oracaoBtnLink: texto(o.oracaoBtnLink) || p.oracaoBtnLink,
+    contribuaBtnTexto: texto(o.contribuaBtnTexto) || p.contribuaBtnTexto,
+    contribuaBtnLink: texto(o.contribuaBtnLink) || p.contribuaBtnLink,
   };
 }
 
@@ -272,6 +325,11 @@ export function serializarSecoesHome(v: {
   minisTitulo?: string; minisLead?: string; depoimentosTitulo?: string;
   contribuaTitulo?: string; contribuaTexto?: string;
   contatoTitulo?: string; contatoLead?: string; agendaTitulo?: string;
+  heroBtn1Texto?: string; heroBtn1Link?: string; heroBtn2Texto?: string; heroBtn2Link?: string;
+  mensagemLead?: string; mensagemBtnTexto?: string; mensagemBtnLink?: string;
+  appBtnTexto?: string; appBtnLink?: string; minisBtnTexto?: string; minisBtnLink?: string;
+  celulasBtnTexto?: string; celulasBtnLink?: string; oracaoBtnTexto?: string; oracaoBtnLink?: string;
+  contribuaBtnTexto?: string; contribuaBtnLink?: string;
 }): string | null {
   const appRecursos = (v.appRecursos ?? []).slice(0, 6).map(texto);
   const passos = (v.passos ?? []).slice(0, 5).map((x) => ({ titulo: texto(x.titulo), texto: texto(x.texto) }));
@@ -284,6 +342,11 @@ export function serializarSecoesHome(v: {
     minisTitulo: texto(v.minisTitulo), minisLead: texto(v.minisLead), depoimentosTitulo: texto(v.depoimentosTitulo),
     contribuaTitulo: texto(v.contribuaTitulo), contribuaTexto: texto(v.contribuaTexto),
     contatoTitulo: texto(v.contatoTitulo), contatoLead: texto(v.contatoLead), agendaTitulo: texto(v.agendaTitulo),
+    heroBtn1Texto: texto(v.heroBtn1Texto), heroBtn1Link: texto(v.heroBtn1Link), heroBtn2Texto: texto(v.heroBtn2Texto), heroBtn2Link: texto(v.heroBtn2Link),
+    mensagemLead: texto(v.mensagemLead), mensagemBtnTexto: texto(v.mensagemBtnTexto), mensagemBtnLink: texto(v.mensagemBtnLink),
+    appBtnTexto: texto(v.appBtnTexto), appBtnLink: texto(v.appBtnLink), minisBtnTexto: texto(v.minisBtnTexto), minisBtnLink: texto(v.minisBtnLink),
+    celulasBtnTexto: texto(v.celulasBtnTexto), celulasBtnLink: texto(v.celulasBtnLink), oracaoBtnTexto: texto(v.oracaoBtnTexto), oracaoBtnLink: texto(v.oracaoBtnLink),
+    contribuaBtnTexto: texto(v.contribuaBtnTexto), contribuaBtnLink: texto(v.contribuaBtnLink),
   };
   const algo = Object.values(obj).some((x) =>
     typeof x === "string" ? x : x.some((c: unknown) => (typeof c === "string" ? c : Boolean((c as { titulo?: string; texto?: string }).titulo || (c as { texto?: string }).texto))),
