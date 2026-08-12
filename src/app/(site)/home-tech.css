@@ -220,9 +220,14 @@
 .tk-foot__top { display: flex; justify-content: space-between; gap: 40px; flex-wrap: wrap; border-bottom: 1px solid var(--tk-linha); padding-bottom: 36px; }
 .tk-foot__cols { display: flex; gap: 54px; flex-wrap: wrap; }
 .tk-foot h4 { font-family: var(--disp); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--tk-verde2); margin-bottom: 14px; }
-.tk-foot a { display: block; font-size: 14px; margin-bottom: 10px; color: var(--tk-muted); }
-.tk-foot a:hover { color: #fff; }
-.tk-foot__copy { padding-top: 24px; font-size: 13px; color: var(--tk-muted); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+.tk-foot__cols a { display: block; font-size: 14px; margin-bottom: 10px; color: var(--tk-muted); }
+.tk-foot__cols a:hover { color: #fff; }
+.tk-foot__cred a { color: inherit; }
+.tk-foot__copy { padding-top: 24px; font-size: 13px; color: var(--tk-muted); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
+.tk-foot__cred { white-space: nowrap; }
+@media (max-width: 620px) { .tk-foot__cred { white-space: normal; } }
+.tk-foot__login { display: inline-flex; align-items: center; gap: 8px; font-family: var(--disp); font-weight: 600; font-size: 13.5px; color: var(--tk-verde); background: color-mix(in srgb, var(--tk-verde) 12%, transparent); border: 1px solid color-mix(in srgb, var(--tk-verde) 42%, transparent); padding: 9px 18px; border-radius: 10px; transition: all .2s cubic-bezier(.2,.8,.2,1); white-space: nowrap; }
+.tk-foot__login:hover { background: var(--tk-verde); color: #04120A; transform: translateY(-2px); }
 
 /* reveal ao rolar */
 @media (prefers-reduced-motion: no-preference) {

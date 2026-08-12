@@ -328,7 +328,10 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
             </div>
           </div>
         </div>
-        <div className="tk-foot__copy"><span>© 2026 {nome}. Todos os direitos reservados. · <CreditoConexao /></span><span>Feito com fé 🖤</span></div>
+        <div className="tk-foot__copy">
+          <span className="tk-foot__cred">© 2026 {nome}. Todos os direitos reservados. · <CreditoConexao /></span>
+          <Link href="/login" className="tk-foot__login">Entrar no sistema →</Link>
+        </div>
       </div></footer>
     </div>
   );
