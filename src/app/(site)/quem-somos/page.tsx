@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { carregarOverridePagina } from "@/components/site/OverridePagina";
 
 export const metadata: Metadata = {
   title: "Quem Somos",
@@ -44,7 +45,10 @@ const PILARES = [
   },
 ] as const;
 
-export default function QuemSomos() {
+export default async function QuemSomos() {
+  const override = await carregarOverridePagina("quem-somos");
+  if (override) return override;
+
   return (
     <>
       <section className="page-hero">

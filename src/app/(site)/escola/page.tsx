@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { carregarOverridePagina } from "@/components/site/OverridePagina";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { tenantDaRequisicao } from "@/lib/tenant/resolve";
@@ -64,6 +65,9 @@ const svgCheck = (
 );
 
 export default async function PaginaEscola() {
+  const override = await carregarOverridePagina("escola");
+  if (override) return override;
+
   const tenant = await tenantDaRequisicao();
   if (!tenant) notFound();
 

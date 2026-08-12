@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { carregarOverridePagina } from "@/components/site/OverridePagina";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { tenantDaRequisicao } from "@/lib/tenant/resolve";
@@ -10,6 +11,9 @@ export const metadata: Metadata = {
 };
 
 export default async function Pastores() {
+  const override = await carregarOverridePagina("pastores");
+  if (override) return override;
+
   const tenant = await tenantDaRequisicao();
   if (!tenant) notFound();
   const { config } = await carregarDadosSite(tenant.id);

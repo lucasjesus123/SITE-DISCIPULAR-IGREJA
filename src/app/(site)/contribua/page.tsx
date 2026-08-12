@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { carregarOverridePagina } from "@/components/site/OverridePagina";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { tenantDaRequisicao } from "@/lib/tenant/resolve";
@@ -67,6 +68,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function PaginaContribua() {
+  const override = await carregarOverridePagina("contribua");
+  if (override) return override;
+
   const tenant = await tenantDaRequisicao();
   if (!tenant) notFound();
 
