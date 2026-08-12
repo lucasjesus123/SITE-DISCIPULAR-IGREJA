@@ -213,6 +213,15 @@
 .tk-contato .info { font-weight: 500; line-height: 1.9; color: var(--tk-tinta); }
 .tk-map { margin-top: 16px; border-radius: 16px; overflow: hidden; border: 1px solid rgba(0,0,0,.12); }
 .tk-map iframe { width: 100%; height: 280px; border: 0; display: block; }
+/* Formulário WhatsApp (FormWhatsAppInst) dentro da seção clara de contato. */
+.tk .form { display: grid; gap: .3rem; }
+.tk .form label { font-family: var(--disp); font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--tk-tinta-suave); margin-top: .55rem; }
+.tk .form .f { background: #fff; border: 1px solid rgba(0,0,0,.14); border-radius: 12px; height: 50px; padding: 0 15px; font-size: 15px; color: var(--tk-tinta); font-family: inherit; width: 100%; }
+.tk .form .f.area { height: 120px; padding-top: 12px; resize: vertical; line-height: 1.5; }
+.tk .form .f::placeholder { color: #9aa39d; }
+.tk .form .f:focus { outline: 2px solid var(--tk-verde2); outline-offset: 1px; border-color: var(--tk-verde2); }
+.tk .wabtn { margin-top: .9rem; background: linear-gradient(135deg, var(--tk-verde), var(--tk-verde2)); color: #04120A; border: 0; border-radius: 12px; height: 52px; font-family: var(--disp); font-weight: 700; font-size: 15px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: transform .2s cubic-bezier(.2,.8,.2,1), box-shadow .2s; box-shadow: 0 8px 26px -8px var(--tk-glow); }
+.tk .wabtn:hover { transform: translateY(-2px); box-shadow: 0 14px 40px -8px var(--tk-glow); }
 @media (max-width: 880px) { .tk-contato .grid { grid-template-columns: 1fr; } }
 
 /* FOOTER */
