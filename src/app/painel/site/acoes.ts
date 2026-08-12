@@ -459,6 +459,10 @@ export async function salvarConteudoHome(dadosBrutos: unknown): Promise<Resultad
         oracaoBtnLink: z.string().trim().max(300).optional().default(""),
         contribuaBtnTexto: z.string().trim().max(60).optional().default(""),
         contribuaBtnLink: z.string().trim().max(300).optional().default(""),
+        menu: z.array(z.object({
+          label: z.string().trim().max(40).optional().default(""),
+          href: z.string().trim().max(200).optional().default(""),
+        })).max(10).default([]),
       }).optional(),
     });
     const dados = schema.parse(dadosBrutos);

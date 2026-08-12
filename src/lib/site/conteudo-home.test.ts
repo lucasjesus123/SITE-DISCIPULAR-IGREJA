@@ -122,3 +122,12 @@ test("serializarSecoesHome: nada preenchido devolve null; round-trip mantém edi
   assert.equal(r.passos[0]!.titulo, "Sim!");
   assert.equal(r.newsletterTitulo, SECOES_HOME_PADRAO.newsletterTitulo); // não editado → padrão
 });
+
+test("menu editável: vazio volta ao padrão; round-trip mantém itens válidos", () => {
+  assert.deepEqual(parseSecoesHome(JSON.stringify({ menu: [] })).menu, SECOES_HOME_PADRAO.menu);
+  const s = serializarSecoesHome({ menu: [{ label: "Início", href: "/" }, { label: "só rótulo", href: "" }] });
+  const r = parseSecoesHome(s);
+  assert.equal(r.menu.length, 1); // item sem destino é descartado
+  assert.equal(r.menu[0]!.label, "Início");
+  assert.equal(r.menu[0]!.href, "/");
+});

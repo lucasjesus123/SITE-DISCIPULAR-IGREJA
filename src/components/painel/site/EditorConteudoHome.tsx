@@ -32,6 +32,7 @@ export function EditorConteudoHome({
   const bvCards = padArray(boasVindas.cards, 4, { titulo: "", texto: "" });
   const appRecursos = padArray(secoes.appRecursos.map((r) => ({ v: r })), 6, { v: "" });
   const passos = padArray(secoes.passos, 5, { titulo: "", texto: "" });
+  const menuRows = padArray(secoes.menu.map((m) => ({ label: m.label, href: m.href })), 8, { label: "", href: "" });
 
   function salvar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -75,6 +76,7 @@ export function EditorConteudoHome({
         celulasBtnTexto: g("sec_celulasBtnTexto"), celulasBtnLink: g("sec_celulasBtnLink"),
         oracaoBtnTexto: g("sec_oracaoBtnTexto"), oracaoBtnLink: g("sec_oracaoBtnLink"),
         contribuaBtnTexto: g("sec_contribuaBtnTexto"), contribuaBtnLink: g("sec_contribuaBtnLink"),
+        menu: Array.from({ length: 8 }, (_, i) => ({ label: g(`sec_menu${i}_label`), href: g(`sec_menu${i}_href`) })),
       },
       ministerios: Array.from({ length: N }, (_, i) => ({ titulo: g(`m${i}_titulo`), descricao: g(`m${i}_descricao`), icone: g(`m${i}_icone`) })),
       depoimentos: Array.from({ length: N }, (_, i) => ({ texto: g(`d${i}_texto`), nome: g(`d${i}_nome`), papel: g(`d${i}_papel`) })),
@@ -202,6 +204,20 @@ export function EditorConteudoHome({
               <input name="sec_newsletterTexto" defaultValue={secoes.newsletterTexto} maxLength={300} />
             </label>
           </div>
+        </div>
+      </div>
+
+      {/* MENU DO SITE */}
+      <div>
+        <p className="campo__rotulo" style={{ marginBottom: ".4rem" }}>Menu do topo</p>
+        <p className="lvr-nota" style={{ marginBottom: ".6rem" }}>Rótulo + destino de cada item. Use #novo/#minis… para rolar até uma seção, ou /pagina para abrir uma página. Deixe em branco para esconder. Tudo vazio = menu padrão.</p>
+        <div className="stack" style={{ "--flow": ".5rem" } as React.CSSProperties}>
+          {menuRows.map((m, i) => (
+            <div key={i} style={{ display: "flex", gap: ".6rem", flexWrap: "wrap", alignItems: "center" }}>
+              <input name={`sec_menu${i}_label`} defaultValue={m.label} maxLength={40} placeholder={`Item ${i + 1} — rótulo`} style={{ flex: 1, minWidth: 130 }} aria-label={`Menu item ${i + 1} rótulo`} />
+              <input name={`sec_menu${i}_href`} defaultValue={m.href} maxLength={200} placeholder="Destino (#novo ou /pagina)" style={{ flex: 1, minWidth: 150 }} aria-label={`Menu item ${i + 1} destino`} />
+            </div>
+          ))}
         </div>
       </div>
 

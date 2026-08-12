@@ -110,12 +110,7 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
       <nav className="tk-nav"><div className="wrap">
         <Marca />
         <ul className="tk-menu">
-          <li><a href="#novo">Novo por aqui</a></li>
-          <li><a href="#mensagem">Mensagens</a></li>
-          <li><a href="#minis">Ministérios</a></li>
-          <li><a href="#app">App</a></li>
-          <li><a href="#passos">Próximos passos</a></li>
-          <li><a href="#give">Contribua</a></li>
+          {sec.menu.map((m, i) => (<li key={i}><a href={m.href}>{m.label}</a></li>))}
         </ul>
         <div className="tk-nav__cta">
           <a href={linkVivo} target={canalYoutube ? "_blank" : undefined} rel={canalYoutube ? "noopener noreferrer" : undefined} className="tk-live"><span className="tk-dot" />Ao vivo</a>

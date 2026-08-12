@@ -65,6 +65,10 @@ export interface PassoHome {
   titulo: string;
   texto: string;
 }
+export interface ItemMenu {
+  label: string;
+  href: string;
+}
 export interface SecoesHome {
   appTitulo: string; // vazio = "Acesse o app da <nome da igreja>" (dinâmico)
   appLead: string;
@@ -106,7 +110,18 @@ export interface SecoesHome {
   oracaoBtnLink: string;
   contribuaBtnTexto: string;
   contribuaBtnLink: string;
+  // Menu do topo (rótulo + destino). Vazio = menu padrão.
+  menu: ItemMenu[];
 }
+
+export const MENU_PADRAO: ItemMenu[] = [
+  { label: "Novo por aqui", href: "#novo" },
+  { label: "Mensagens", href: "#mensagem" },
+  { label: "Ministérios", href: "#minis" },
+  { label: "App", href: "#app" },
+  { label: "Próximos passos", href: "#passos" },
+  { label: "Contribua", href: "#give" },
+];
 
 export const SECOES_HOME_PADRAO: SecoesHome = {
   appTitulo: "",
@@ -159,6 +174,7 @@ export const SECOES_HOME_PADRAO: SecoesHome = {
   oracaoBtnLink: "/oracao",
   contribuaBtnTexto: "Contribuir com PIX",
   contribuaBtnLink: "/contribua",
+  menu: MENU_PADRAO,
 };
 
 function texto(v: unknown): string {
@@ -273,6 +289,11 @@ export function parseSecoesHome(json: string | null | undefined): SecoesHome {
     const r = (pasIn[i] ?? {}) as Record<string, unknown>;
     return { titulo: texto(r.titulo) || d.titulo, texto: texto(r.texto) || d.texto };
   });
+  const menuIn = Array.isArray(o.menu) ? o.menu : [];
+  const menu = menuIn
+    .map((m) => { const r = m as Record<string, unknown>; return { label: texto(r.label), href: texto(r.href) }; })
+    .filter((m) => m.label && m.href)
+    .slice(0, 10);
   const p = SECOES_HOME_PADRAO;
   return {
     appTitulo: texto(o.appTitulo), // vazio permitido (=> título dinâmico com o nome da igreja)
@@ -312,6 +333,7 @@ export function parseSecoesHome(json: string | null | undefined): SecoesHome {
     oracaoBtnLink: texto(o.oracaoBtnLink) || p.oracaoBtnLink,
     contribuaBtnTexto: texto(o.contribuaBtnTexto) || p.contribuaBtnTexto,
     contribuaBtnLink: texto(o.contribuaBtnLink) || p.contribuaBtnLink,
+    menu: menu.length ? menu : MENU_PADRAO,
   };
 }
 
@@ -330,6 +352,7 @@ export function serializarSecoesHome(v: {
   appBtnTexto?: string; appBtnLink?: string; minisBtnTexto?: string; minisBtnLink?: string;
   celulasBtnTexto?: string; celulasBtnLink?: string; oracaoBtnTexto?: string; oracaoBtnLink?: string;
   contribuaBtnTexto?: string; contribuaBtnLink?: string;
+  menu?: { label?: string; href?: string }[];
 }): string | null {
   const appRecursos = (v.appRecursos ?? []).slice(0, 6).map(texto);
   const passos = (v.passos ?? []).slice(0, 5).map((x) => ({ titulo: texto(x.titulo), texto: texto(x.texto) }));
@@ -347,9 +370,16 @@ export function serializarSecoesHome(v: {
     appBtnTexto: texto(v.appBtnTexto), appBtnLink: texto(v.appBtnLink), minisBtnTexto: texto(v.minisBtnTexto), minisBtnLink: texto(v.minisBtnLink),
     celulasBtnTexto: texto(v.celulasBtnTexto), celulasBtnLink: texto(v.celulasBtnLink), oracaoBtnTexto: texto(v.oracaoBtnTexto), oracaoBtnLink: texto(v.oracaoBtnLink),
     contribuaBtnTexto: texto(v.contribuaBtnTexto), contribuaBtnLink: texto(v.contribuaBtnLink),
+    menu: (v.menu ?? []).slice(0, 10).map((m) => ({ label: texto(m.label), href: texto(m.href) })).filter((m) => m.label && m.href),
   };
   const algo = Object.values(obj).some((x) =>
-    typeof x === "string" ? x : x.some((c: unknown) => (typeof c === "string" ? c : Boolean((c as { titulo?: string; texto?: string }).titulo || (c as { texto?: string }).texto))),
+    typeof x === "string"
+      ? x
+      : x.some((c: unknown) => {
+          if (typeof c === "string") return Boolean(c);
+          const o = c as { titulo?: string; texto?: string; label?: string; href?: string };
+          return Boolean(o.titulo || o.texto || o.label || o.href);
+        }),
   );
   return algo ? JSON.stringify(obj) : null;
 }
