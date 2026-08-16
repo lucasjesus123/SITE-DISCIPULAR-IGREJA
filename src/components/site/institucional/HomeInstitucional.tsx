@@ -317,8 +317,12 @@ export function HomeInstitucional({ dados, live, ultimaMsgVideoId, ultimaMsgTitu
         <div className="tk-foot__top">
           <Marca classe="tk-brand" />
           <div className="tk-foot__cols">
-            <div><h4>Igreja</h4><a href="#novo">Novo por aqui</a><a href="#minis">Ministérios</a><a href="#agenda">Agenda</a></div>
-            <div><h4>Participe</h4><a href="#mensagem">Mensagens</a><a href="#give">Contribua</a><a href="#passos">Próximos passos</a></div>
+            {sec.rodape.map((col, i) => (
+              <div key={i}>
+                <h4>{col.titulo}</h4>
+                {col.links.map((l, j) => (<a key={j} href={l.href}>{l.label}</a>))}
+              </div>
+            ))}
             <div><h4>Redes</h4>
               {config.instagram && <a href={config.instagram} target="_blank" rel="noopener noreferrer">Instagram</a>}
               {config.youtube && <a href={config.youtube} target="_blank" rel="noopener noreferrer">YouTube</a>}

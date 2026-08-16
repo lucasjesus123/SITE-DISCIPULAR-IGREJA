@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { tenantDaRequisicao } from "@/lib/tenant/resolve";
+import { carregarDadosSite } from "@/lib/services/site";
 import { obterTokenCsrf } from "@/lib/security/csrf";
 import {
   Campo,
@@ -16,8 +19,12 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function PaginaOracao() {
+  const tenant = await tenantDaRequisicao();
+  if (!tenant) notFound();
+
   // Garante que o cookie CSRF existe antes de o formulário ser renderizado.
-  await obterTokenCsrf();
+  const [dados] = await Promise.all([carregarDadosSite(tenant.id), obterTokenCsrf()]);
+  const sec = dados.config.secoes;
 
   return (
     <>
@@ -25,11 +32,10 @@ export default async function PaginaOracao() {
         <div className="container container--narrow">
           <p className="eyebrow">Intercessão</p>
           <h1 style={{ marginTop: "1.2rem" }}>
-            Podemos orar <span className="serif-italic gold">por você</span>?
+            {sec.formOracaoTitulo} <span className="serif-italic gold">{sec.formOracaoDestaque}</span>?
           </h1>
           <p className="lead" style={{ marginTop: "1.4rem" }}>
-            Não existe pedido pequeno demais. Escreva com liberdade — nossa equipe de intercessão
-            vai orar, e o que você compartilhar fica protegido.
+            {sec.formOracaoLead}
           </p>
         </div>
       </section>

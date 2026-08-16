@@ -23,6 +23,7 @@ export default async function PaginaBatismo() {
   if (!tenant) notFound();
 
   const [dados] = await Promise.all([carregarDadosSite(tenant.id), obterTokenCsrf()]);
+  const sec = dados.config.secoes;
 
   return (
     <>
@@ -30,11 +31,10 @@ export default async function PaginaBatismo() {
         <div className="container container--narrow">
           <p className="eyebrow">Batismo</p>
           <h1 style={{ marginTop: "1.2rem" }}>
-            Um passo de <span className="serif-italic gold">obediência</span>.
+            {sec.formBatismoTitulo} <span className="serif-italic gold">{sec.formBatismoDestaque}</span>.
           </h1>
           <p className="lead" style={{ marginTop: "1.4rem" }}>
-            O batismo é o testemunho público de uma decisão que já aconteceu no coração. Conte um
-            pouco da sua história e caminharemos com você até esse dia.
+            {sec.formBatismoLead}
           </p>
         </div>
       </section>

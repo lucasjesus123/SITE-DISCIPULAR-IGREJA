@@ -69,6 +69,11 @@ export interface ItemMenu {
   label: string;
   href: string;
 }
+/** Uma coluna de links do rodapé: um título e até 4 links. */
+export interface RodapeColuna {
+  titulo: string;
+  links: ItemMenu[];
+}
 export interface SecoesHome {
   appTitulo: string; // vazio = "Acesse o app da <nome da igreja>" (dinâmico)
   appLead: string;
@@ -91,6 +96,18 @@ export interface SecoesHome {
   contatoTitulo: string;
   contatoLead: string;
   agendaTitulo: string;
+  // Intro das páginas de formulário (Batismo, Visita, Oração). Cada uma tem um
+  // título em duas partes (texto normal + palavra em destaque dourado) e um
+  // parágrafo de abertura. Editável no painel — sem migração no banco.
+  formBatismoTitulo: string;
+  formBatismoDestaque: string;
+  formBatismoLead: string;
+  formVisitaTitulo: string;
+  formVisitaDestaque: string;
+  formVisitaLead: string;
+  formOracaoTitulo: string;
+  formOracaoDestaque: string;
+  formOracaoLead: string;
   // Botões e links da home (rótulo + destino). Link vazio nos do hero = usa o
   // destino dinâmico (ao vivo). Os demais têm destino padrão.
   heroBtn1Texto: string;
@@ -112,7 +129,23 @@ export interface SecoesHome {
   contribuaBtnLink: string;
   // Menu do topo (rótulo + destino). Vazio = menu padrão.
   menu: ItemMenu[];
+  // Rodapé: 2 colunas de links (a 3ª coluna "Redes" é automática das redes
+  // sociais). Vazio = colunas padrão.
+  rodape: RodapeColuna[];
 }
+
+export const RODAPE_PADRAO: RodapeColuna[] = [
+  { titulo: "Igreja", links: [
+    { label: "Novo por aqui", href: "#novo" },
+    { label: "Ministérios", href: "#minis" },
+    { label: "Agenda", href: "#agenda" },
+  ] },
+  { titulo: "Participe", links: [
+    { label: "Mensagens", href: "#mensagem" },
+    { label: "Contribua", href: "#give" },
+    { label: "Próximos passos", href: "#passos" },
+  ] },
+];
 
 export const MENU_PADRAO: ItemMenu[] = [
   { label: "Novo por aqui", href: "#novo" },
@@ -157,6 +190,15 @@ export const SECOES_HOME_PADRAO: SecoesHome = {
   contatoTitulo: "Venha nos visitar",
   contatoLead: "Estamos de portas abertas. Envie sua mensagem — ela chega direto no nosso WhatsApp.",
   agendaTitulo: "Próximos eventos",
+  formBatismoTitulo: "Um passo de",
+  formBatismoDestaque: "obediência",
+  formBatismoLead: "O batismo é o testemunho público de uma decisão que já aconteceu no coração. Conte um pouco da sua história e caminharemos com você até esse dia.",
+  formVisitaTitulo: "Venha como",
+  formVisitaDestaque: "está",
+  formVisitaLead: "Não precisa de roupa especial, nem de saber nada sobre a Bíblia. Avise que você vem e teremos alguém esperando por você na porta.",
+  formOracaoTitulo: "Podemos orar",
+  formOracaoDestaque: "por você",
+  formOracaoLead: "Não existe pedido pequeno demais. Escreva com liberdade — nossa equipe de intercessão vai orar, e o que você compartilhar fica protegido.",
   heroBtn1Texto: "▶ Assista ao vivo",
   heroBtn1Link: "",
   heroBtn2Texto: "Baixar o app",
@@ -175,6 +217,7 @@ export const SECOES_HOME_PADRAO: SecoesHome = {
   contribuaBtnTexto: "Contribuir com PIX",
   contribuaBtnLink: "/contribua",
   menu: MENU_PADRAO,
+  rodape: RODAPE_PADRAO,
 };
 
 function texto(v: unknown): string {
@@ -294,6 +337,19 @@ export function parseSecoesHome(json: string | null | undefined): SecoesHome {
     .map((m) => { const r = m as Record<string, unknown>; return { label: texto(r.label), href: texto(r.href) }; })
     .filter((m) => m.label && m.href)
     .slice(0, 10);
+  // Rodapé: exatamente 2 colunas, cada uma título + links (≤4). Coluna sem
+  // título nem links volta ao padrão daquela posição.
+  const rodapeIn = Array.isArray(o.rodape) ? o.rodape : [];
+  const rodape = RODAPE_PADRAO.map((padrao, i) => {
+    const c = (rodapeIn[i] ?? {}) as Record<string, unknown>;
+    const linksIn = Array.isArray(c.links) ? c.links : [];
+    const links = linksIn
+      .map((l) => { const r = l as Record<string, unknown>; return { label: texto(r.label), href: texto(r.href) }; })
+      .filter((l) => l.label && l.href)
+      .slice(0, 4);
+    const titulo = texto(c.titulo);
+    return titulo || links.length ? { titulo: titulo || padrao.titulo, links: links.length ? links : padrao.links } : padrao;
+  });
   const p = SECOES_HOME_PADRAO;
   return {
     appTitulo: texto(o.appTitulo), // vazio permitido (=> título dinâmico com o nome da igreja)
@@ -316,6 +372,15 @@ export function parseSecoesHome(json: string | null | undefined): SecoesHome {
     contatoTitulo: texto(o.contatoTitulo) || p.contatoTitulo,
     contatoLead: texto(o.contatoLead) || p.contatoLead,
     agendaTitulo: texto(o.agendaTitulo) || p.agendaTitulo,
+    formBatismoTitulo: texto(o.formBatismoTitulo) || p.formBatismoTitulo,
+    formBatismoDestaque: texto(o.formBatismoDestaque) || p.formBatismoDestaque,
+    formBatismoLead: texto(o.formBatismoLead) || p.formBatismoLead,
+    formVisitaTitulo: texto(o.formVisitaTitulo) || p.formVisitaTitulo,
+    formVisitaDestaque: texto(o.formVisitaDestaque) || p.formVisitaDestaque,
+    formVisitaLead: texto(o.formVisitaLead) || p.formVisitaLead,
+    formOracaoTitulo: texto(o.formOracaoTitulo) || p.formOracaoTitulo,
+    formOracaoDestaque: texto(o.formOracaoDestaque) || p.formOracaoDestaque,
+    formOracaoLead: texto(o.formOracaoLead) || p.formOracaoLead,
     heroBtn1Texto: texto(o.heroBtn1Texto) || p.heroBtn1Texto,
     heroBtn1Link: texto(o.heroBtn1Link), // vazio = destino dinâmico (ao vivo)
     heroBtn2Texto: texto(o.heroBtn2Texto) || p.heroBtn2Texto,
@@ -334,6 +399,7 @@ export function parseSecoesHome(json: string | null | undefined): SecoesHome {
     contribuaBtnTexto: texto(o.contribuaBtnTexto) || p.contribuaBtnTexto,
     contribuaBtnLink: texto(o.contribuaBtnLink) || p.contribuaBtnLink,
     menu: menu.length ? menu : MENU_PADRAO,
+    rodape,
   };
 }
 
@@ -347,12 +413,16 @@ export function serializarSecoesHome(v: {
   minisTitulo?: string; minisLead?: string; depoimentosTitulo?: string;
   contribuaTitulo?: string; contribuaTexto?: string;
   contatoTitulo?: string; contatoLead?: string; agendaTitulo?: string;
+  formBatismoTitulo?: string; formBatismoDestaque?: string; formBatismoLead?: string;
+  formVisitaTitulo?: string; formVisitaDestaque?: string; formVisitaLead?: string;
+  formOracaoTitulo?: string; formOracaoDestaque?: string; formOracaoLead?: string;
   heroBtn1Texto?: string; heroBtn1Link?: string; heroBtn2Texto?: string; heroBtn2Link?: string;
   mensagemLead?: string; mensagemBtnTexto?: string; mensagemBtnLink?: string;
   appBtnTexto?: string; appBtnLink?: string; minisBtnTexto?: string; minisBtnLink?: string;
   celulasBtnTexto?: string; celulasBtnLink?: string; oracaoBtnTexto?: string; oracaoBtnLink?: string;
   contribuaBtnTexto?: string; contribuaBtnLink?: string;
   menu?: { label?: string; href?: string }[];
+  rodape?: { titulo?: string; links?: { label?: string; href?: string }[] }[];
 }): string | null {
   const appRecursos = (v.appRecursos ?? []).slice(0, 6).map(texto);
   const passos = (v.passos ?? []).slice(0, 5).map((x) => ({ titulo: texto(x.titulo), texto: texto(x.texto) }));
@@ -365,12 +435,19 @@ export function serializarSecoesHome(v: {
     minisTitulo: texto(v.minisTitulo), minisLead: texto(v.minisLead), depoimentosTitulo: texto(v.depoimentosTitulo),
     contribuaTitulo: texto(v.contribuaTitulo), contribuaTexto: texto(v.contribuaTexto),
     contatoTitulo: texto(v.contatoTitulo), contatoLead: texto(v.contatoLead), agendaTitulo: texto(v.agendaTitulo),
+    formBatismoTitulo: texto(v.formBatismoTitulo), formBatismoDestaque: texto(v.formBatismoDestaque), formBatismoLead: texto(v.formBatismoLead),
+    formVisitaTitulo: texto(v.formVisitaTitulo), formVisitaDestaque: texto(v.formVisitaDestaque), formVisitaLead: texto(v.formVisitaLead),
+    formOracaoTitulo: texto(v.formOracaoTitulo), formOracaoDestaque: texto(v.formOracaoDestaque), formOracaoLead: texto(v.formOracaoLead),
     heroBtn1Texto: texto(v.heroBtn1Texto), heroBtn1Link: texto(v.heroBtn1Link), heroBtn2Texto: texto(v.heroBtn2Texto), heroBtn2Link: texto(v.heroBtn2Link),
     mensagemLead: texto(v.mensagemLead), mensagemBtnTexto: texto(v.mensagemBtnTexto), mensagemBtnLink: texto(v.mensagemBtnLink),
     appBtnTexto: texto(v.appBtnTexto), appBtnLink: texto(v.appBtnLink), minisBtnTexto: texto(v.minisBtnTexto), minisBtnLink: texto(v.minisBtnLink),
     celulasBtnTexto: texto(v.celulasBtnTexto), celulasBtnLink: texto(v.celulasBtnLink), oracaoBtnTexto: texto(v.oracaoBtnTexto), oracaoBtnLink: texto(v.oracaoBtnLink),
     contribuaBtnTexto: texto(v.contribuaBtnTexto), contribuaBtnLink: texto(v.contribuaBtnLink),
     menu: (v.menu ?? []).slice(0, 10).map((m) => ({ label: texto(m.label), href: texto(m.href) })).filter((m) => m.label && m.href),
+    rodape: (v.rodape ?? []).slice(0, 2).map((c) => ({
+      titulo: texto(c.titulo),
+      links: (c.links ?? []).slice(0, 4).map((l) => ({ label: texto(l.label), href: texto(l.href) })).filter((l) => l.label && l.href),
+    })).filter((c) => c.titulo || c.links.length),
   };
   const algo = Object.values(obj).some((x) =>
     typeof x === "string"

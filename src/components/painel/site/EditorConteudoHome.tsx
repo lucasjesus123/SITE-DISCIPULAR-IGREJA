@@ -33,6 +33,11 @@ export function EditorConteudoHome({
   const appRecursos = padArray(secoes.appRecursos.map((r) => ({ v: r })), 6, { v: "" });
   const passos = padArray(secoes.passos, 5, { titulo: "", texto: "" });
   const menuRows = padArray(secoes.menu.map((m) => ({ label: m.label, href: m.href })), 8, { label: "", href: "" });
+  const rodapeCols = padArray(
+    secoes.rodape.map((c) => ({ titulo: c.titulo, links: padArray(c.links.map((l) => ({ label: l.label, href: l.href })), 4, { label: "", href: "" }) })),
+    2,
+    { titulo: "", links: padArray([] as { label: string; href: string }[], 4, { label: "", href: "" }) },
+  );
 
   function salvar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -67,6 +72,9 @@ export function EditorConteudoHome({
         contatoTitulo: g("sec_contatoTitulo"),
         contatoLead: g("sec_contatoLead"),
         agendaTitulo: g("sec_agendaTitulo"),
+        formBatismoTitulo: g("sec_formBatismoTitulo"), formBatismoDestaque: g("sec_formBatismoDestaque"), formBatismoLead: g("sec_formBatismoLead"),
+        formVisitaTitulo: g("sec_formVisitaTitulo"), formVisitaDestaque: g("sec_formVisitaDestaque"), formVisitaLead: g("sec_formVisitaLead"),
+        formOracaoTitulo: g("sec_formOracaoTitulo"), formOracaoDestaque: g("sec_formOracaoDestaque"), formOracaoLead: g("sec_formOracaoLead"),
         heroBtn1Texto: g("sec_heroBtn1Texto"), heroBtn1Link: g("sec_heroBtn1Link"),
         heroBtn2Texto: g("sec_heroBtn2Texto"), heroBtn2Link: g("sec_heroBtn2Link"),
         mensagemLead: g("sec_mensagemLead"),
@@ -77,6 +85,10 @@ export function EditorConteudoHome({
         oracaoBtnTexto: g("sec_oracaoBtnTexto"), oracaoBtnLink: g("sec_oracaoBtnLink"),
         contribuaBtnTexto: g("sec_contribuaBtnTexto"), contribuaBtnLink: g("sec_contribuaBtnLink"),
         menu: Array.from({ length: 8 }, (_, i) => ({ label: g(`sec_menu${i}_label`), href: g(`sec_menu${i}_href`) })),
+        rodape: Array.from({ length: 2 }, (_, i) => ({
+          titulo: g(`sec_rod${i}_titulo`),
+          links: Array.from({ length: 4 }, (_, j) => ({ label: g(`sec_rod${i}_l${j}_label`), href: g(`sec_rod${i}_l${j}_href`) })),
+        })),
       },
       ministerios: Array.from({ length: N }, (_, i) => ({ titulo: g(`m${i}_titulo`), descricao: g(`m${i}_descricao`), icone: g(`m${i}_icone`) })),
       depoimentos: Array.from({ length: N }, (_, i) => ({ texto: g(`d${i}_texto`), nome: g(`d${i}_nome`), papel: g(`d${i}_papel`) })),
@@ -207,6 +219,28 @@ export function EditorConteudoHome({
         </div>
       </div>
 
+      {/* PÁGINAS DE FORMULÁRIO: Batismo, Visita, Oração */}
+      <div>
+        <p className="campo__rotulo" style={{ marginBottom: ".4rem" }}>Textos das páginas de formulário</p>
+        <p className="lvr-nota" style={{ marginBottom: ".6rem" }}>Abertura das páginas Batismo, Visita e Oração. O título é dividido em duas partes: o texto normal e a “palavra em destaque” (que aparece dourada). Em branco = texto padrão.</p>
+        <div className="stack" style={{ "--flow": ".7rem" } as React.CSSProperties}>
+          {([
+            ["Batismo", "formBatismoTitulo", "formBatismoDestaque", "formBatismoLead", secoes.formBatismoTitulo, secoes.formBatismoDestaque, secoes.formBatismoLead, "Um passo de", "obediência"],
+            ["Visita", "formVisitaTitulo", "formVisitaDestaque", "formVisitaLead", secoes.formVisitaTitulo, secoes.formVisitaDestaque, secoes.formVisitaLead, "Venha como", "está"],
+            ["Oração", "formOracaoTitulo", "formOracaoDestaque", "formOracaoLead", secoes.formOracaoTitulo, secoes.formOracaoDestaque, secoes.formOracaoLead, "Podemos orar", "por você"],
+          ] as const).map(([rot, nt, nd, nl, vt, vd, vl, pt, pd]) => (
+            <div key={nt} style={{ border: "1.5px solid var(--pnl-line)", borderRadius: 12, padding: ".8rem", display: "grid", gap: ".5rem" }}>
+              <span style={{ fontSize: ".82rem", fontWeight: 700, opacity: .75 }}>{rot}</span>
+              <div style={{ display: "flex", gap: ".6rem", flexWrap: "wrap" }}>
+                <input name={`sec_${nt}`} defaultValue={vt} maxLength={80} placeholder={`Título (ex.: ${pt})`} style={{ flex: 2, minWidth: 160 }} aria-label={`${rot} — título`} />
+                <input name={`sec_${nd}`} defaultValue={vd} maxLength={40} placeholder={`Destaque (ex.: ${pd})`} style={{ flex: 1, minWidth: 120 }} aria-label={`${rot} — palavra em destaque`} />
+              </div>
+              <textarea name={`sec_${nl}`} defaultValue={vl} rows={2} maxLength={400} placeholder="Parágrafo de abertura" aria-label={`${rot} — parágrafo`} />
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* MENU DO SITE */}
       <div>
         <p className="campo__rotulo" style={{ marginBottom: ".4rem" }}>Menu do topo</p>
@@ -216,6 +250,25 @@ export function EditorConteudoHome({
             <div key={i} style={{ display: "flex", gap: ".6rem", flexWrap: "wrap", alignItems: "center" }}>
               <input name={`sec_menu${i}_label`} defaultValue={m.label} maxLength={40} placeholder={`Item ${i + 1} — rótulo`} style={{ flex: 1, minWidth: 130 }} aria-label={`Menu item ${i + 1} rótulo`} />
               <input name={`sec_menu${i}_href`} defaultValue={m.href} maxLength={200} placeholder="Destino (#novo ou /pagina)" style={{ flex: 1, minWidth: 150 }} aria-label={`Menu item ${i + 1} destino`} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* RODAPÉ */}
+      <div>
+        <p className="campo__rotulo" style={{ marginBottom: ".4rem" }}>Rodapé — colunas de links</p>
+        <p className="lvr-nota" style={{ marginBottom: ".6rem" }}>Duas colunas do rodapé (a coluna “Redes” é automática das suas redes sociais). Título + até 4 links cada. Use #novo/#minis… para uma seção da home, ou /pagina. Em branco = padrão.</p>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: ".8rem" }}>
+          {rodapeCols.map((col, i) => (
+            <div key={i} style={{ border: "1.5px solid var(--pnl-line)", borderRadius: 12, padding: ".8rem", display: "grid", gap: ".5rem" }}>
+              <input name={`sec_rod${i}_titulo`} defaultValue={col.titulo} maxLength={40} placeholder={`Título da coluna ${i + 1}`} aria-label={`Rodapé coluna ${i + 1} título`} style={{ fontWeight: 600 }} />
+              {col.links.map((l, j) => (
+                <div key={j} style={{ display: "flex", gap: ".4rem", flexWrap: "wrap" }}>
+                  <input name={`sec_rod${i}_l${j}_label`} defaultValue={l.label} maxLength={40} placeholder={`Link ${j + 1}`} style={{ flex: 1, minWidth: 100 }} aria-label={`Coluna ${i + 1} link ${j + 1} rótulo`} />
+                  <input name={`sec_rod${i}_l${j}_href`} defaultValue={l.href} maxLength={200} placeholder="Destino" style={{ flex: 1, minWidth: 100 }} aria-label={`Coluna ${i + 1} link ${j + 1} destino`} />
+                </div>
+              ))}
             </div>
           ))}
         </div>

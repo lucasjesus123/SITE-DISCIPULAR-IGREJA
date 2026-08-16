@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CreditoConexao } from "@/components/CreditoConexao";
-import type { ItemMenu } from "@/lib/site/conteudo-home";
+import type { ItemMenu, RodapeColuna } from "@/lib/site/conteudo-home";
 
 /**
  * Nav + rodapé Institucional para as páginas INTERNAS do site (mensagens,
@@ -18,6 +18,8 @@ interface Props {
   socials: { instagram: string | null; youtube: string | null; whatsapp: string | null };
   /** Mesmo menu editável da home. Âncora (#x) vira /#x para funcionar da interna. */
   menu?: ItemMenu[];
+  /** Colunas de links do rodapé (mesmo conteúdo editável da home). */
+  rodape?: RodapeColuna[];
   children: React.ReactNode;
 }
 
@@ -26,8 +28,9 @@ function destino(href: string): string {
   return href.startsWith("#") ? `/${href}` : href;
 }
 
-export function ChromeInstitucional({ nome, logo, aoVivo, socials, menu, children }: Props) {
+export function ChromeInstitucional({ nome, logo, aoVivo, socials, menu, rodape, children }: Props) {
   const itens = menu && menu.length > 0 ? menu : null;
+  const colunas = rodape && rodape.length > 0 ? rodape : null;
   return (
     <>
       <header className="ins-hd">
@@ -78,18 +81,29 @@ export function ChromeInstitucional({ nome, logo, aoVivo, socials, menu, childre
               )}
             </Link>
             <div className="ins-ft__cols">
-              <div>
-                <h4>Igreja</h4>
-                <Link href="/#novo">Novo por aqui</Link>
-                <Link href="/#minis">Ministérios</Link>
-                <Link href="/agenda">Agenda</Link>
-              </div>
-              <div>
-                <h4>Participe</h4>
-                <Link href="/mensagens">Mensagens</Link>
-                <Link href="/contribua">Contribua</Link>
-                <Link href="/app">Área do membro</Link>
-              </div>
+              {colunas ? (
+                colunas.map((col, i) => (
+                  <div key={i}>
+                    <h4>{col.titulo}</h4>
+                    {col.links.map((l, j) => (<Link key={j} href={destino(l.href)}>{l.label}</Link>))}
+                  </div>
+                ))
+              ) : (
+                <>
+                  <div>
+                    <h4>Igreja</h4>
+                    <Link href="/#novo">Novo por aqui</Link>
+                    <Link href="/#minis">Ministérios</Link>
+                    <Link href="/agenda">Agenda</Link>
+                  </div>
+                  <div>
+                    <h4>Participe</h4>
+                    <Link href="/mensagens">Mensagens</Link>
+                    <Link href="/contribua">Contribua</Link>
+                    <Link href="/app">Área do membro</Link>
+                  </div>
+                </>
+              )}
               <div>
                 <h4>Redes</h4>
                 {socials.instagram && <a href={socials.instagram} target="_blank" rel="noopener noreferrer">Instagram</a>}

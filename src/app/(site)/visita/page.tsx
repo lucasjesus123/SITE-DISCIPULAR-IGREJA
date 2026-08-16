@@ -24,6 +24,7 @@ export default async function PaginaVisita() {
 
   const [dados] = await Promise.all([carregarDadosSite(tenant.id), obterTokenCsrf()]);
   const { campi, agenda } = dados;
+  const sec = dados.config.secoes;
 
   return (
     <>
@@ -31,11 +32,10 @@ export default async function PaginaVisita() {
         <div className="container container--narrow">
           <p className="eyebrow">Primeira visita</p>
           <h1 style={{ marginTop: "1.2rem" }}>
-            Venha como <span className="serif-italic gold">está</span>.
+            {sec.formVisitaTitulo} <span className="serif-italic gold">{sec.formVisitaDestaque}</span>.
           </h1>
           <p className="lead" style={{ marginTop: "1.4rem" }}>
-            Não precisa de roupa especial, nem de saber nada sobre a Bíblia. Avise que você vem e
-            teremos alguém esperando por você na porta.
+            {sec.formVisitaLead}
           </p>
         </div>
       </section>

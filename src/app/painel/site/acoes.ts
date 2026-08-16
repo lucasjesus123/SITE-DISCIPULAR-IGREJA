@@ -442,6 +442,15 @@ export async function salvarConteudoHome(dadosBrutos: unknown): Promise<Resultad
         contatoTitulo: z.string().trim().max(80).optional().default(""),
         contatoLead: z.string().trim().max(400).optional().default(""),
         agendaTitulo: z.string().trim().max(80).optional().default(""),
+        formBatismoTitulo: z.string().trim().max(80).optional().default(""),
+        formBatismoDestaque: z.string().trim().max(40).optional().default(""),
+        formBatismoLead: z.string().trim().max(400).optional().default(""),
+        formVisitaTitulo: z.string().trim().max(80).optional().default(""),
+        formVisitaDestaque: z.string().trim().max(40).optional().default(""),
+        formVisitaLead: z.string().trim().max(400).optional().default(""),
+        formOracaoTitulo: z.string().trim().max(80).optional().default(""),
+        formOracaoDestaque: z.string().trim().max(40).optional().default(""),
+        formOracaoLead: z.string().trim().max(400).optional().default(""),
         heroBtn1Texto: z.string().trim().max(60).optional().default(""),
         heroBtn1Link: z.string().trim().max(300).optional().default(""),
         heroBtn2Texto: z.string().trim().max(60).optional().default(""),
@@ -463,6 +472,13 @@ export async function salvarConteudoHome(dadosBrutos: unknown): Promise<Resultad
           label: z.string().trim().max(40).optional().default(""),
           href: z.string().trim().max(200).optional().default(""),
         })).max(10).default([]),
+        rodape: z.array(z.object({
+          titulo: z.string().trim().max(40).optional().default(""),
+          links: z.array(z.object({
+            label: z.string().trim().max(40).optional().default(""),
+            href: z.string().trim().max(200).optional().default(""),
+          })).max(4).default([]),
+        })).max(2).default([]),
       }).optional(),
     });
     const dados = schema.parse(dadosBrutos);
